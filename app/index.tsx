@@ -15,6 +15,9 @@ import { LIGHT_POLLUTION_TILE_URL } from '../src/services/lightPollution';
 import { scoreColor } from '../src/services/scoring';
 import type { Candidate, LatLng } from '../src/types';
 
+const RADIUS_PRESETS_KM = [50, 120, 250] as const;
+type RadiusKm = (typeof RADIUS_PRESETS_KM)[number];
+
 export default function HomeScreen() {
   const mapRef = useRef<MapView>(null);
   const [origin, setOrigin] = useState<LatLng | null>(null);
@@ -25,6 +28,14 @@ export default function HomeScreen() {
     { message: 'Locating you…' },
   );
   const [showOverlay, setShowOverlay] = useState(true);
+  const [radiusKm, setRadiusKm] = useState<RadiusKm>(120);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
+  const [, setNow] = useState(Date.now()); // tick to refresh "x ago"
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -57,41 +68,63 @@ export default function HomeScreen() {
     };
   }, [origin]);
 
-  const search = useCallback(async () => {
-    if (!origin) return;
-    setBusy(true);
-    setStatus({ message: 'Scanning the next 3 nights for clear skies…' });
-    try {
-      const results = await findDarkSkySpots({ origin, radiusKm: 120, count: 18, days: 3 });
-      setCandidates(results);
-      setStatus({
-        message: results.length
-          ? `Ranked ${results.length} spots. Tap a marker for details.`
-          : 'No candidate spots returned.',
-      });
-      const top = results[0];
-      if (top && mapRef.current) {
-        mapRef.current.animateToRegion(
-          {
-            latitude: top.location.latitude,
-            longitude: top.location.longitude,
-            latitudeDelta: 2,
-            longitudeDelta: 2,
-          },
-          600,
-        );
+  const search = useCallback(
+    async (r: RadiusKm) => {
+      if (!origin) return;
+      setBusy(true);
+      setStatus({ message: `Scanning ${r} km radius for the next 3 nights…` });
+      try {
+        const results = await findDarkSkySpots({
+          origin,
+          radiusKm: r,
+          count: 18,
+          days: 3,
+        });
+        setCandidates(results);
+        setLastUpdated(Date.now());
+        setStatus({
+          message: results.length
+            ? `Ranked ${results.length} spots. Tap a marker for details.`
+            : 'No candidate spots returned.',
+        });
+        const top = results[0];
+        if (top && mapRef.current) {
+          mapRef.current.animateToRegion(
+            {
+              latitude: top.location.latitude,
+              longitude: top.location.longitude,
+              latitudeDelta: Math.max(2, r / 50),
+              longitudeDelta: Math.max(2, r / 50),
+            },
+            600,
+          );
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        setStatus({ message: `Search failed: ${msg}`, tone: 'error' });
+      } finally {
+        setBusy(false);
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      setStatus({ message: `Search failed: ${msg}`, tone: 'error' });
-    } finally {
-      setBusy(false);
-    }
-  }, [origin]);
+    },
+    [origin],
+  );
 
   useEffect(() => {
-    if (origin) search();
-  }, [origin, search]);
+    if (origin) search(radiusKm);
+  }, [origin, radiusKm, search]);
+
+  const recenter = useCallback(() => {
+    if (!origin || !mapRef.current) return;
+    mapRef.current.animateToRegion(
+      {
+        latitude: origin.latitude,
+        longitude: origin.longitude,
+        latitudeDelta: Math.max(2, radiusKm / 50),
+        longitudeDelta: Math.max(2, radiusKm / 50),
+      },
+      400,
+    );
+  }, [origin, radiusKm]);
 
   if (!origin || !initialRegion) {
     return (
@@ -111,7 +144,6 @@ export default function HomeScreen() {
         showsUserLocation
         showsMyLocationButton={false}
       >
-        {/* OSM basemap so we don't depend on Apple/Google credentials. */}
         <UrlTile
           urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
           maximumZ={19}
@@ -137,23 +169,58 @@ export default function HomeScreen() {
         ))}
       </MapView>
 
-      {status ? <StatusBanner message={status.message} busy={busy} tone={status.tone} /> : null}
+      {status ? (
+        <StatusBanner
+          message={
+            lastUpdated && !busy
+              ? `${status.message} · Updated ${formatRelative(lastUpdated)}`
+              : status.message
+          }
+          busy={busy}
+          tone={status.tone}
+        />
+      ) : null}
 
-      <View style={styles.controls}>
-        <Pressable
-          style={styles.button}
-          onPress={search}
-          disabled={busy}
-        >
-          <Text style={styles.buttonText}>{busy ? 'Searching…' : 'Refresh'}</Text>
-        </Pressable>
+      <View style={styles.topControls}>
+        <View style={styles.pillRow}>
+          {RADIUS_PRESETS_KM.map((r) => (
+            <Pressable
+              key={r}
+              onPress={() => setRadiusKm(r)}
+              disabled={busy}
+              style={[styles.pill, radiusKm === r && styles.pillActive]}
+            >
+              <Text
+                style={[
+                  styles.pillText,
+                  radiusKm === r && styles.pillTextActive,
+                ]}
+              >
+                {r} km
+              </Text>
+            </Pressable>
+          ))}
+        </View>
         <Pressable
           style={[styles.button, styles.buttonGhost]}
           onPress={() => setShowOverlay((v) => !v)}
         >
-          <Text style={styles.buttonText}>
+          <Text style={styles.buttonGhostText}>
             {showOverlay ? 'Hide LP overlay' : 'Show LP overlay'}
           </Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.fabColumn}>
+        <Pressable
+          style={[styles.fab, styles.fabPrimary]}
+          onPress={() => search(radiusKm)}
+          disabled={busy}
+        >
+          <Text style={styles.fabPrimaryText}>{busy ? '…' : '↻'}</Text>
+        </Pressable>
+        <Pressable style={styles.fab} onPress={recenter}>
+          <Text style={styles.fabText}>◎</Text>
         </Pressable>
       </View>
 
@@ -162,6 +229,15 @@ export default function HomeScreen() {
       ) : null}
     </View>
   );
+}
+
+function formatRelative(ts: number): string {
+  const s = Math.max(1, Math.round((Date.now() - ts) / 1000));
+  if (s < 60) return `${s}s ago`;
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  return `${h}h ago`;
 }
 
 const styles = StyleSheet.create({
@@ -173,19 +249,53 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingText: { color: '#F1F5FF', fontSize: 14 },
-  controls: {
+
+  topControls: {
     position: 'absolute',
     top: 70,
     right: 12,
     gap: 8,
     alignItems: 'flex-end',
   },
+  pillRow: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(18, 26, 51, 0.92)',
+    borderRadius: 999,
+    padding: 4,
+    gap: 4,
+  },
+  pill: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+  },
+  pillActive: { backgroundColor: '#3DD68C' },
+  pillText: { color: '#9AA8C7', fontWeight: '600', fontSize: 12 },
+  pillTextActive: { color: '#0B1020' },
+
   button: {
-    backgroundColor: '#3DD68C',
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 12,
   },
-  buttonGhost: { backgroundColor: '#1A2447' },
-  buttonText: { color: '#0B1020', fontWeight: '700' },
+  buttonGhost: { backgroundColor: 'rgba(18, 26, 51, 0.92)' },
+  buttonGhostText: { color: '#F1F5FF', fontWeight: '600', fontSize: 12 },
+
+  fabColumn: {
+    position: 'absolute',
+    bottom: 220,
+    right: 12,
+    gap: 10,
+  },
+  fab: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(18, 26, 51, 0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fabText: { color: '#F1F5FF', fontSize: 20 },
+  fabPrimary: { backgroundColor: '#3DD68C' },
+  fabPrimaryText: { color: '#0B1020', fontSize: 20, fontWeight: '700' },
 });

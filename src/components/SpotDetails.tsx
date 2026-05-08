@@ -1,5 +1,6 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Candidate } from '../types';
+import { compassPoint } from '../services/geo';
 import { bortleLabel } from '../services/lightPollution';
 import { scoreColor, scoreLabel } from '../services/scoring';
 
@@ -9,8 +10,8 @@ type Props = {
 };
 
 export function SpotDetails({ candidate, onClose }: Props) {
-  const { score, nights, bestNightIndex, bortle, distanceKm } = candidate;
-  const bestNight = nights[bestNightIndex];
+  const { score, nights, bestNightIndex, bortle, distanceKm, bearingDeg, location } = candidate;
+  const direction = compassPoint(bearingDeg);
 
   return (
     <View style={styles.sheet}>
@@ -21,7 +22,7 @@ export function SpotDetails({ candidate, onClose }: Props) {
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{scoreLabel(score.total)} conditions</Text>
           <Text style={styles.subtitle}>
-            {distanceKm.toFixed(0)} km away · Bortle {bortle} · {bortleLabel(bortle)}
+            {distanceKm.toFixed(0)} km {direction} · Bortle {bortle} · {bortleLabel(bortle)}
           </Text>
         </View>
         <Pressable onPress={onClose} hitSlop={12}>
@@ -38,6 +39,7 @@ export function SpotDetails({ candidate, onClose }: Props) {
             <Text style={styles.nightDate}>{formatDate(n.date)}</Text>
             <Stat label="Cloud" value={`${Math.round(n.meanCloud)}%`} />
             <Stat label="Humidity" value={`${Math.round(n.meanHumidity)}%`} />
+            <Stat label="Wind" value={`${n.meanWind.toFixed(1)} m/s`} />
             <Stat
               label="Moon"
               value={`${Math.round(n.moonIllumination * 100)}% · ${Math.round(
@@ -54,8 +56,28 @@ export function SpotDetails({ candidate, onClose }: Props) {
         <BreakdownBar label="Moon" value={score.moon} />
         <BreakdownBar label="Humidity" value={score.humidity} />
       </View>
+
+      <View style={styles.actions}>
+        <Pressable
+          style={styles.actionBtn}
+          onPress={() => openInMaps(location.latitude, location.longitude)}
+        >
+          <Text style={styles.actionText}>Directions</Text>
+        </Pressable>
+      </View>
     </View>
   );
+}
+
+function openInMaps(lat: number, lng: number) {
+  // Universal URL works on iOS (Apple Maps), Android (Google Maps), web.
+  const label = encodeURIComponent('Dark sky spot');
+  const url = Platform.select({
+    ios: `maps://?daddr=${lat},${lng}&q=${label}`,
+    android: `geo:${lat},${lng}?q=${lat},${lng}(${label})`,
+    default: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+  });
+  if (url) Linking.openURL(url).catch(() => {});
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -128,7 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginRight: 8,
-    minWidth: 140,
+    minWidth: 150,
   },
   bestNight: { borderWidth: 1, borderColor: '#7ED957' },
   nightDate: { color: '#F1F5FF', fontWeight: '600', marginBottom: 6 },
@@ -153,4 +175,13 @@ const styles = StyleSheet.create({
     width: 28,
     textAlign: 'right',
   },
+
+  actions: { marginTop: 14, flexDirection: 'row', justifyContent: 'flex-end' },
+  actionBtn: {
+    backgroundColor: '#3DD68C',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+  },
+  actionText: { color: '#0B1020', fontWeight: '700' },
 });

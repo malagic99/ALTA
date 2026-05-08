@@ -1,7 +1,7 @@
 import type { Candidate, LatLng } from '../types';
 import { buildNights } from './astronomy';
-import { offsetKm, haversineKm } from './geo';
-import { estimateBortle } from './lightPollution';
+import { bearingDeg, haversineKm, offsetKm } from './geo';
+import { bortleFromPlaces, fetchPopulatedPlaces } from './lightPollution';
 import { scoreNight } from './scoring';
 import { fetchForecastBatch } from './weather';
 
@@ -30,21 +30,23 @@ export async function findDarkSkySpots(
 
   const points = sampleRing(opts.origin, radiusKm, count);
 
-  const [forecasts, bortles] = await Promise.all([
+  // Fetch populated places ONCE around the origin with a generous margin so
+  // every candidate's brightness sum sees all relevant cities. Cities much
+  // farther than 2× radiusKm contribute negligibly via 1/d².
+  const placesRadiusKm = Math.max(150, radiusKm * 2.5);
+
+  const [forecasts, places] = await Promise.all([
     fetchForecastBatch(points, days),
-    Promise.all(points.map((p) => estimateBortle(p, radiusKm * 1.5))),
+    fetchPopulatedPlaces(opts.origin, placesRadiusKm),
   ]);
 
   const candidates: Candidate[] = points.map((point, i) => {
     const nights = buildNights(point, forecasts[i], days);
-    const bortle = bortles[i].bortle;
+    const { bortle } = bortleFromPlaces(point, places);
 
     let bestIdx = 0;
     let bestScore = -1;
-    let bestSkyScore = scoreNight(
-      nights[0] ?? emptyNight(),
-      bortle,
-    );
+    let bestSkyScore = scoreNight(nights[0] ?? emptyNight(), bortle);
     for (let j = 0; j < nights.length; j++) {
       const s = scoreNight(nights[j], bortle);
       if (s.total > bestScore) {
@@ -58,6 +60,7 @@ export async function findDarkSkySpots(
       id: `${point.latitude.toFixed(4)},${point.longitude.toFixed(4)}`,
       location: point,
       distanceKm: haversineKm(opts.origin, point),
+      bearingDeg: bearingDeg(opts.origin, point),
       bortle,
       nights,
       score: bestSkyScore,
@@ -92,6 +95,7 @@ function emptyNight() {
     meanCloud: 100,
     meanHumidity: 100,
     meanVisibility: 0,
+    meanWind: 0,
     moonIllumination: 1,
     moonUpFraction: 1,
   };

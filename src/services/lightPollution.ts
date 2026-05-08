@@ -10,21 +10,32 @@ export const LIGHT_POLLUTION_TILE_URL =
   'https://djlorenz.github.io/astronomy/lp2022/overlay/tiles/{z}/{x}/{y}.png';
 
 /**
+ * A populated place with population, used to estimate sky brightness.
+ */
+export type PopulatedPlace = {
+  lat: number;
+  lng: number;
+  population: number;
+  name?: string;
+};
+
+/**
  * Per-point Bortle estimate.
  *
  * We don't have a free per-pixel VIIRS sampling API, so we approximate sky
  * brightness from nearby populated places via the OpenStreetMap Overpass
  * API. Each populated place contributes a brightness term proportional to
- * population / (distance + d0)^2 — a standard inverse-square light
+ * population / (distance + 1)² — a standard inverse-square light
  * propagation model with a soft floor to avoid singularities at zero
  * distance. The aggregate is then mapped to a Bortle bucket using
  * thresholds calibrated against well-known sites.
  *
- * This is a coarse proxy, but for "find a dark spot away from the city"
- * the dominant signal is exactly distance-from-cities, so it works well
- * for ranking. Replace with a real radiance lookup if you bring a
- * commercial source.
+ * For ranked-search workloads we fetch all relevant places ONCE around
+ * the origin (`fetchPopulatedPlaces`) and compute Bortle locally per
+ * candidate via `bortleFromPlaces`. This avoids hitting Overpass once
+ * per candidate, which would get rate-limited.
  */
+
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 
 type OverpassNode = {
@@ -35,66 +46,62 @@ type OverpassNode = {
 
 type OverpassResponse = { elements: OverpassNode[] };
 
-const CACHE = new Map<string, { value: number; bortle: number }>();
-const CACHE_RADIUS_KM = 5;
-
-export async function estimateBortle(
-  point: LatLng,
-  searchRadiusKm = 200,
-): Promise<{ value: number; bortle: number }> {
-  const cached = lookupCache(point);
-  if (cached) return cached;
-
-  const radiusM = Math.round(searchRadiusKm * 1000);
+export async function fetchPopulatedPlaces(
+  center: LatLng,
+  radiusKm: number,
+): Promise<PopulatedPlace[]> {
+  const radiusM = Math.round(radiusKm * 1000);
   const query = `[out:json][timeout:25];
-node(around:${radiusM},${point.latitude.toFixed(4)},${point.longitude.toFixed(4)})
+node(around:${radiusM},${center.latitude.toFixed(4)},${center.longitude.toFixed(4)})
   ["place"~"^(city|town|village)$"]["population"];
 out tags center;`;
 
-  let nodes: OverpassNode[] = [];
   try {
     const res = await fetch(OVERPASS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'data=' + encodeURIComponent(query),
     });
-    if (res.ok) {
-      const data = (await res.json()) as OverpassResponse;
-      nodes = data.elements ?? [];
+    if (!res.ok) return [];
+    const data = (await res.json()) as OverpassResponse;
+    const places: PopulatedPlace[] = [];
+    for (const n of data.elements ?? []) {
+      const popStr = n.tags?.population;
+      if (!popStr) continue;
+      const pop = parseInt(popStr.replace(/[^0-9]/g, ''), 10);
+      if (!Number.isFinite(pop) || pop <= 0) continue;
+      places.push({
+        lat: n.lat,
+        lng: n.lon,
+        population: pop,
+        name: n.tags?.name,
+      });
     }
+    return places;
   } catch {
-    // network/timeout: fall through with empty list → treated as very dark
+    return [];
   }
+}
 
+export function bortleFromPlaces(
+  point: LatLng,
+  places: PopulatedPlace[],
+): { value: number; bortle: number } {
   let brightness = 0;
-  for (const n of nodes) {
-    const popStr = n.tags?.population;
-    if (!popStr) continue;
-    const pop = parseInt(popStr.replace(/[^0-9]/g, ''), 10);
-    if (!Number.isFinite(pop) || pop <= 0) continue;
-    const d = haversineKm(point, { latitude: n.lat, longitude: n.lon });
-    // soft floor of 1km prevents blow-up when sitting on top of a node
-    brightness += pop / Math.pow(d + 1, 2);
+  for (const p of places) {
+    const d = haversineKm(point, { latitude: p.lat, longitude: p.lng });
+    brightness += p.population / Math.pow(d + 1, 2);
   }
-
-  const bortle = brightnessToBortle(brightness);
-  const result = { value: brightness, bortle };
-  CACHE.set(cacheKey(point), result);
-  return result;
+  return { value: brightness, bortle: brightnessToBortle(brightness) };
 }
 
-function lookupCache(point: LatLng) {
-  for (const [key, val] of CACHE) {
-    const [lat, lon] = key.split(',').map(Number);
-    if (haversineKm({ latitude: lat, longitude: lon }, point) < CACHE_RADIUS_KM) {
-      return val;
-    }
-  }
-  return null;
-}
-
-function cacheKey(p: LatLng): string {
-  return `${p.latitude.toFixed(2)},${p.longitude.toFixed(2)}`;
+/** Convenience for one-off lookups. Prefer the batch path for rankings. */
+export async function estimateBortle(
+  point: LatLng,
+  searchRadiusKm = 200,
+): Promise<{ value: number; bortle: number }> {
+  const places = await fetchPopulatedPlaces(point, searchRadiusKm);
+  return bortleFromPlaces(point, places);
 }
 
 /**

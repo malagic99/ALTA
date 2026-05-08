@@ -30,6 +30,8 @@ export type AstroNight = {
   meanHumidity: number;
   /** Mean visibility (m) during the window. */
   meanVisibility: number;
+  /** Mean wind speed (m/s) during the window. */
+  meanWind: number;
   /** Moon illumination fraction, 0-1, at the window midpoint. */
   moonIllumination: number;
   /** Fraction of the window the moon is above the horizon, 0-1. */
@@ -51,6 +53,8 @@ export type Candidate = {
   location: LatLng;
   /** Distance from origin in km. */
   distanceKm: number;
+  /** Compass bearing from origin to candidate, degrees clockwise from N. */
+  bearingDeg: number;
   /** Bortle estimate 1 (excellent) to 9 (inner-city). */
   bortle: number;
   /** Per-night forecast and astro context. */

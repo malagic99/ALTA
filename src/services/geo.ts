@@ -35,3 +35,25 @@ export function offsetKm(
     longitude: origin.longitude + toDegrees(dLon),
   };
 }
+
+/** Initial bearing from `from` to `to`, in degrees clockwise from north. */
+export function bearingDeg(from: LatLng, to: LatLng): number {
+  const φ1 = toRadians(from.latitude);
+  const φ2 = toRadians(to.latitude);
+  const Δλ = toRadians(to.longitude - from.longitude);
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x =
+    Math.cos(φ1) * Math.sin(φ2) -
+    Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  return (toDegrees(Math.atan2(y, x)) + 360) % 360;
+}
+
+const COMPASS_POINTS = [
+  'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+  'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW',
+];
+
+export function compassPoint(bearing: number): string {
+  const idx = Math.round((((bearing % 360) + 360) % 360) / 22.5) % 16;
+  return COMPASS_POINTS[idx];
+}

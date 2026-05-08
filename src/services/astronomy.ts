@@ -54,6 +54,7 @@ export function buildNights(
       meanCloud: stats.cloud,
       meanHumidity: stats.humidity,
       meanVisibility: stats.visibility,
+      meanWind: stats.wind,
       moonIllumination: moon.illumination,
       moonUpFraction: moon.upFraction,
     });
@@ -77,13 +78,14 @@ function aggregateOverWindow(
   forecast: WeatherForecast,
   start: Date,
   end: Date,
-): { cloud: number; humidity: number; visibility: number } {
+): { cloud: number; humidity: number; visibility: number; wind: number } {
   const startMs = start.getTime();
   const endMs = end.getTime();
   let n = 0;
   let cloudSum = 0;
   let humSum = 0;
   let visSum = 0;
+  let windSum = 0;
 
   for (let i = 0; i < forecast.time.length; i++) {
     const t = Date.parse(forecast.time[i] + 'Z'); // Open-Meteo returns naive UTC strings
@@ -91,16 +93,18 @@ function aggregateOverWindow(
     cloudSum += forecast.cloudCover[i] ?? 0;
     humSum += forecast.humidity[i] ?? 0;
     visSum += forecast.visibility[i] ?? 0;
+    windSum += forecast.windSpeed[i] ?? 0;
     n++;
   }
 
   if (n === 0) {
-    return { cloud: 100, humidity: 100, visibility: 0 };
+    return { cloud: 100, humidity: 100, visibility: 0, wind: 0 };
   }
   return {
     cloud: cloudSum / n,
     humidity: humSum / n,
     visibility: visSum / n,
+    wind: windSum / n,
   };
 }
 
