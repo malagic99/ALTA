@@ -8,8 +8,10 @@ import MapView, {
   type Region,
 } from 'react-native-maps';
 
+import { PinPanel } from '../src/components/PinPanel';
 import { SpotDetails } from '../src/components/SpotDetails';
 import { StatusBanner } from '../src/components/StatusBanner';
+import { darknessWindow } from '../src/services/astronomy';
 import { findDarkSkySpots } from '../src/services/candidates';
 import { LIGHT_POLLUTION_TILE_URL } from '../src/services/lightPollution';
 import { scoreColor } from '../src/services/scoring';
@@ -28,6 +30,7 @@ export default function HomeScreen() {
     { message: 'Locating you…' },
   );
   const [showOverlay, setShowOverlay] = useState(true);
+  const [droppedPin, setDroppedPin] = useState<LatLng | null>(null);
   const [radiusKm, setRadiusKm] = useState<RadiusKm>(120);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const [, setNow] = useState(Date.now()); // tick to refresh "x ago"
@@ -84,7 +87,7 @@ export default function HomeScreen() {
         setLastUpdated(Date.now());
         setStatus({
           message: results.length
-            ? `Ranked ${results.length} spots. Tap a marker for details.`
+            ? `Ranked ${results.length} spots. Tap a marker, or long-press the map to inspect a custom spot.`
             : 'No candidate spots returned.',
         });
         const top = results[0];
@@ -143,6 +146,11 @@ export default function HomeScreen() {
         initialRegion={initialRegion}
         showsUserLocation
         showsMyLocationButton={false}
+        onLongPress={(e) => {
+          const c = e.nativeEvent.coordinate;
+          setSelected(null);
+          setDroppedPin({ latitude: c.latitude, longitude: c.longitude });
+        }}
       >
         <UrlTile
           urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -161,12 +169,29 @@ export default function HomeScreen() {
           <Marker
             key={c.id}
             coordinate={c.location}
-            onPress={() => setSelected(c)}
+            onPress={() => {
+              setDroppedPin(null);
+              setSelected(c);
+            }}
             pinColor={scoreColor(c.score.total)}
             title={`#${i + 1} · Score ${c.score.total}`}
             description={`Bortle ${c.bortle} · ${c.distanceKm.toFixed(0)} km`}
           />
         ))}
+
+        {droppedPin ? (
+          <Marker
+            coordinate={droppedPin}
+            pinColor="#56CCF2"
+            draggable
+            onDragEnd={(e) => {
+              const c = e.nativeEvent.coordinate;
+              setDroppedPin({ latitude: c.latitude, longitude: c.longitude });
+            }}
+            title="Pinned spot"
+            description="Long-press to move; use the panel to compute horizon"
+          />
+        ) : null}
       </MapView>
 
       {status ? (
@@ -227,7 +252,27 @@ export default function HomeScreen() {
       {selected ? (
         <SpotDetails candidate={selected} onClose={() => setSelected(null)} />
       ) : null}
+
+      {droppedPin ? <PinPanelHost pin={droppedPin} onClose={() => setDroppedPin(null)} /> : null}
     </View>
+  );
+}
+
+/**
+ * Resolves the astronomical-darkness window for the dropped pin's location
+ * and tonight, then renders the PinPanel. Falls back to a sane window if
+ * SunCalc returns nothing (polar day): start = now, end = now + 8h.
+ */
+function PinPanelHost({ pin, onClose }: { pin: LatLng; onClose: () => void }) {
+  const { nightStart, nightEnd } = useMemo(() => {
+    const w = darknessWindow(pin, new Date());
+    if (w) return { nightStart: w.start, nightEnd: w.end };
+    const start = new Date();
+    const end = new Date(start.getTime() + 8 * 3600_000);
+    return { nightStart: start, nightEnd: end };
+  }, [pin.latitude, pin.longitude]);
+  return (
+    <PinPanel pin={pin} nightStart={nightStart} nightEnd={nightEnd} onClose={onClose} />
   );
 }
 

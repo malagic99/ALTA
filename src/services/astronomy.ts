@@ -2,6 +2,34 @@ import SunCalc from 'suncalc';
 import type { AstroNight, LatLng, WeatherForecast } from '../types';
 
 /**
+ * Astronomical-darkness window for the night that starts on `day`.
+ * Returns null when there's no usable window (polar day).
+ */
+export function darknessWindow(
+  point: LatLng,
+  day: Date,
+): { start: Date; end: Date } | null {
+  const dayUTC = new Date(day);
+  dayUTC.setUTCHours(12, 0, 0, 0);
+  const times = SunCalc.getTimes(dayUTC, point.latitude, point.longitude);
+  const start = pickFirstValid([times.night, times.nauticalDusk, times.dusk]);
+  const tomorrow = new Date(dayUTC);
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  const tomorrowTimes = SunCalc.getTimes(
+    tomorrow,
+    point.latitude,
+    point.longitude,
+  );
+  const end = pickFirstValid([
+    tomorrowTimes.nightEnd,
+    tomorrowTimes.nauticalDawn,
+    tomorrowTimes.dawn,
+  ]);
+  if (!start || !end || end.getTime() <= start.getTime()) return null;
+  return { start, end };
+}
+
+/**
  * Returns up to `days` consecutive nights starting tonight. For each night
  * we use the astronomical-twilight window (sun ≤ -18°). If true astronomical
  * darkness never occurs at this latitude/season we fall back to nautical
@@ -18,31 +46,9 @@ export function buildNights(
   for (let i = 0; i < days; i++) {
     const day = new Date(now);
     day.setUTCDate(day.getUTCDate() + i);
-    day.setUTCHours(12, 0, 0, 0); // anchor near noon to derive evening times
-
-    const times = SunCalc.getTimes(day, point.latitude, point.longitude);
-    const start = pickFirstValid([
-      times.night, // sun crosses -18° going down (astronomical dusk)
-      times.nauticalDusk,
-      times.dusk,
-    ]);
-    // For end, use the *next* morning twilight; SunCalc gives both events on same call.
-    const tomorrow = new Date(day);
-    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-    const tomorrowTimes = SunCalc.getTimes(
-      tomorrow,
-      point.latitude,
-      point.longitude,
-    );
-    const end = pickFirstValid([
-      tomorrowTimes.nightEnd,
-      tomorrowTimes.nauticalDawn,
-      tomorrowTimes.dawn,
-    ]);
-
-    if (!start || !end || end.getTime() <= start.getTime()) {
-      continue;
-    }
+    const window = darknessWindow(point, day);
+    if (!window) continue;
+    const { start, end } = window;
 
     const stats = aggregateOverWindow(forecast, start, end);
     const moon = moonStatsOverWindow(point, start, end);
