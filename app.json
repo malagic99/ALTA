@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Marko",
+    "slug": "marko",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "marko",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.marko.astro",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Marko uses your location to find dark-sky astrophotography spots near you."
+      }
+    },
+    "android": {
+      "package": "com.marko.astro",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_KEY_OPTIONAL"
+        }
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Marko uses your location to rank nearby dark-sky observation spots."
+        }
+      ]
+    ],
+    "extra": {
+      "openWeatherMapApiKey": ""
+    }
+  }
+}
