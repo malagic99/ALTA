@@ -1,6 +1,14 @@
 import type { LatLng } from '../types';
+import { canopyAvailable, fetchCanopyHeights } from './canopy';
 import { buildHorizonRays, fetchElevations } from './elevation';
 import { haversineKm, toDegrees } from './geo';
+
+export type HorizonLayers = {
+  /** Whether canopy heights were added on top of the terrain. */
+  canopy: boolean;
+  /** Whether building heights (Solar API) were added — Phase 3, not yet. */
+  buildings: boolean;
+};
 
 export type HorizonProfile = {
   /** Center / observer location. */
@@ -15,6 +23,8 @@ export type HorizonProfile = {
   altitudes: number[];
   /** Maximum sample distance used (km). */
   maxRangeKm: number;
+  /** Which obstruction layers were included in this profile. */
+  layers: HorizonLayers;
 };
 
 const EARTH_RADIUS_M = 6_371_000;
@@ -31,20 +41,26 @@ export type HorizonOptions = {
   samplesPerRay?: number;
   maxRangeKm?: number;
   eyeHeightM?: number;
+  /**
+   * If true and the canopy backend is configured, add Meta CHM canopy
+   * heights to the terrain at each sample point. Falls back to terrain
+   * only if the backend isn't reachable.
+   */
+  includeCanopy?: boolean;
 };
 
 /**
- * Computes a 360° terrain-only horizon profile around `center`.
+ * Computes a 360° horizon profile around `center`.
  *
  * For each azimuth we sample ground elevations along a ray out to
- * `maxRangeKm`, and the horizon altitude in that direction is the maximum
- * apparent elevation angle of any sample, accounting for earth curvature
- * and standard atmospheric refraction.
+ * `maxRangeKm`, optionally add canopy heights from the Meta CHM (via
+ * the canopy backend), and the horizon altitude in that direction is
+ * the maximum apparent elevation angle of any sample, with earth
+ * curvature and standard atmospheric refraction applied.
  *
- * Trees and buildings are intentionally not included here — the canopy
- * (Phase 2) and Solar API (Phase 3) layers add to this baseline.
+ * Buildings (Solar API) are not yet wired in — Phase 3.
  */
-export async function computeTerrainHorizon(
+export async function computeHorizon(
   center: LatLng,
   opts: HorizonOptions = {},
 ): Promise<HorizonProfile> {
@@ -52,6 +68,7 @@ export async function computeTerrainHorizon(
   const samplesPerRay = opts.samplesPerRay ?? 20; // ~500m steps to 10km
   const maxRangeKm = opts.maxRangeKm ?? 10;
   const eyeHeightM = opts.eyeHeightM ?? DEFAULT_EYE_HEIGHT_M;
+  const wantCanopy = !!opts.includeCanopy && canopyAvailable();
 
   const { rays } = buildHorizonRays(
     center,
@@ -64,9 +81,21 @@ export async function computeTerrainHorizon(
   // Flatten center + all rays into one batch, preserving offsets so we can
   // recover per-ray slices.
   const allPoints: LatLng[] = [center, ...rays.flat()];
-  const elevations = await fetchElevations(allPoints);
+
+  const [elevations, canopy] = await Promise.all([
+    fetchElevations(allPoints),
+    wantCanopy
+      ? fetchCanopyHeights(allPoints).catch(() => null)
+      : Promise.resolve(null),
+  ]);
+
+  const surfaceHeight = (i: number) =>
+    elevations[i] + (canopy ? canopy[i] : 0);
 
   const observerElevation = elevations[0];
+  // The observer is *under* the canopy (or on a building roof) is not
+  // something we can know from the data, so we put the observer at
+  // ground + eye height regardless of canopy at the center.
   const observerEyeM = observerElevation + eyeHeightM;
 
   const azimuths: number[] = [];
@@ -79,10 +108,10 @@ export async function computeTerrainHorizon(
 
     let maxAlt = -90;
     for (let s = 0; s < ray.length; s++) {
-      const sampleElev = elevations[cursor + s];
       const sample = ray[s];
+      const sampleSurface = surfaceHeight(cursor + s);
       const distM = haversineKm(center, sample) * 1000;
-      const alt = apparentElevationAngle(observerEyeM, sampleElev, distM);
+      const alt = apparentElevationAngle(observerEyeM, sampleSurface, distM);
       if (alt > maxAlt) maxAlt = alt;
     }
     azimuths.push(azDeg);
@@ -98,8 +127,12 @@ export async function computeTerrainHorizon(
     azimuths,
     altitudes,
     maxRangeKm,
+    layers: { canopy: !!canopy, buildings: false },
   };
 }
+
+/** @deprecated Use `computeHorizon` with `includeCanopy: false`. */
+export const computeTerrainHorizon = computeHorizon;
 
 /**
  * Apparent elevation angle (degrees) from observer at height `obsH` above

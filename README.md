@@ -42,8 +42,11 @@ Long-press anywhere on the map to drop a pin (drag to fine-tune). Tap
 5. Spit out per-target clearance lines like
    *"Milky Way core: clears 11:34 PM, dips 2:08 AM (peak 18°)."*
 
-Phases 2 and 3 will add canopy heights (Meta CHM via a small backend)
-and building heights (Google Solar API) on top of the terrain baseline.
+If the **canopy backend** (Phase 2, see `backend/canopy/`) is configured,
+a checkbox on the pin panel adds Meta CHM canopy heights to each sample
+point before the horizon is computed, so the radar reflects the trees
+that block your sky. Phase 3 will add building heights via the Google
+Solar API.
 
 ## Stack
 
@@ -67,10 +70,13 @@ Create `.env.local` at the repo root:
 # Required for "Calculate horizon"
 EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_key_here
 
-# Optional — Phase 2/3 placeholders, not used yet
+# Optional — canopy heights for the horizon calc.
+# Deploy backend/canopy to Cloud Run and put the URL here.
+EXPO_PUBLIC_CANOPY_BACKEND_URL=
+
+# Optional — Phase 3 placeholders, not used yet
 EXPO_PUBLIC_ASTROSPHERIC_API_KEY=
 EXPO_PUBLIC_METEOBLUE_API_KEY=
-EXPO_PUBLIC_CANOPY_BACKEND_URL=
 ```
 
 `EXPO_PUBLIC_*` variables are inlined into the JS bundle, so restrict
@@ -99,9 +105,9 @@ covers many thousands of these. Heavy usage should add caching (per
 
 - **Bortle estimate is a proxy** — population/distance, not real VIIRS
   radiance.
-- **Horizon is terrain-only.** Trees and buildings aren't modelled yet;
-  Phase 2 (canopy via GEE backend) and Phase 3 (Solar API roof heights)
-  add to this baseline.
+- **Horizon includes terrain (and canopy if the backend is wired up).**
+  Building heights are still pending — Phase 3 will plug the Google
+  Solar API into the same `surfaceHeight` accumulator.
 - **Overpass is rate-limited.** Don't crank candidate count to hundreds
   without server-side caching.
 - **Polar latitudes.** During polar day the astronomical-darkness
@@ -135,4 +141,8 @@ src/
     lightPollution.ts  Overpass-based Bortle estimate + tile URL
     scoring.ts       Composite 0-100 score
     candidates.ts    Ring sampler + orchestration
+    canopy.ts        Client for the canopy backend (Meta CHM)
+backend/
+  canopy/            FastAPI + GEE proxy that samples Meta CHM
+                     pixel values; deploy to Cloud Run.
 ```

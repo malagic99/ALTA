@@ -10,8 +10,9 @@ import {
   View,
 } from 'react-native';
 
+import { canopyAvailable } from '../services/canopy';
 import { computeClearances, type TargetClearance } from '../services/clearance';
-import { computeTerrainHorizon, type HorizonProfile } from '../services/horizon';
+import { computeHorizon, type HorizonProfile } from '../services/horizon';
 import { TARGETS, trackTargets, type TargetTrack } from '../services/targets';
 import type { LatLng } from '../types';
 
@@ -31,15 +32,17 @@ export function PinPanel({ pin, nightStart, nightEnd, onClose }: Props) {
   const [clearances, setClearances] = useState<TargetClearance[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [includeCanopy, setIncludeCanopy] = useState(canopyAvailable());
 
   const calculate = async () => {
     setBusy(true);
     setError(null);
     try {
-      const profile = await computeTerrainHorizon(pin, {
+      const profile = await computeHorizon(pin, {
         azimuthCount: 36,
         samplesPerRay: 20,
         maxRangeKm: 10,
+        includeCanopy,
       });
       const ts = trackTargets(
         TARGETS,
@@ -78,10 +81,27 @@ export function PinPanel({ pin, nightStart, nightEnd, onClose }: Props) {
         {!horizon && !busy ? (
           <View style={styles.helpRow}>
             <Text style={styles.help}>
-              Tap to compute terrain horizon (Google Elevation API) and tonight's
-              target paths.
+              Tap to compute the horizon (Google Elevation API
+              {canopyAvailable() ? ' + Meta canopy' : ''}) and tonight's target paths.
             </Text>
           </View>
+        ) : null}
+
+        {canopyAvailable() ? (
+          <Pressable
+            style={styles.toggleRow}
+            onPress={() => setIncludeCanopy((v) => !v)}
+          >
+            <View
+              style={[
+                styles.checkbox,
+                includeCanopy && styles.checkboxOn,
+              ]}
+            >
+              {includeCanopy ? <Text style={styles.checkboxTick}>✓</Text> : null}
+            </View>
+            <Text style={styles.toggleLabel}>Include canopy heights (Meta CHM)</Text>
+          </Pressable>
         ) : null}
 
         {error ? (
@@ -105,7 +125,7 @@ export function PinPanel({ pin, nightStart, nightEnd, onClose }: Props) {
 
         {horizon ? (
           <Text style={styles.meta}>
-            Observer elevation {horizon.observerElevation.toFixed(0)} m · range {horizon.maxRangeKm} km · terrain only (no canopy or buildings yet)
+            Observer elevation {horizon.observerElevation.toFixed(0)} m · range {horizon.maxRangeKm} km · {layerSummary(horizon)}
           </Text>
         ) : null}
       </ScrollView>
@@ -133,6 +153,13 @@ export function PinPanel({ pin, nightStart, nightEnd, onClose }: Props) {
       </View>
     </View>
   );
+}
+
+function layerSummary(p: HorizonProfile): string {
+  const layers = ['terrain'];
+  if (p.layers.canopy) layers.push('canopy');
+  if (p.layers.buildings) layers.push('buildings');
+  return layers.join(' + ');
 }
 
 function clearanceLine(c: TargetClearance): string {
@@ -206,4 +233,23 @@ const styles = StyleSheet.create({
   actionPrimary: { backgroundColor: '#3DD68C' },
   actionPrimaryText: { color: '#0B1020', fontWeight: '700' },
   actionText: { color: '#F1F5FF', fontWeight: '600' },
+
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+  },
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#3B4B7A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxOn: { backgroundColor: '#3DD68C', borderColor: '#3DD68C' },
+  checkboxTick: { color: '#0B1020', fontSize: 12, fontWeight: '700' },
+  toggleLabel: { color: '#F1F5FF', fontSize: 12 },
 });
