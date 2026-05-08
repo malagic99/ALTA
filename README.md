@@ -1,5 +1,15 @@
 # Marko
 
+> **Active frontend: native SwiftUI iOS app — see [`ios/`](./ios/).**
+> The Expo / React Native code below is the original frontend; it's
+> kept for reference but new development is happening on the native
+> side. Both share the same Python canopy backend in
+> [`backend/canopy/`](./backend/canopy/).
+
+---
+
+## Original Expo (React Native) frontend
+
 An Expo (React Native) app that finds astrophotography-friendly locations
 near you by combining **light pollution**, **multi-night weather
 forecasts**, and a per-spot **terrain horizon + target clearance

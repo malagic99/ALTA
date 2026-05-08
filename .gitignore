@@ -6,5 +6,14 @@ web-build/
 .env
 .env.local
 .DS_Store
-ios/
+
+# Expo-generated native build dirs (we don't store these); the
+# top-level `ios/` folder holds our native SwiftUI source and is
+# intentionally tracked.
 android/
+
+# Xcode build artefacts
+ios/build/
+ios/DerivedData/
+ios/Marko.xcodeproj/
+ios/*.xcworkspace/
