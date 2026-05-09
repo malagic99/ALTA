@@ -72,6 +72,23 @@ final class RateLimiter {
         try context.save()
     }
 
+    /// Returns a previously-consumed slot. Called when an upstream API
+    /// (e.g. the Google Elevation API) failed *after* `consume()` had
+    /// already reserved a slot — we don't want to charge the user for
+    /// network round-trips that didn't produce a result. No-op if the
+    /// counter is already at zero or if the day has rolled over since
+    /// the consume.
+    ///
+    /// Best-effort: any persistence error is swallowed because the
+    /// caller is already in an error path and we don't want to mask
+    /// the original failure with a refund failure.
+    func refund(now: Date = .now) {
+        guard let existing = try? record(for: now), existing.count > 0 else { return }
+        existing.count -= 1
+        existing.lastHitAt = now
+        try? context.save()
+    }
+
     // MARK: - Private
 
     private func record(for now: Date) throws -> RateLimitRecord? {

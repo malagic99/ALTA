@@ -28,6 +28,7 @@ struct ContentView: View {
     @State private var includeCanopy: Bool = true
 
     @State private var orchestrator: HorizonOrchestrator?
+    @State private var elevationConfigured: Bool = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -46,13 +47,19 @@ struct ContentView: View {
         }
         .task {
             if orchestrator == nil {
+                let elevation = ElevationService.fromBundle()
                 let canopy = CanopyService.fromBundle()
+                elevationConfigured = (elevation != nil)
                 orchestrator = HorizonOrchestrator(
                     context: modelContext,
+                    elevationService: elevation,
                     canopyService: canopy
                 )
-                if canopy == nil {
-                    statusMessage = "Canopy backend URL not set in Info.plist — running terrain-only."
+                if elevation == nil {
+                    statusMessage = "Google Maps API key not set in Info.plist — Calculate is disabled."
+                    statusTone = .warning
+                } else if canopy == nil {
+                    statusMessage = "Canopy backend URL not set — running terrain-only."
                     statusTone = .warning
                 }
             }
@@ -242,10 +249,14 @@ struct ContentView: View {
     // MARK: - Behaviour
 
     private var canCalculate: Bool {
-        pinnedCoordinate != nil && !isCalculating && remainingToday > 0
+        elevationConfigured
+            && pinnedCoordinate != nil
+            && !isCalculating
+            && remainingToday > 0
     }
 
     private var buttonTitle: String {
+        if !elevationConfigured { return "Set Google Maps API key" }
         if pinnedCoordinate == nil { return "Drop a pin first" }
         if remainingToday == 0 { return "Daily limit reached" }
         return "Calculate horizon"

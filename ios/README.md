@@ -16,10 +16,11 @@ ios/
 │   │   ├── RateLimitRecord.swift     # @Model: per-UTC-day request counter
 │   │   └── HorizonDTOs.swift         # Codable wire types + value type
 │   ├── Networking/
+│   │   ├── ElevationService.swift    # actor, URLSession, batched ≤512
 │   │   ├── CanopyService.swift       # actor, URLSession, /canopy/sample
-│   │   └── RateLimiter.swift         # 5/day, backed by SwiftData
+│   │   └── RateLimiter.swift         # 5/day + refund(), backed by SwiftData
 │   ├── Services/
-│   │   └── HorizonOrchestrator.swift # cache + rate limit + sample grid
+│   │   └── HorizonOrchestrator.swift # cache + rate limit + ground+canopy
 │   ├── Views/
 │   │   ├── ContentView.swift         # Map, pin drop, calculate, status
 │   │   └── HorizonRadarView.swift    # SwiftUI Canvas radar
@@ -58,13 +59,47 @@ file.
 Edit `Marko/Resources/Info.plist`:
 
 ```xml
+<key>MarkoGoogleMapsAPIKey</key>
+<string>AIzaSy…your-key</string>
+
 <key>MarkoCanopyBackendURL</key>
 <string>https://marko-canopy-xxxx-uc.a.run.app</string>
 ```
 
-If the URL is left as the default `https://YOUR-CANOPY-SERVICE.run.app`
-the app falls back to terrain-only mode and surfaces a warning banner
-(once `ElevationService` is wired in — see below).
+The Google Maps key is **required** — without it the Calculate
+button is disabled and the status banner explains why. The canopy
+URL is optional; without it the horizon falls back to terrain-only.
+
+### Google Maps API key — setup + cost
+
+1. In the [Google Cloud Console](https://console.cloud.google.com/),
+   enable **Maps Elevation API** for your project.
+2. Create an API key under **APIs & Services → Credentials**.
+3. **Restrict the key** before pasting it into Info.plist:
+   - *Application restrictions:* iOS apps, bundle ID `com.marko.astro`.
+   - *API restrictions:* allow only **Maps Elevation API**.
+   The key ships in the app binary, so an unrestricted key would be
+   one app-store download from being abused.
+
+**Cost math.** The Elevation API charges $5.00 per 1,000 requests
+with 5,000 free requests per month. Each horizon calculation in this
+app fits in **one** request (the 36 × 14 grid is 505 points, under
+the 512-locations-per-request cap), and the daily rate limiter caps
+fresh calculations at 5/day. Worst case: 5 × 30 = **150 requests per
+month**, comfortably inside the free tier. The cache makes repeats
+free.
+
+### Rate limiter & refunds
+
+- 5 fresh horizon calculations per UTC day (`RateLimiter.dailyLimit`).
+- Cache hits are free.
+- The slot is consumed *before* network I/O so flaky retries can't
+  bypass the cap.
+- If the **Elevation API** fails (quota exceeded, request denied,
+  network error, …) `RateLimiter.refund()` returns the slot — you
+  only pay for successful work. Canopy errors are soft-failed
+  (terrain-only profile, slot stays consumed since terrain still
+  cost a request).
 
 ## Architecture notes
 
@@ -83,11 +118,13 @@ the app falls back to terrain-only mode and surfaces a warning banner
 - **CanopyService** is an `actor`, so the JSON encoder/decoder are
   protected from concurrent reuse. Batches ≤1024 points, mirroring the
   backend's `MAX_POINTS_PER_REQUEST`.
-- **HorizonOrchestrator** ships with ground elevations stubbed at 0 m
-  so the canopy + radar pipeline can be exercised end-to-end against
-  the existing backend. Implement `ElevationService` mirroring
-  `CanopyService`, fold its results into `groundElevations` inside
-  `computeHorizon`, and flip `includesTerrain` on the produced profile.
+- **HorizonOrchestrator** runs the pipeline as
+  `surface[i] = ground[i] + canopy[i]`, with ground heights from the
+  Elevation API (required) and canopy heights from the Cloud Run
+  backend (optional, soft-fails to terrain-only). The 36 × 14 sample
+  grid is sized to fit in one Elevation API request — bumping
+  `samplesPerRay` past 14 will start splitting into two requests
+  per calc and double your billing.
 
 ## Honest caveats
 

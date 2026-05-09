@@ -4,16 +4,22 @@ import SwiftData
 
 /// Errors surfaced by the horizon pipeline.
 enum HorizonError: LocalizedError {
+    case missingElevationService
     case missingCanopyService
     case rateLimited(remainingSeconds: Int)
+    case elevation(any Error)
     case canopy(any Error)
 
     var errorDescription: String? {
         switch self {
+        case .missingElevationService:
+            return "Google Maps API key is missing. Set MarkoGoogleMapsAPIKey in Info.plist before calculating a horizon."
         case .missingCanopyService:
             return "Canopy backend isn't configured."
         case .rateLimited(let s):
             return RateLimitError.exhausted(remainingSeconds: s).localizedDescription
+        case .elevation(let err):
+            return err.localizedDescription
         case .canopy(let err):
             return err.localizedDescription
         }
@@ -58,13 +64,23 @@ final class HorizonOrchestrator {
 
     private let context: ModelContext
     private let rateLimiter: RateLimiter
+    private let elevationService: ElevationService?
     private let canopyService: CanopyService?
 
-    init(context: ModelContext, canopyService: CanopyService?) {
+    init(
+        context: ModelContext,
+        elevationService: ElevationService?,
+        canopyService: CanopyService?
+    ) {
         self.context = context
         self.rateLimiter = RateLimiter(context: context)
+        self.elevationService = elevationService
         self.canopyService = canopyService
     }
+
+    /// Whether a fresh `Calculate horizon` call can succeed. The cache
+    /// path doesn't need this; only fresh computes do.
+    var hasElevationService: Bool { elevationService != nil }
 
     /// Cache lookup; nil if there's nothing for this location or the
     /// stored profile has expired.
@@ -84,6 +100,19 @@ final class HorizonOrchestrator {
     /// Returns a horizon profile, possibly served from cache. Throws on
     /// rate-limit or network errors. If `forceRefresh` is true the cache
     /// is bypassed and a slot is consumed.
+    ///
+    /// Behaviour for fresh computes:
+    /// 1. Validate that an `ElevationService` is configured. If not, no
+    ///    slot is consumed and `.missingElevationService` is thrown.
+    /// 2. Reserve a rate-limit slot so flaky retries can't bypass the
+    ///    daily cap.
+    /// 3. Fetch ground elevations (required). On any
+    ///    `ElevationServiceError` the slot is **refunded** and
+    ///    `.elevation(...)` is thrown — the user keeps their daily
+    ///    budget for genuinely successful work only.
+    /// 4. Fetch canopy heights (optional, soft-fail). A canopy error
+    ///    leaves the resulting profile flagged as terrain-only but
+    ///    does not refund — terrain still cost an API request.
     func getOrComputeHorizon(
         at coord: CLLocationCoordinate2D,
         includeCanopy: Bool = true,
@@ -93,42 +122,68 @@ final class HorizonOrchestrator {
             return .cache(cached)
         }
 
+        guard let elevationService else {
+            throw HorizonError.missingElevationService
+        }
+
         // Reserve the budget BEFORE any network I/O so a flaky network
         // doesn't burn slots only on success.
         try rateLimiter.consume()
 
         do {
-            let profile = try await computeHorizon(coord: coord, includeCanopy: includeCanopy)
+            let profile = try await computeHorizon(
+                coord: coord,
+                includeCanopy: includeCanopy,
+                elevationService: elevationService
+            )
             try persist(profile: profile, coord: coord)
             return .fresh(profile)
+        } catch let elevError as ElevationServiceError {
+            // The Elevation API failed — quota, denied, network, etc.
+            // Hand the slot back; the user didn't get a profile.
+            rateLimiter.refund()
+            throw HorizonError.elevation(elevError)
         } catch {
-            throw HorizonError.canopy(error)
+            // Any other failure (e.g. SwiftData persist) is unusual
+            // enough that we keep the slot consumed: the elevation
+            // and canopy fetches did succeed.
+            throw error
         }
     }
 
     // MARK: - Compute
 
     private struct RaySpec {
+        /// One azimuth bin every 10°.
         static let azimuthCount = 36
-        static let samplesPerRay = 20
+        /// Samples per ray. Sized so the full grid (azimuthCount *
+        /// samplesPerRay + 1 observer) stays at or under the Elevation
+        /// API's 512-locations-per-request cap, which keeps each
+        /// horizon calc to exactly **one** billed Elevation API request.
+        ///   36 × 14 + 1 = 505 ≤ 512.
+        static let samplesPerRay = 14
         static let minKm = 0.1
         static let maxKm = 10.0
         static let eyeHeightM = 1.6
     }
 
-    /// Builds a 36 × 20 sample grid around `coord`, fetches canopy heights
-    /// (and, in a future revision, ground elevations) for every point,
-    /// then projects the maximum apparent altitude per azimuth.
+    /// Builds a 36 × 14 sample grid around `coord`, fetches ground
+    /// elevations from the Google Elevation API and (optionally)
+    /// canopy heights from the canopy backend, then projects the
+    /// maximum apparent altitude per azimuth.
     ///
-    /// NOTE: ground elevations come from the Google Elevation API in the
-    /// finished app. This file ships the pipeline and treats elevations
-    /// as a flat 0 m surface so the canopy work end-to-end is testable
-    /// without the Maps key. Add an `ElevationService` mirroring
-    /// `CanopyService` and fold its results into `surface[i]` to enable
-    /// terrain.
+    /// `surfaceHeight[i] = ground[i] + canopy[i]` — the building
+    /// layer (Solar API, Phase 3) will add a third term to the same
+    /// accumulator.
+    ///
+    /// Throws `ElevationServiceError` on any Elevation API failure;
+    /// the caller is responsible for refunding the rate-limit slot.
+    /// Canopy errors are soft-failed: the returned profile is
+    /// terrain-only and `includesCanopy` is false.
     private func computeHorizon(
         coord: CLLocationCoordinate2D,
-        includeCanopy: Bool
+        includeCanopy: Bool,
+        elevationService: ElevationService
     ) async throws -> HorizonProfile {
         let observer = LatLng(coord)
         var samples: [LatLng] = []
@@ -153,21 +208,26 @@ final class HorizonOrchestrator {
             rays.append(indices)
         }
 
-        // Ground elevation: 0 placeholder. See note above.
-        let groundElevations = [Double](repeating: 0, count: samples.count)
+        // 1. Ground elevations — required. Single batched request for
+        //    the whole grid (505 points ≤ 512 cap).
+        let groundElevations = try await elevationService.sampleElevations(points: samples)
 
+        // 2. Canopy heights — optional. A failure here leaves
+        //    `canopyHeights` as zeros and `hadCanopy` false; the
+        //    resulting profile is terrain-only and the rate-limit slot
+        //    stays consumed (terrain itself was real work).
         var canopyHeights = [Double](repeating: 0, count: samples.count)
         var hadCanopy = false
-        if includeCanopy, let service = canopyService {
+        if includeCanopy, let canopy = canopyService {
             do {
-                canopyHeights = try await service.sampleHeights(points: samples)
+                canopyHeights = try await canopy.sampleHeights(points: samples)
                 hadCanopy = true
             } catch {
-                // Soft-fail: we still return a terrain profile. Could
-                // surface a "canopy unavailable" warning instead.
+                // Soft-fail. Future: surface a "canopy unavailable" toast.
             }
         }
 
+        // 3. Per-sample surface height = ground + canopy (+ buildings, future).
         let observerEyeM = groundElevations[0] + RaySpec.eyeHeightM
         var azimuths: [Double] = []
         var altitudes: [Double] = []
@@ -179,11 +239,8 @@ final class HorizonOrchestrator {
             var maxAlt = -90.0
             for sampleIndex in rays[a] {
                 let surface = groundElevations[sampleIndex] + canopyHeights[sampleIndex]
-                let lat = samples[sampleIndex]
-                let dKm = Self.haversineKm(
-                    LatLng(lat: coord.latitude, lng: coord.longitude),
-                    lat
-                )
+                let p = samples[sampleIndex]
+                let dKm = Self.haversineKm(observer, p)
                 let alt = Self.apparentElevationAngle(
                     observerEyeM: observerEyeM,
                     targetSurfaceM: surface,
@@ -202,7 +259,7 @@ final class HorizonOrchestrator {
             azimuths: azimuths,
             altitudes: altitudes,
             maxRangeKm: RaySpec.maxKm,
-            includesTerrain: false, // flip true once ElevationService is wired
+            includesTerrain: true,
             includesCanopy: hadCanopy,
             includesBuildings: false
         )
