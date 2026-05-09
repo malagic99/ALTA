@@ -22,6 +22,8 @@ struct ContentView: View {
     @State private var pinnedCoordinate: CLLocationCoordinate2D?
     @State private var horizonProfile: HorizonProfile?
     @State private var sourceLabel: String = ""
+    @State private var twilightWindow: TwilightWindow?
+    @State private var targetTracks: [TargetTrack] = []
     @State private var statusMessage: String = "Long-press the map to drop a pin."
     @State private var statusTone: StatusTone = .info
     @State private var isCalculating: Bool = false
@@ -261,7 +263,7 @@ struct ContentView: View {
                 .tint(.cyan)
             }
 
-            HorizonRadarView(profile: profile)
+            HorizonRadarView(profile: profile, tracks: targetTracks)
                 .aspectRatio(1, contentMode: .fit)
                 .frame(maxWidth: 320)
                 .frame(maxWidth: .infinity)
@@ -270,6 +272,11 @@ struct ContentView: View {
                 meta("Range", "\(Int(profile.maxRangeKm)) km")
                 meta("Layers", layerSummary(profile))
                 meta("Cached", "\(cachedHorizons.count) spots")
+            }
+
+            if let window = twilightWindow, !targetTracks.isEmpty {
+                Divider().background(Color.white.opacity(0.08))
+                ClearanceList(tracks: targetTracks, window: window)
             }
         }
         .padding(14)
@@ -323,12 +330,31 @@ struct ContentView: View {
 
         // Auto-show a cached profile if we already have one for this spot.
         if let orchestrator, let cached = orchestrator.cachedProfile(at: coordinate) {
-            horizonProfile = HorizonSource.cache(cached).profile
+            let profile = HorizonSource.cache(cached).profile
+            horizonProfile = profile
             sourceLabel = "From cache · " + relativeFetched(cached.fetchedAt)
+            recomputeTracks(profile: profile, observer: coordinate)
         } else {
             horizonProfile = nil
             sourceLabel = ""
+            twilightWindow = nil
+            targetTracks = []
         }
+    }
+
+    /// Re-runs the local ephemeris + clearance pass against the
+    /// current pin and a fresh twilight window. Pure, no network.
+    private func recomputeTracks(profile: HorizonProfile, observer: CLLocationCoordinate2D) {
+        let window = TwilightSolver.nextWindow(
+            latitudeDegrees: observer.latitude,
+            longitudeDegrees: observer.longitude
+        )
+        twilightWindow = window
+        targetTracks = ClearanceCalculator.tracksForCatalog(
+            profile: profile,
+            observer: observer,
+            window: window
+        )
     }
 
     private func calculate(forceRefresh: Bool) async {
@@ -343,6 +369,7 @@ struct ContentView: View {
                 forceRefresh: forceRefresh
             )
             horizonProfile = result.profile
+            recomputeTracks(profile: result.profile, observer: pinnedCoordinate)
             switch result {
             case .cache(let cached):
                 sourceLabel = "From cache · " + relativeFetched(cached.fetchedAt)

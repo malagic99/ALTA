@@ -21,11 +21,15 @@ ios/
 │   │   ├── CanopyService.swift       # actor, URLSession, /canopy/sample
 │   │   └── RateLimiter.swift         # 5/day + refund(), backed by SwiftData
 │   ├── Services/
-│   │   └── HorizonOrchestrator.swift # cache + rate limit + ground+canopy
+│   │   ├── HorizonOrchestrator.swift # cache + rate limit + ground+canopy
+│   │   ├── Ephemeris.swift           # Pure-Swift J2000 → alt/az + refraction
+│   │   ├── Twilight.swift            # Astro twilight via sun position
+│   │   └── ClearanceCalculator.swift # Target tracks + clears/dips times
 │   ├── Views/
 │   │   ├── ContentView.swift         # Map, pin drop, calculate, status
 │   │   ├── SettingsSheet.swift       # BYOK form (Keychain-backed)
-│   │   └── HorizonRadarView.swift    # SwiftUI Canvas radar
+│   │   ├── ClearanceList.swift       # "Milky Way clears at 11:30 PM…"
+│   │   └── HorizonRadarView.swift    # SwiftUI Canvas radar + target tracks
 │   └── Resources/
 │       ├── Info.plist                # Location desc + $(MARKO_*) refs
 │       ├── App.xcconfig              # Default build settings (tracked)
@@ -130,6 +134,34 @@ free.
   only pay for successful work. Canopy errors are soft-failed
   (terrain-only profile, slot stays consumed since terrain still
   cost a request).
+
+## Target clearance times
+
+After a horizon profile is computed (or pulled from cache), the app
+runs a pure-Swift ephemeris pass against a curated catalog of
+deep-sky targets — Milky Way core, Andromeda, Orion, Pleiades, North
+America Nebula, Lagoon, Rho Ophiuchi, California Nebula — and the
+night's astronomical-darkness window. For each target it reports a
+sentence like:
+
+> Milky Way core: clears 11:30 PM, dips 2:00 AM (peak 32°).
+
+Plus the same data drawn as a coloured curve on the radar (solid
+when the target clears the local horizon, dashed when it's blocked
+by terrain/canopy/buildings, with a filled disc at peak altitude).
+
+Edge cases handled:
+- **Up at dusk** — "up at dusk, dips 2:00 AM"
+- **Up at dawn** — "clears 4:12 AM, still up at dawn"
+- **Never visible from this pin** — "Below horizon all night"
+- **Polar summer** — twilight solver reports "no astronomical
+  darkness tonight" and the list collapses gracefully
+
+The whole pass is local (no network, no key, no rate-limit slot).
+Twilight uses a low-precision sun-position formula good to ~1
+arcminute through this century; target alt/az uses J2000 RA/Dec
+without precession — drift over the next few decades is well below
+the radar's resolution.
 
 ## Architecture notes
 

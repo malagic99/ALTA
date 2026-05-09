@@ -46,6 +46,49 @@ struct HorizonProfile: Sendable, Equatable {
     }
 }
 
+// MARK: - Target tracks & clearance
+
+/// A single sample of a target's apparent position.
+struct TargetSample: Sendable, Equatable {
+    let time: Date
+    /// Apparent (refracted) altitude in degrees.
+    let altitudeDegrees: Double
+    /// Azimuth in degrees, 0 = north, increasing clockwise.
+    let azimuthDegrees: Double
+    /// True if the target is above the local horizon profile at this
+    /// moment (i.e. visible from the pinned spot).
+    let isVisible: Bool
+}
+
+/// A target's path across the night plus the clearance summary the
+/// user actually reads.
+struct TargetTrack: Sendable, Equatable, Identifiable {
+    let target: DSOTarget
+    let samples: [TargetSample]
+
+    /// First moment the target rises above the local horizon during
+    /// the night window. nil means it was already up at dusk or it
+    /// never clears.
+    let clearTime: Date?
+    /// Last moment the target is above the local horizon. nil means
+    /// it's still up at dawn or it never clears.
+    let dipTime: Date?
+    /// Peak apparent altitude during the visible portion (degrees).
+    let peakAltitudeDegrees: Double
+    /// Time of peak altitude. nil if never visible.
+    let peakTime: Date?
+    /// Already up when the night begins.
+    let upAtDusk: Bool
+    /// Still up when the night ends.
+    let upAtDawn: Bool
+    /// Target never clears the horizon profile during the window.
+    let neverClears: Bool
+
+    var id: String { target.id }
+
+    var isVisibleSomeTime: Bool { !neverClears }
+}
+
 // MARK: - Canopy backend wire types
 // These match backend/canopy/main.py's request/response models.
 
