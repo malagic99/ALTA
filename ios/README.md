@@ -16,8 +16,9 @@ ios/
 │   │   ├── RateLimitRecord.swift     # @Model: per-UTC-day request counter
 │   │   └── HorizonDTOs.swift         # Codable wire types + value type
 │   ├── Networking/
-│   │   ├── SecretsStore.swift        # Keychain BYOK + Info.plist fallback
-│   │   ├── ElevationService.swift    # actor, URLSession, batched ≤512
+│   │   ├── SecretsStore.swift        # Keychain BYO-backend + Info.plist fallback
+│   │   ├── AttestationManager.swift  # DCAppAttestService wrapper, signs requests
+│   │   ├── ElevationService.swift    # actor, URLSession, batched ≤512 via backend
 │   │   ├── CanopyService.swift       # actor, URLSession, /canopy/sample
 │   │   ├── LightPollutionService.swift # Overpass-based Bortle estimator
 │   │   └── RateLimiter.swift         # 5/day + refund(), backed by SwiftData
@@ -73,56 +74,94 @@ at runtime, can be overridden from the Keychain.
 
 ### Runtime BYOK (Settings sheet)
 
-Tap the gear in the top-right and paste your values. They're stored
-in the iOS Keychain
-(`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`), so they stay
-on-device, survive reinstalls of the same app/team ID, and aren't
-synced to iCloud. Tap **Clear stored secrets** to wipe them.
+Tap the gear in the top-right and paste your **backend URL**. It's
+stored in the iOS Keychain
+(`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`), so it stays
+on-device, survives reinstalls of the same app/team ID, and isn't
+synced to iCloud. Tap **Clear stored secrets** to wipe it.
 
-This is the right path for TestFlight builds where each user brings
-their own Google Cloud key.
+The Google Maps API key is **not** entered here. It lives only on
+the backend (Cloud Run + Secret Manager); the iOS app calls
+`/elevation/sample` on the backend, which forwards to Google. Each
+request is signed with App Attest so the proxy can't be hammered by
+arbitrary clients.
 
 ### Build-time defaults (xcconfig)
 
-For your own dev builds you can ship a default key without typing
-it on every device:
+For your own dev builds you can ship a default backend URL without
+typing it on every device:
 
 ```bash
 cd ios/Marko/Resources
 cp Secrets.example.xcconfig Secrets.xcconfig
-# edit Secrets.xcconfig with your real values
+# edit Secrets.xcconfig with your real backend URL
 ```
 
 `Secrets.xcconfig` is gitignored. `App.xcconfig` (tracked) does an
-`#include?` so the build still succeeds with no Secrets file —
-fields just come through empty, and the in-app Settings sheet
+`#include?` so the build still succeeds with no Secrets file — the
+backend URL just comes through empty, and the in-app Settings sheet
 becomes the only source.
 
 xcconfig quirk to remember: `//` is a comment, even inside a value.
 For URLs, break the double-slash with `$()/`:
 ```
-MARKO_CANOPY_BACKEND_URL = https:/$()/marko-canopy-xxxx.a.run.app
+MARKO_CANOPY_BACKEND_URL = https:/$()/marko-backend-xxxx.a.run.app
 ```
 The example file already does this.
 
-### Google Maps API key — setup, restrictions, cost
+### Server-side Google Maps key — setup, restrictions, cost
+
+The key only ever exists on the server. To deploy:
 
 1. In the [Google Cloud Console](https://console.cloud.google.com/),
-   enable **Maps Elevation API** for your project.
-2. Create an API key under **APIs & Services → Credentials**.
-3. **Restrict the key** before pasting it into Info.plist:
-   - *Application restrictions:* iOS apps, bundle ID `com.marko.astro`.
-   - *API restrictions:* allow only **Maps Elevation API**.
-   The key ships in the app binary, so an unrestricted key would be
-   one app-store download from being abused.
+   enable **Maps Elevation API** on your project.
+2. Create an API key, restrict it to **Maps Elevation API only** and
+   to your Cloud Run service's egress (or leave unrestricted; the
+   key never leaves Secret Manager).
+3. `gcloud secrets create marko-google-maps-key --data-file=key.txt`.
+4. Mount on the Cloud Run service:
+   ```
+   --set-secrets GOOGLE_MAPS_API_KEY=marko-google-maps-key:latest
+   ```
+
+Because the key never ships in the binary, the old "iOS bundle ID"
+restriction isn't necessary. Pulling the key from the IPA is no
+longer possible.
 
 **Cost math.** The Elevation API charges $5.00 per 1,000 requests
-with 5,000 free requests per month. Each horizon calculation in this
-app fits in **one** request (the 36 × 14 grid is 505 points, under
-the 512-locations-per-request cap), and the daily rate limiter caps
-fresh calculations at 5/day. Worst case: 5 × 30 = **150 requests per
-month**, comfortably inside the free tier. The cache makes repeats
-free.
+with 5,000 free requests per month. Each horizon calculation in
+this app fits in **one** upstream request (the 36 × 14 grid is
+505 points, under the 512-locations-per-request cap), and the
+daily rate limiter caps fresh calculations at 5/day. Worst case:
+5 × 30 = **150 requests per month**, comfortably inside the free
+tier. The cache makes repeats free.
+
+### App Attest
+
+`AttestationManager` (`ios/Marko/Networking/AttestationManager.swift`)
+wraps `DCAppAttestService`:
+
+1. On first launch the app generates a key in the secure enclave,
+   calls `attestKey` for an Apple-signed attestation, and POSTs
+   `{key_id, attestation, challenge}` to `/attest/register`.
+2. Each subsequent request to `/elevation/sample` or
+   `/canopy/sample` carries `X-Attest-Key-Id`,
+   `X-Attest-Assertion` (ECDSA-P256 over `SHA256(body ‖ challenge)`),
+   and `X-Attest-Challenge` headers.
+
+The backend (`backend/canopy/attest.py`) verifies these against the
+public key it stored at registration. The cryptographic verification
+is currently a clearly-marked stub (the dev path,
+`APP_ATTEST_ENFORCE=0`, accepts any well-formed headers); flipping
+the env var to `1` requires implementing the cert-chain validation
++ ECDSA signature check in `attest.py` — the TODO comments enumerate
+the exact RFC steps. This is intentional: the verification is
+meaningless without a real Apple Developer team ID and isn't
+testable from a sandbox.
+
+The entitlement (`Marko.entitlements`) ships with
+`com.apple.developer.devicecheck.appattest-environment = development`.
+Switch to `production` for App Store / TestFlight builds.
 
 ### Rate limiter & refunds
 
@@ -130,11 +169,11 @@ free.
 - Cache hits are free.
 - The slot is consumed *before* network I/O so flaky retries can't
   bypass the cap.
-- If the **Elevation API** fails (quota exceeded, request denied,
-  network error, …) `RateLimiter.refund()` returns the slot — you
-  only pay for successful work. Canopy errors are soft-failed
-  (terrain-only profile, slot stays consumed since terrain still
-  cost a request).
+- If the **Elevation backend** fails (quota exceeded, App Attest
+  rejected, network error, …) `RateLimiter.refund()` returns the
+  slot — you only pay for successful work. Canopy errors are
+  soft-failed (terrain-only profile, slot stays consumed since
+  terrain still cost a request).
 
 ## Light pollution & Bortle estimate
 

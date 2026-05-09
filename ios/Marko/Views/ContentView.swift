@@ -60,7 +60,6 @@ struct ContentView: View {
                 rebuildOrchestrator(initial: true)
             }
         }
-        .onChange(of: secrets.googleMapsAPIKey) { _, _ in rebuildOrchestrator(initial: false) }
         .onChange(of: secrets.canopyBackendURL) { _, _ in rebuildOrchestrator(initial: false) }
         .sheet(isPresented: $showSettings) {
             SettingsSheet(secrets: secrets)
@@ -100,15 +99,27 @@ struct ContentView: View {
             canopyService: canopy
         )
 
-        if elevation == nil {
-            statusMessage = "Open Settings to add your Google Maps API key."
-            statusTone = .warning
-        } else if canopy == nil {
-            statusMessage = "Canopy backend URL not set — horizon will be terrain-only."
+        if elevation == nil || canopy == nil {
+            statusMessage = "Open Settings to add your Marko backend URL."
             statusTone = .warning
         } else if !initial {
             statusMessage = "Settings updated."
             statusTone = .success
+        }
+
+        // Kick off App Attest registration as soon as a backend URL
+        // is available. Idempotent: runs once per device, no-ops on
+        // subsequent calls. Errors here are logged via the status
+        // banner but don't block the rest of the UI.
+        if elevation != nil {
+            Task {
+                do {
+                    try await AttestationManager.shared.bootstrapIfNeeded()
+                } catch {
+                    statusMessage = "App Attest setup: \(error.localizedDescription)"
+                    statusTone = .warning
+                }
+            }
         }
     }
 
@@ -349,7 +360,7 @@ struct ContentView: View {
     }
 
     private var buttonTitle: String {
-        if !elevationConfigured { return "Set Google Maps API key" }
+        if !elevationConfigured { return "Set backend URL" }
         if pinnedCoordinate == nil { return "Drop a pin first" }
         if remainingToday == 0 { return "Daily limit reached" }
         return "Calculate horizon"

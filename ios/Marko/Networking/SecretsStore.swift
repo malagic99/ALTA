@@ -17,19 +17,16 @@ import Security
 final class SecretsStore: ObservableObject {
     static let shared = SecretsStore()
 
-    @Published private(set) var googleMapsAPIKey: String?
     @Published private(set) var canopyBackendURL: String?
 
     /// True when the active value came from the Keychain rather than
     /// the bundle. Lets the Settings sheet show a "Stored on device"
     /// indicator next to overridden fields.
-    @Published private(set) var googleMapsAPIKeyOverridden: Bool = false
     @Published private(set) var canopyBackendURLOverridden: Bool = false
 
     private static let keychainService = "com.marko.astro.secrets"
 
     private enum Account {
-        static let googleMapsAPIKey = "google_maps_api_key"
         static let canopyBackendURL = "canopy_backend_url"
     }
 
@@ -40,20 +37,9 @@ final class SecretsStore: ObservableObject {
     /// Re-reads Keychain + bundle and republishes. Called automatically
     /// from `set…` mutators; also exposed for app-foreground refresh.
     func reload() {
-        let keychainKey = Self.read(account: Account.googleMapsAPIKey)
         let keychainURL = Self.read(account: Account.canopyBackendURL)
-
-        googleMapsAPIKey = keychainKey ?? Self.bundleString("MarkoGoogleMapsAPIKey")
         canopyBackendURL = keychainURL ?? Self.bundleString("MarkoCanopyBackendURL")
-
-        googleMapsAPIKeyOverridden = (keychainKey != nil)
         canopyBackendURLOverridden = (keychainURL != nil)
-    }
-
-    /// Persists or clears (pass nil/empty) the user's Google Maps key.
-    func setGoogleMapsAPIKey(_ value: String?) {
-        Self.write(account: Account.googleMapsAPIKey, value: value)
-        reload()
     }
 
     /// Persists or clears (pass nil/empty) the user's canopy backend URL.
@@ -64,7 +50,6 @@ final class SecretsStore: ObservableObject {
 
     /// Wipes all user-supplied secrets. Bundle defaults take over again.
     func clearAll() {
-        Self.write(account: Account.googleMapsAPIKey, value: nil)
         Self.write(account: Account.canopyBackendURL, value: nil)
         reload()
     }

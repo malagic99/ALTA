@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+        App Attest environment.
+        - "development" while debugging on real hardware via Xcode.
+        - "production" for App Store / TestFlight builds.
+        Switch the value (or split into Debug.entitlements /
+        Release.entitlements) when you ship.
+    -->
+    <key>com.apple.developer.devicecheck.appattest-environment</key>
+    <string>development</string>
+</dict>
+</plist>

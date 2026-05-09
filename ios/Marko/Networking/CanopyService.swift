@@ -111,13 +111,21 @@ actor CanopyService {
 
     private func postSample(points: [LatLng]) async throws -> CanopySampleResponse {
         let url = backendURL.appendingPathComponent("canopy/sample")
+        let body = try encoder.encode(
+            CanopySampleRequest(points: points, asset: nil, band: nil, scale_m: nil)
+        )
+
+        // Sign the request with App Attest. The backend's middleware
+        // verifies the assertion against the device's registered key.
+        let attestHeaders = try await AttestationManager.shared
+            .attestationHeaders(for: body)
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.httpBody = try encoder.encode(
-            CanopySampleRequest(points: points, asset: nil, band: nil, scale_m: nil)
-        )
+        for (k, v) in attestHeaders { request.setValue(v, forHTTPHeaderField: k) }
+        request.httpBody = body
 
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse else {

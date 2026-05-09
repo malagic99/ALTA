@@ -16,8 +16,11 @@ from functools import lru_cache
 from typing import List
 
 import ee
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
+
+from attest import router as attest_router, verify_assertion
+from elevation import router as elevation_router
 
 # --- configuration -----------------------------------------------------
 
@@ -84,7 +87,9 @@ class SampleResponse(BaseModel):
     scale_m: int
 
 
-app = FastAPI(title="Marko Canopy Service", version="0.1.0")
+app = FastAPI(title="Marko Backend", version="0.2.0")
+app.include_router(attest_router)
+app.include_router(elevation_router)
 
 
 @app.get("/health")
@@ -93,7 +98,10 @@ def health() -> dict:
 
 
 @app.post("/canopy/sample", response_model=SampleResponse)
-def sample(req: SampleRequest) -> SampleResponse:
+def sample(
+    req: SampleRequest,
+    _attest: dict = Depends(verify_assertion),
+) -> SampleResponse:
     if not req.points:
         return SampleResponse(
             heights_m=[],

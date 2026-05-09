@@ -1,9 +1,18 @@
-# Canopy backend
+# Marko backend
 
-Tiny FastAPI service that samples canopy heights from a Google Earth
-Engine raster (default: Meta CHM) and returns them as a flat list. The
-mobile app calls this whenever the user runs **Calculate horizon** with
-the canopy layer enabled.
+FastAPI service that the iOS app calls for every operation that
+requires a credentialed upstream:
+
+- `POST /canopy/sample` — Meta canopy height samples via Google
+  Earth Engine.
+- `POST /elevation/sample` — proxies the Google Maps Elevation API
+  so the app never has to embed Google's key.
+- `POST /attest/register` — App Attest registration.
+- `GET /health` — liveness probe.
+
+Both `sample` endpoints are gated by App Attest assertions
+(`X-Attest-Key-Id`, `X-Attest-Assertion`, `X-Attest-Challenge`) so
+random callers can't hammer them.
 
 ## API
 
@@ -20,6 +29,24 @@ POST /canopy/sample
   "heights_m": [12.4, 0.0, 23.1, ...],
   "asset": "...", "band": "b1", "scale_m": 1
 }
+
+POST /elevation/sample
+{
+  "points": [{"lat": 40.0, "lng": -105.0}, ...]
+}
+→
+{
+  "elevations_m": [1655.2, 1701.4, ...]
+}
+
+POST /attest/register
+{
+  "key_id": "<base64url>",
+  "attestation": "<base64url CBOR>",
+  "challenge": "<base64url>"
+}
+→
+{ "ok": true }
 ```
 
 `GET /health` returns `{ "ok": true, "default_asset": "..." }`.
@@ -50,12 +77,20 @@ python main.py            # listens on :8080
 uvicorn main:app --reload
 ```
 
-Smoke-test:
+Smoke-test (note `APP_ATTEST_ENFORCE=0` and the dev-mode header):
 
 ```bash
+APP_ATTEST_ENFORCE=0 GOOGLE_MAPS_API_KEY=... uvicorn main:app
+
 curl -s localhost:8080/canopy/sample \
   -H 'Content-Type: application/json' \
+  -H 'X-Attest-Key-Id: DEV_local' \
   -d '{"points":[{"lat":40.0,"lng":-105.0},{"lat":0,"lng":0}]}' | jq
+
+curl -s localhost:8080/elevation/sample \
+  -H 'Content-Type: application/json' \
+  -H 'X-Attest-Key-Id: DEV_local' \
+  -d '{"points":[{"lat":39.7392,"lng":-104.9903}]}' | jq
 ```
 
 ## Deploy to Cloud Run
@@ -64,22 +99,29 @@ curl -s localhost:8080/canopy/sample \
 PROJECT_ID=your-proj
 REGION=us-central1
 SVC_ACC='svc@your-proj.iam.gserviceaccount.com'
+APPLE_TEAM=ABC123XYZ           # your Apple Developer team ID
+BUNDLE=com.marko.astro
 
-# Stash the key in Secret Manager so it doesn't sit on disk.
-gcloud secrets create gee-key --data-file=key.json --project=$PROJECT_ID
+# Stash credentials in Secret Manager.
+gcloud secrets create gee-key             --data-file=key.json    --project=$PROJECT_ID
+gcloud secrets create marko-google-maps   --data-file=maps-key.txt --project=$PROJECT_ID
 
-gcloud run deploy marko-canopy \
+gcloud run deploy marko-backend \
   --source . \
   --region $REGION \
   --project $PROJECT_ID \
   --allow-unauthenticated \
-  --set-env-vars "GEE_SERVICE_ACCOUNT=$SVC_ACC" \
-  --set-secrets "GEE_KEY_JSON=gee-key:latest" \
+  --set-env-vars "GEE_SERVICE_ACCOUNT=$SVC_ACC,APPLE_TEAM_ID=$APPLE_TEAM,APPLE_BUNDLE_ID=$BUNDLE,APP_ATTEST_ENVIRONMENT=appattestdevelop,APP_ATTEST_ENFORCE=0" \
+  --set-secrets "GEE_KEY_JSON=gee-key:latest,GOOGLE_MAPS_API_KEY=marko-google-maps:latest" \
   --memory 1Gi \
   --cpu 1 \
   --concurrency 10 \
   --max-instances 5
 ```
+
+When you finish the App Attest verification stub in `attest.py`,
+flip `APP_ATTEST_ENFORCE=1` and `APP_ATTEST_ENVIRONMENT=appattest`
+on the production deploy.
 
 Take the resulting `https://...run.app` URL and put it in the app:
 
