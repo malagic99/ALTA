@@ -43,7 +43,9 @@ enum HorizonSource {
                 maxRangeKm: cached.maxRangeKm,
                 includesTerrain: cached.includesTerrain,
                 includesCanopy: cached.includesCanopy,
-                includesBuildings: cached.includesBuildings
+                includesBuildings: cached.includesBuildings,
+                bortleClass: cached.bortleClass,
+                skyBrightnessProxy: cached.skyBrightnessProxy
             )
         case .fresh(let profile):
             return profile
@@ -209,25 +211,37 @@ final class HorizonOrchestrator {
         }
 
         // 1. Ground elevations — required. Single batched request for
-        //    the whole grid (505 points ≤ 512 cap).
+        //    the whole grid (505 points ≤ 512 cap). Throws on failure
+        //    so the caller can refund the rate-limit slot.
+        //
+        //    We launch canopy and Bortle in parallel with elevation:
+        //    they're independent network calls and racing them halves
+        //    the worst-case wall time on a fresh compute.
+        async let canopyTask: [Double]? = includeCanopy
+            ? (try? await canopyService?.sampleHeights(points: samples))
+            : nil
+        async let bortleTask: BortleEstimate? = (
+            try? await LightPollutionService.shared.bortle(at: coord)
+        )
+
         let groundElevations = try await elevationService.sampleElevations(points: samples)
 
-        // 2. Canopy heights — optional. A failure here leaves
-        //    `canopyHeights` as zeros and `hadCanopy` false; the
-        //    resulting profile is terrain-only and the rate-limit slot
-        //    stays consumed (terrain itself was real work).
+        // 2. Canopy heights — optional, soft-fail. Failure leaves
+        //    canopyHeights as zeros and `hadCanopy` false; rate-limit
+        //    slot stays consumed because terrain was real work.
         var canopyHeights = [Double](repeating: 0, count: samples.count)
         var hadCanopy = false
-        if includeCanopy, let canopy = canopyService {
-            do {
-                canopyHeights = try await canopy.sampleHeights(points: samples)
-                hadCanopy = true
-            } catch {
-                // Soft-fail. Future: surface a "canopy unavailable" toast.
-            }
+        if let resolved = await canopyTask, resolved.count == samples.count {
+            canopyHeights = resolved
+            hadCanopy = true
         }
 
-        // 3. Per-sample surface height = ground + canopy (+ buildings, future).
+        // 3. Bortle estimate — optional, soft-fail. Same cost story
+        //    as canopy: nothing to refund, the user still got a
+        //    horizon. nil bortleClass surfaces as "—" in the UI.
+        let bortle = await bortleTask
+
+        // 4. Per-sample surface height = ground + canopy (+ buildings, future).
         let observerEyeM = groundElevations[0] + RaySpec.eyeHeightM
         var azimuths: [Double] = []
         var altitudes: [Double] = []
@@ -261,7 +275,9 @@ final class HorizonOrchestrator {
             maxRangeKm: RaySpec.maxKm,
             includesTerrain: true,
             includesCanopy: hadCanopy,
-            includesBuildings: false
+            includesBuildings: false,
+            bortleClass: bortle?.class,
+            skyBrightnessProxy: bortle?.brightnessProxy
         )
     }
 
@@ -287,7 +303,9 @@ final class HorizonOrchestrator {
             eyeHeightM: profile.eyeHeightM,
             includesTerrain: profile.includesTerrain,
             includesCanopy: profile.includesCanopy,
-            includesBuildings: profile.includesBuildings
+            includesBuildings: profile.includesBuildings,
+            bortleClass: profile.bortleClass,
+            skyBrightnessProxy: profile.skyBrightnessProxy
         )
         context.insert(cached)
         try context.save()

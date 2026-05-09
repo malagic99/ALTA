@@ -31,6 +31,12 @@ struct HorizonProfile: Sendable, Equatable {
     var includesTerrain: Bool
     var includesCanopy: Bool
     var includesBuildings: Bool
+    /// Bortle dark-sky class 1-9 for this pin, nil if the Overpass
+    /// fetch failed (soft-fail; doesn't invalidate the profile).
+    var bortleClass: Int?
+    /// Raw brightness proxy (population / distance² sum). Useful for
+    /// diffing two pins that round to the same Bortle bucket.
+    var skyBrightnessProxy: Double?
 
     /// Linear-interpolated horizon altitude (degrees) at an arbitrary azimuth.
     func altitude(at azimuthDegrees: Double) -> Double {

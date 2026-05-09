@@ -34,6 +34,14 @@ final class CachedHorizon {
     var includesCanopy: Bool
     var includesBuildings: Bool
 
+    /// Bortle dark-sky class 1-9 for this location. Nil if the
+    /// Overpass call failed when this entry was created — caller
+    /// can opportunistically backfill on a cache hit if it cares.
+    var bortleClass: Int?
+    /// Raw brightness proxy (population / distance² sum). Lets two
+    /// pins that round to the same Bortle bucket be compared.
+    var skyBrightnessProxy: Double?
+
     init(
         locationKey: String,
         latitude: Double,
@@ -47,7 +55,9 @@ final class CachedHorizon {
         eyeHeightM: Double,
         includesTerrain: Bool,
         includesCanopy: Bool,
-        includesBuildings: Bool
+        includesBuildings: Bool,
+        bortleClass: Int? = nil,
+        skyBrightnessProxy: Double? = nil
     ) {
         self.locationKey = locationKey
         self.latitude = latitude
@@ -62,6 +72,8 @@ final class CachedHorizon {
         self.includesTerrain = includesTerrain
         self.includesCanopy = includesCanopy
         self.includesBuildings = includesBuildings
+        self.bortleClass = bortleClass
+        self.skyBrightnessProxy = skyBrightnessProxy
     }
 
     var isExpired: Bool { Date() > expiresAt }

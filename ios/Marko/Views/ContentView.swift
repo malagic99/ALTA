@@ -268,6 +268,8 @@ struct ContentView: View {
                 .frame(maxWidth: 320)
                 .frame(maxWidth: .infinity)
 
+            bortleRow(profile)
+
             HStack(spacing: 12) {
                 meta("Range", "\(Int(profile.maxRangeKm)) km")
                 meta("Layers", layerSummary(profile))
@@ -284,6 +286,46 @@ struct ContentView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(.ultraThinMaterial)
         )
+    }
+
+    @ViewBuilder
+    private func bortleRow(_ profile: HorizonProfile) -> some View {
+        HStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(bortleColor(profile.bortleClass))
+                    .frame(width: 28, height: 28)
+                Text(profile.bortleClass.map(String.init) ?? "—")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.black.opacity(0.85))
+            }
+            VStack(alignment: .leading, spacing: 1) {
+                Text(profile.bortleClass.map { "Bortle \($0)" } ?? "Sky brightness")
+                    .font(.subheadline.weight(.semibold))
+                Text(profile.bortleClass.map(BortleEstimate.label(for:))
+                     ?? "Light-pollution estimate unavailable")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func bortleColor(_ bortle: Int?) -> Color {
+        guard let b = bortle else { return Color.gray.opacity(0.4) }
+        // Cool dark green for excellent skies → desaturated red for inner-city.
+        switch b {
+        case 1: return Color(red: 0.23, green: 0.78, blue: 0.55)
+        case 2: return Color(red: 0.40, green: 0.84, blue: 0.50)
+        case 3: return Color(red: 0.65, green: 0.85, blue: 0.40)
+        case 4: return Color(red: 0.92, green: 0.85, blue: 0.30)
+        case 5: return Color(red: 0.96, green: 0.74, blue: 0.30)
+        case 6: return Color(red: 0.98, green: 0.60, blue: 0.32)
+        case 7: return Color(red: 0.95, green: 0.45, blue: 0.40)
+        case 8: return Color(red: 0.90, green: 0.36, blue: 0.45)
+        default: return Color(red: 0.78, green: 0.30, blue: 0.55)
+        }
     }
 
     private func meta(_ label: String, _ value: String) -> some View {

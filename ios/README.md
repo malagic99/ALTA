@@ -19,6 +19,7 @@ ios/
 │   │   ├── SecretsStore.swift        # Keychain BYOK + Info.plist fallback
 │   │   ├── ElevationService.swift    # actor, URLSession, batched ≤512
 │   │   ├── CanopyService.swift       # actor, URLSession, /canopy/sample
+│   │   ├── LightPollutionService.swift # Overpass-based Bortle estimator
 │   │   └── RateLimiter.swift         # 5/day + refund(), backed by SwiftData
 │   ├── Services/
 │   │   ├── HorizonOrchestrator.swift # cache + rate limit + ground+canopy
@@ -134,6 +135,35 @@ free.
   only pay for successful work. Canopy errors are soft-failed
   (terrain-only profile, slot stays consumed since terrain still
   cost a request).
+
+## Light pollution & Bortle estimate
+
+Each fresh horizon also runs a Bortle estimate against OpenStreetMap's
+public Overpass API: we pull populated places (city/town/village
+nodes with a `population` tag) within 200 km of the pin and compute
+a brightness proxy `Σ population_i / (distance_km_i + 1)²`. The sum
+is bucketed into a Bortle class 1-9 ("Excellent dark sky" through
+"Inner-city"), shown as a colour-graded badge in the horizon card.
+
+The estimate is concurrent with the Elevation + Canopy fetches, so
+it doesn't add to the wall-clock time. It soft-fails: if Overpass is
+slow or down, the horizon still ships and the badge shows "—" with
+"Light-pollution estimate unavailable" — same posture as canopy.
+
+Honest caveats:
+
+- Population/distance² isn't a substitute for a real per-pixel VIIRS
+  radiance sample. The dominant signal for "find a spot far from
+  cities" *is* distance from cities though, so for ranking pins on
+  a road trip it works well. The Bortle bucket boundaries match
+  the original Expo build so users moving between platforms see the
+  same number for the same pin.
+- A visual light-pollution **tile overlay** on the map (the Lorenz
+  VIIRS atlas the Expo app showed) needs an `MKMapView` wrapped via
+  `UIViewRepresentable` because iOS 17 SwiftUI `Map` doesn't accept
+  custom tile sources. Queued for a follow-up.
+- Overpass is a free public service; please don't crank `radiusKm`
+  to 1000+ km without thinking about the load you'd put on it.
 
 ## Target clearance times
 
