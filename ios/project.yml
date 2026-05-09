@@ -27,6 +27,9 @@ targets:
     platform: iOS
     sources:
       - path: Marko
+    configFiles:
+      Debug: Marko/Resources/App.xcconfig
+      Release: Marko/Resources/App.xcconfig
     info:
       path: Marko/Resources/Info.plist
     settings:

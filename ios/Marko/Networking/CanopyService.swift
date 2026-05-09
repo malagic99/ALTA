@@ -33,12 +33,12 @@ enum CanopyServiceError: LocalizedError {
 /// `maxPointsPerRequest` to mirror the backend's MAX_POINTS_PER_REQUEST
 /// guard.
 actor CanopyService {
-    /// Read from `Info.plist` so the backend URL can be set per build
-    /// configuration without recompiling.
+    /// Resolves the backend URL via `SecretsStore`: Keychain (BYOK)
+    /// first, then Info.plist. Returns nil when neither holds a
+    /// parseable URL.
+    @MainActor
     static func loadBackendURL() -> URL? {
-        guard let raw = Bundle.main.object(forInfoDictionaryKey: "MarkoCanopyBackendURL") as? String,
-              !raw.isEmpty,
-              !raw.contains("YOUR-CANOPY-SERVICE"),
+        guard let raw = SecretsStore.shared.canopyBackendURL,
               let url = URL(string: raw)
         else { return nil }
         return url
@@ -62,8 +62,9 @@ actor CanopyService {
         self.maxPointsPerRequest = maxPointsPerRequest
     }
 
-    /// Convenience initializer that pulls the URL from Info.plist and
-    /// returns nil if it isn't configured.
+    /// Convenience initializer that pulls the URL from `SecretsStore`
+    /// and returns nil if it isn't configured.
+    @MainActor
     static func fromBundle() -> CanopyService? {
         guard let url = loadBackendURL() else { return nil }
         let config = URLSessionConfiguration.default

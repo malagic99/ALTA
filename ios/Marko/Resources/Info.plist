@@ -31,8 +31,8 @@
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Marko uses your location to centre the map and find dark-sky observation spots near you.</string>
     <key>MarkoCanopyBackendURL</key>
-    <string>https://YOUR-CANOPY-SERVICE.run.app</string>
+    <string>$(MARKO_CANOPY_BACKEND_URL)</string>
     <key>MarkoGoogleMapsAPIKey</key>
-    <string>YOUR_GOOGLE_MAPS_API_KEY</string>
+    <string>$(MARKO_GOOGLE_MAPS_API_KEY)</string>
 </dict>
 </plist>

@@ -67,21 +67,18 @@ actor ElevationService {
     /// request. Don't bump this without checking that limit.
     static let maxPointsPerRequest = 512
 
-    /// Pulls the API key from `Info.plist`. Returns nil when the key
-    /// is missing or still set to the placeholder, so callers can
-    /// detect an unconfigured build.
+    /// Resolves the API key via `SecretsStore`: Keychain (BYOK) first,
+    /// then Info.plist. Returns nil when neither has a usable value.
+    @MainActor
     static func loadAPIKey() -> String? {
-        guard let key = Bundle.main.object(forInfoDictionaryKey: "MarkoGoogleMapsAPIKey") as? String,
-              !key.isEmpty,
-              !key.contains("YOUR_GOOGLE_MAPS_API_KEY"),
-              !key.hasPrefix("YOUR_")
-        else { return nil }
-        return key
+        SecretsStore.shared.googleMapsAPIKey
     }
 
-    /// Convenience for the common case: read the key from Info.plist
-    /// and build a service with a request-tuned URLSession. Returns
-    /// nil when the API key isn't configured.
+    /// Convenience constructor: pull the key from `SecretsStore` and
+    /// build a service with a request-tuned URLSession. Returns nil
+    /// when no key is configured (in which case the UI disables
+    /// Calculate and points the user at Settings).
+    @MainActor
     static func fromBundle() -> ElevationService? {
         guard let key = loadAPIKey() else { return nil }
         let config = URLSessionConfiguration.default

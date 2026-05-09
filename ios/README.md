@@ -16,6 +16,7 @@ ios/
 │   │   ├── RateLimitRecord.swift     # @Model: per-UTC-day request counter
 │   │   └── HorizonDTOs.swift         # Codable wire types + value type
 │   ├── Networking/
+│   │   ├── SecretsStore.swift        # Keychain BYOK + Info.plist fallback
 │   │   ├── ElevationService.swift    # actor, URLSession, batched ≤512
 │   │   ├── CanopyService.swift       # actor, URLSession, /canopy/sample
 │   │   └── RateLimiter.swift         # 5/day + refund(), backed by SwiftData
@@ -23,9 +24,12 @@ ios/
 │   │   └── HorizonOrchestrator.swift # cache + rate limit + ground+canopy
 │   ├── Views/
 │   │   ├── ContentView.swift         # Map, pin drop, calculate, status
+│   │   ├── SettingsSheet.swift       # BYOK form (Keychain-backed)
 │   │   └── HorizonRadarView.swift    # SwiftUI Canvas radar
 │   └── Resources/
-│       └── Info.plist                # Location desc + MarkoCanopyBackendURL
+│       ├── Info.plist                # Location desc + $(MARKO_*) refs
+│       ├── App.xcconfig              # Default build settings (tracked)
+│       └── Secrets.example.xcconfig  # Template; copy to Secrets.xcconfig
 ```
 
 ## Setup — option A: drop into an existing Xcode project
@@ -54,23 +58,49 @@ xcodegen reads `project.yml` and produces a regenerable `.xcodeproj`,
 which is friendlier in source control than the default Xcode-managed
 file.
 
-## Configuration
+## Configuration — two paths
 
-Edit `Marko/Resources/Info.plist`:
+The app supports **runtime BYOK** (recommended for end-users) and a
+**build-time xcconfig** path (developer convenience). Either covers
+the keys; both is fine. **Info.plist holds no literal keys** — it
+references `$(MARKO_*)` build settings that come from xcconfig and,
+at runtime, can be overridden from the Keychain.
 
-```xml
-<key>MarkoGoogleMapsAPIKey</key>
-<string>AIzaSy…your-key</string>
+### Runtime BYOK (Settings sheet)
 
-<key>MarkoCanopyBackendURL</key>
-<string>https://marko-canopy-xxxx-uc.a.run.app</string>
+Tap the gear in the top-right and paste your values. They're stored
+in the iOS Keychain
+(`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`), so they stay
+on-device, survive reinstalls of the same app/team ID, and aren't
+synced to iCloud. Tap **Clear stored secrets** to wipe them.
+
+This is the right path for TestFlight builds where each user brings
+their own Google Cloud key.
+
+### Build-time defaults (xcconfig)
+
+For your own dev builds you can ship a default key without typing
+it on every device:
+
+```bash
+cd ios/Marko/Resources
+cp Secrets.example.xcconfig Secrets.xcconfig
+# edit Secrets.xcconfig with your real values
 ```
 
-The Google Maps key is **required** — without it the Calculate
-button is disabled and the status banner explains why. The canopy
-URL is optional; without it the horizon falls back to terrain-only.
+`Secrets.xcconfig` is gitignored. `App.xcconfig` (tracked) does an
+`#include?` so the build still succeeds with no Secrets file —
+fields just come through empty, and the in-app Settings sheet
+becomes the only source.
 
-### Google Maps API key — setup + cost
+xcconfig quirk to remember: `//` is a comment, even inside a value.
+For URLs, break the double-slash with `$()/`:
+```
+MARKO_CANOPY_BACKEND_URL = https:/$()/marko-canopy-xxxx.a.run.app
+```
+The example file already does this.
+
+### Google Maps API key — setup, restrictions, cost
 
 1. In the [Google Cloud Console](https://console.cloud.google.com/),
    enable **Maps Elevation API** for your project.

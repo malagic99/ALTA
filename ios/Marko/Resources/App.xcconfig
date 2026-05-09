@@ -1,0 +1,16 @@
+// Default build settings, applied to both Debug and Release.
+//
+// Real API keys live in Secrets.xcconfig (gitignored). The optional
+// include below pulls them in when present and silently no-ops when
+// not — meaning the project still builds cleanly on a fresh clone
+// before anyone has pasted credentials, with empty placeholders in
+// Info.plist that the in-app Settings sheet can fill in at runtime
+// (see SecretsStore.swift).
+//
+// xcconfig precedence: later assignments win. So the empty defaults
+// here are overridden by Secrets.xcconfig if it defines the same key.
+
+MARKO_GOOGLE_MAPS_API_KEY =
+MARKO_CANOPY_BACKEND_URL =
+
+#include? "Secrets.xcconfig"

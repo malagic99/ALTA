@@ -29,6 +29,9 @@ struct ContentView: View {
 
     @State private var orchestrator: HorizonOrchestrator?
     @State private var elevationConfigured: Bool = false
+    @State private var showSettings: Bool = false
+
+    @StateObject private var secrets = SecretsStore.shared
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -45,24 +48,65 @@ struct ContentView: View {
                 .padding(.horizontal, 12)
                 .padding(.bottom, 12)
         }
+        .overlay(alignment: .topTrailing) {
+            settingsButton
+                .padding(.top, 64)
+                .padding(.trailing, 14)
+        }
         .task {
             if orchestrator == nil {
-                let elevation = ElevationService.fromBundle()
-                let canopy = CanopyService.fromBundle()
-                elevationConfigured = (elevation != nil)
-                orchestrator = HorizonOrchestrator(
-                    context: modelContext,
-                    elevationService: elevation,
-                    canopyService: canopy
-                )
-                if elevation == nil {
-                    statusMessage = "Google Maps API key not set in Info.plist — Calculate is disabled."
-                    statusTone = .warning
-                } else if canopy == nil {
-                    statusMessage = "Canopy backend URL not set — running terrain-only."
-                    statusTone = .warning
-                }
+                rebuildOrchestrator(initial: true)
             }
+        }
+        .onChange(of: secrets.googleMapsAPIKey) { _, _ in rebuildOrchestrator(initial: false) }
+        .onChange(of: secrets.canopyBackendURL) { _, _ in rebuildOrchestrator(initial: false) }
+        .sheet(isPresented: $showSettings) {
+            SettingsSheet(secrets: secrets)
+        }
+    }
+
+    private var settingsButton: some View {
+        Button { showSettings = true } label: {
+            Image(systemName: "gearshape.fill")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 40, height: 40)
+                .background(
+                    Circle().fill(.thinMaterial)
+                )
+                .overlay(alignment: .topTrailing) {
+                    if !elevationConfigured {
+                        // Tiny dot to nudge users toward Settings when
+                        // the app is unconfigured.
+                        Circle()
+                            .fill(.red)
+                            .frame(width: 9, height: 9)
+                            .offset(x: 2, y: -2)
+                    }
+                }
+        }
+        .accessibilityLabel("Settings")
+    }
+
+    private func rebuildOrchestrator(initial: Bool) {
+        let elevation = ElevationService.fromBundle()
+        let canopy = CanopyService.fromBundle()
+        elevationConfigured = (elevation != nil)
+        orchestrator = HorizonOrchestrator(
+            context: modelContext,
+            elevationService: elevation,
+            canopyService: canopy
+        )
+
+        if elevation == nil {
+            statusMessage = "Open Settings to add your Google Maps API key."
+            statusTone = .warning
+        } else if canopy == nil {
+            statusMessage = "Canopy backend URL not set — horizon will be terrain-only."
+            statusTone = .warning
+        } else if !initial {
+            statusMessage = "Settings updated."
+            statusTone = .success
         }
     }
 
