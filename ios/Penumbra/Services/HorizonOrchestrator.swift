@@ -13,7 +13,7 @@ enum HorizonError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingElevationService:
-            return "Marko backend URL isn't configured. Open Settings to set it before calculating a horizon."
+            return "Penumbra backend URL isn't configured. Open Settings to set it before calculating a horizon."
         case .missingCanopyService:
             return "Canopy backend isn't configured."
         case .rateLimited(let s):

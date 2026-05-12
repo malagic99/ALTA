@@ -53,7 +53,7 @@ from attest_store import (
 # --- configuration ----------------------------------------------------
 
 APPLE_TEAM_ID = os.environ.get("APPLE_TEAM_ID", "")
-APPLE_BUNDLE_ID = os.environ.get("APPLE_BUNDLE_ID", "com.marko.astro")
+APPLE_BUNDLE_ID = os.environ.get("APPLE_BUNDLE_ID", "com.penumbra.astro")
 APP_ATTEST_ENVIRONMENT = os.environ.get(
     "APP_ATTEST_ENVIRONMENT", "appattestdevelop"
 )

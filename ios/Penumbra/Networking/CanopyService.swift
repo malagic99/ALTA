@@ -12,7 +12,7 @@ enum CanopyServiceError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .missingBackendURL:
-            return "Canopy backend URL is not configured. Set MarkoCanopyBackendURL in Info.plist."
+            return "Penumbra backend URL is not configured. Set PenumbraBackendURL in Info.plist."
         case .invalidResponse:
             return "The canopy backend returned a non-HTTP response."
         case .httpStatus(let code, let body):

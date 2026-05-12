@@ -15,9 +15,9 @@ android/
 # Xcode build artefacts
 ios/build/
 ios/DerivedData/
-ios/Marko.xcodeproj/
+ios/Penumbra.xcodeproj/
 ios/*.xcworkspace/
 
 # Local API keys (BYOK lives in the Keychain at runtime; the xcconfig
 # is only a developer convenience for build-time defaults).
-ios/Marko/Resources/Secrets.xcconfig
+ios/Penumbra/Resources/Secrets.xcconfig

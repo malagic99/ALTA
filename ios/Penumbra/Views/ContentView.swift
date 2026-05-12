@@ -100,7 +100,7 @@ struct ContentView: View {
         )
 
         if elevation == nil || canopy == nil {
-            statusMessage = "Open Settings to add your Marko backend URL."
+            statusMessage = "Open Settings to add your Penumbra backend URL."
             statusTone = .warning
         } else if !initial {
             statusMessage = "Settings updated."

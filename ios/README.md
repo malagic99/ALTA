@@ -1,4 +1,4 @@
-# Marko (iOS)
+# Penumbra (iOS)
 
 Native SwiftUI app. Targets **iOS 17+** so we can use SwiftData, the
 new `Map` content APIs, and `MapReader.convert(_:from:)` for
@@ -9,8 +9,8 @@ tap-to-coordinate.
 ```
 ios/
 ├── project.yml                       # xcodegen config (optional)
-├── Marko/
-│   ├── MarkoApp.swift                # @main, ModelContainer
+├── Penumbra/
+│   ├── PenumbraApp.swift                # @main, ModelContainer
 │   ├── Models/
 │   │   ├── CachedHorizon.swift       # @Model: cached horizon profiles
 │   │   ├── RateLimitRecord.swift     # @Model: per-UTC-day request counter
@@ -33,31 +33,31 @@ ios/
 │   │   ├── ClearanceList.swift       # "Milky Way clears at 11:30 PM…"
 │   │   └── HorizonRadarView.swift    # SwiftUI Canvas radar + target tracks
 │   └── Resources/
-│       ├── Info.plist                # Location desc + $(MARKO_*) refs
+│       ├── Info.plist                # Location desc + $(PENUMBRA_*) refs
 │       ├── App.xcconfig              # Default build settings (tracked)
 │       └── Secrets.example.xcconfig  # Template; copy to Secrets.xcconfig
 ```
 
 ## Setup — option A: drop into an existing Xcode project
 
-1. In Xcode: `File → New → Project → iOS App → Marko`. Set deployment
+1. In Xcode: `File → New → Project → iOS App → Penumbra`. Set deployment
    target to **iOS 17.0**.
-2. Delete the boilerplate `ContentView.swift` and `MarkoApp.swift`
+2. Delete the boilerplate `ContentView.swift` and `PenumbraApp.swift`
    that the template generates.
-3. Drag the `Marko/` folder from this repo into the project navigator
-   ("Create groups", add to the Marko target).
-4. Replace the project's `Info.plist` with `Marko/Resources/Info.plist`,
+3. Drag the `Penumbra/` folder from this repo into the project navigator
+   ("Create groups", add to the Penumbra target).
+4. Replace the project's `Info.plist` with `Penumbra/Resources/Info.plist`,
    or merge in the keys (`NSLocationWhenInUseUsageDescription` and
-   `MarkoCanopyBackendURL`).
-5. Set `MarkoCanopyBackendURL` to your deployed canopy service URL.
+   `PenumbraCanopyBackendURL`).
+5. Set `PenumbraCanopyBackendURL` to your deployed canopy service URL.
 
 ## Setup — option B: generate the project with xcodegen
 
 ```bash
 brew install xcodegen
 cd ios
-xcodegen generate         # produces Marko.xcodeproj
-open Marko.xcodeproj
+xcodegen generate         # produces Penumbra.xcodeproj
+open Penumbra.xcodeproj
 ```
 
 xcodegen reads `project.yml` and produces a regenerable `.xcodeproj`,
@@ -69,7 +69,7 @@ file.
 The app supports **runtime BYOK** (recommended for end-users) and a
 **build-time xcconfig** path (developer convenience). Either covers
 the keys; both is fine. **Info.plist holds no literal keys** — it
-references `$(MARKO_*)` build settings that come from xcconfig and,
+references `$(PENUMBRA_*)` build settings that come from xcconfig and,
 at runtime, can be overridden from the Keychain.
 
 ### Runtime BYOK (Settings sheet)
@@ -92,7 +92,7 @@ For your own dev builds you can ship a default backend URL without
 typing it on every device:
 
 ```bash
-cd ios/Marko/Resources
+cd ios/Penumbra/Resources
 cp Secrets.example.xcconfig Secrets.xcconfig
 # edit Secrets.xcconfig with your real backend URL
 ```
@@ -105,7 +105,7 @@ becomes the only source.
 xcconfig quirk to remember: `//` is a comment, even inside a value.
 For URLs, break the double-slash with `$()/`:
 ```
-MARKO_CANOPY_BACKEND_URL = https:/$()/marko-backend-xxxx.a.run.app
+PENUMBRA_BACKEND_URL = https:/$()/penumbra-backend-xxxx.a.run.app
 ```
 The example file already does this.
 
@@ -118,10 +118,10 @@ The key only ever exists on the server. To deploy:
 2. Create an API key, restrict it to **Maps Elevation API only** and
    to your Cloud Run service's egress (or leave unrestricted; the
    key never leaves Secret Manager).
-3. `gcloud secrets create marko-google-maps-key --data-file=key.txt`.
+3. `gcloud secrets create penumbra-google-maps-key --data-file=key.txt`.
 4. Mount on the Cloud Run service:
    ```
-   --set-secrets GOOGLE_MAPS_API_KEY=marko-google-maps-key:latest
+   --set-secrets GOOGLE_MAPS_API_KEY=penumbra-google-maps-key:latest
    ```
 
 Because the key never ships in the binary, the old "iOS bundle ID"
@@ -138,7 +138,7 @@ tier. The cache makes repeats free.
 
 ### App Attest
 
-`AttestationManager` (`ios/Marko/Networking/AttestationManager.swift`)
+`AttestationManager` (`ios/Penumbra/Networking/AttestationManager.swift`)
 wraps `DCAppAttestService`:
 
 1. On first launch the app generates a key in the secure enclave,
@@ -161,7 +161,7 @@ App Attest counter for replay protection. Set
 (`0`) accepts any well-formed headers so the simulator can still
 exercise the rest of the plumbing.
 
-The entitlement (`Marko.entitlements`) ships with
+The entitlement (`Penumbra.entitlements`) ships with
 `com.apple.developer.devicecheck.appattest-environment = development`.
 Switch to `production` for App Store / TestFlight builds and set
 `APP_ATTEST_ENVIRONMENT=appattest` on the backend to match.
@@ -237,7 +237,7 @@ the radar's resolution.
 
 ## Architecture notes
 
-- **SwiftData container** lives on `MarkoApp`; `Schema` includes
+- **SwiftData container** lives on `PenumbraApp`; `Schema` includes
   `CachedHorizon` + `RateLimitRecord`.
 - **Cache key** is lat/lng rounded to 3 decimal places (~110 m grid).
   Pins very close together share an entry, which means free

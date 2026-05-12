@@ -87,7 +87,7 @@ class SampleResponse(BaseModel):
     scale_m: int
 
 
-app = FastAPI(title="Marko Backend", version="0.2.0")
+app = FastAPI(title="Penumbra Backend", version="0.3.0")
 app.include_router(attest_router)
 app.include_router(elevation_router)
 

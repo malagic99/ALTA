@@ -24,7 +24,7 @@ final class SecretsStore: ObservableObject {
     /// indicator next to overridden fields.
     @Published private(set) var canopyBackendURLOverridden: Bool = false
 
-    private static let keychainService = "com.marko.astro.secrets"
+    private static let keychainService = "com.penumbra.astro.secrets"
 
     private enum Account {
         static let canopyBackendURL = "canopy_backend_url"
@@ -38,7 +38,7 @@ final class SecretsStore: ObservableObject {
     /// from `set…` mutators; also exposed for app-foreground refresh.
     func reload() {
         let keychainURL = Self.read(account: Account.canopyBackendURL)
-        canopyBackendURL = keychainURL ?? Self.bundleString("MarkoCanopyBackendURL")
+        canopyBackendURL = keychainURL ?? Self.bundleString("PenumbraBackendURL")
         canopyBackendURLOverridden = (keychainURL != nil)
     }
 

@@ -56,8 +56,8 @@ actor AttestationManager {
 
     private let service = DCAppAttestService.shared
     private let defaults = UserDefaults.standard
-    private let keyIdKey = "com.marko.astro.appattest.keyId"
-    private let registeredKey = "com.marko.astro.appattest.registered"
+    private let keyIdKey = "com.penumbra.astro.appattest.keyId"
+    private let registeredKey = "com.penumbra.astro.appattest.registered"
     private let session: URLSession = .shared
 
     private init() {}

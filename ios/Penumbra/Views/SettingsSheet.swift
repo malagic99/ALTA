@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// In-app BYOB (bring-your-own-backend) form. The Marko backend URL
+/// In-app BYOB (bring-your-own-backend) form. The Penumbra backend URL
 /// lives in the iOS Keychain
 /// (`kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`) and takes
 /// precedence over whatever shipped in the bundle.
@@ -17,7 +17,7 @@ struct SettingsSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("https://marko-backend-…run.app", text: $canopyURL)
+                    TextField("https://penumbra-backend-…run.app", text: $canopyURL)
                         .keyboardType(.URL)
                         .textContentType(.URL)
                         .autocorrectionDisabled()
@@ -25,7 +25,7 @@ struct SettingsSheet: View {
                         .submitLabel(.done)
                 } header: {
                     HStack {
-                        Text("Marko backend URL")
+                        Text("Penumbra backend URL")
                         Spacer()
                         if secrets.canopyBackendURLOverridden {
                             Label("Keychain", systemImage: "key.fill")

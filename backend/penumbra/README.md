@@ -1,4 +1,4 @@
-# Marko backend
+# Penumbra backend
 
 FastAPI service that the iOS app calls for every operation that
 requires a credentialed upstream:
@@ -111,19 +111,19 @@ PROJECT_ID=your-proj
 REGION=us-central1
 SVC_ACC='svc@your-proj.iam.gserviceaccount.com'
 APPLE_TEAM=ABC123XYZ           # your Apple Developer team ID
-BUNDLE=com.marko.astro
+BUNDLE=com.penumbra.astro
 
 # Stash credentials in Secret Manager.
 gcloud secrets create gee-key             --data-file=key.json    --project=$PROJECT_ID
-gcloud secrets create marko-google-maps   --data-file=maps-key.txt --project=$PROJECT_ID
+gcloud secrets create penumbra-google-maps   --data-file=maps-key.txt --project=$PROJECT_ID
 
-gcloud run deploy marko-backend \
+gcloud run deploy penumbra-backend \
   --source . \
   --region $REGION \
   --project $PROJECT_ID \
   --allow-unauthenticated \
   --set-env-vars "GEE_SERVICE_ACCOUNT=$SVC_ACC,APPLE_TEAM_ID=$APPLE_TEAM,APPLE_BUNDLE_ID=$BUNDLE,APP_ATTEST_ENVIRONMENT=appattestdevelop,APP_ATTEST_ENFORCE=1,FIRESTORE_PROJECT_ID=$PROJECT_ID" \
-  --set-secrets "GEE_KEY_JSON=gee-key:latest,GOOGLE_MAPS_API_KEY=marko-google-maps:latest" \
+  --set-secrets "GEE_KEY_JSON=gee-key:latest,GOOGLE_MAPS_API_KEY=penumbra-google-maps:latest" \
   --memory 1Gi \
   --cpu 1 \
   --concurrency 10 \
@@ -167,14 +167,14 @@ Verification is real. The pipeline:
 | `APP_ATTEST_ENFORCE` | yes | `1` in production. `0` for dev / simulator. |
 | `APP_ATTEST_ENVIRONMENT` | yes | `appattestdevelop` for Xcode-signed dev builds, `appattest` for App Store / TestFlight. Must match the iOS entitlement. |
 | `APPLE_TEAM_ID` | yes | Your Apple Developer team ID (10 chars). |
-| `APPLE_BUNDLE_ID` | yes | Defaults to `com.marko.astro`. |
+| `APPLE_BUNDLE_ID` | yes | Defaults to `com.penumbra.astro`. |
 | `FIRESTORE_PROJECT_ID` | recommended | Without it the registration store and challenge store both fall back to in-memory dicts. Fine for one Cloud Run instance with `--max-instances 1`, broken otherwise. |
 | `ATTEST_CHALLENGE_TTL` | optional | Seconds; default 300. |
 
 Take the resulting `https://...run.app` URL and put it in the app:
 
 ```
-EXPO_PUBLIC_CANOPY_BACKEND_URL=https://marko-canopy-xxxx-uc.a.run.app
+EXPO_PUBLIC_CANOPY_BACKEND_URL=https://penumbra-backend-xxxx-uc.a.run.app
 ```
 
 ## Notes

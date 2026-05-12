@@ -14,6 +14,6 @@
 // xcconfig precedence: later assignments win. So the empty default
 // here is overridden by Secrets.xcconfig if it defines the same key.
 
-MARKO_CANOPY_BACKEND_URL =
+PENUMBRA_BACKEND_URL =
 
 #include? "Secrets.xcconfig"

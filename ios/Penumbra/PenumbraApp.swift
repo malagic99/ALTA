@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct MarkoApp: App {
+struct PenumbraApp: App {
     /// Single shared SwiftData container. Both `CachedHorizon` and
     /// `RateLimitRecord` are persisted here.
     let modelContainer: ModelContainer = {
@@ -11,7 +11,7 @@ struct MarkoApp: App {
             RateLimitRecord.self,
         ])
         let configuration = ModelConfiguration(
-            "Marko",
+            "Penumbra",
             schema: schema,
             isStoredInMemoryOnly: false,
             allowsSave: true

@@ -1,10 +1,13 @@
-# Marko
+# Penumbra
 
 > **Active frontend: native SwiftUI iOS app — see [`ios/`](./ios/).**
 > The Expo / React Native code below is the original frontend; it's
 > kept for reference but new development is happening on the native
-> side. Both share the same Python canopy backend in
-> [`backend/canopy/`](./backend/canopy/).
+> side. Both share the same Python backend in
+> [`backend/penumbra/`](./backend/penumbra/).
+>
+> *Repo directory and GitHub remote stay named `Marko` for historical
+> reasons; the product is **Penumbra**.*
 
 ---
 
@@ -81,7 +84,7 @@ Create `.env.local` at the repo root:
 EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=your_key_here
 
 # Optional — canopy heights for the horizon calc.
-# Deploy backend/canopy to Cloud Run and put the URL here.
+# Deploy backend/penumbra to Cloud Run and put the URL here.
 EXPO_PUBLIC_CANOPY_BACKEND_URL=
 
 # Optional — Phase 3 placeholders, not used yet
@@ -153,6 +156,7 @@ src/
     candidates.ts    Ring sampler + orchestration
     canopy.ts        Client for the canopy backend (Meta CHM)
 backend/
-  canopy/            FastAPI + GEE proxy that samples Meta CHM
-                     pixel values; deploy to Cloud Run.
+  penumbra/          FastAPI service: GEE canopy proxy, Google
+                     Elevation proxy, and App Attest. Deploy to
+                     Cloud Run.
 ```

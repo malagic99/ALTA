@@ -12,6 +12,8 @@
     <string>6.0</string>
     <key>CFBundleName</key>
     <string>$(PRODUCT_NAME)</string>
+    <key>CFBundleDisplayName</key>
+    <string>Penumbra</string>
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
@@ -29,8 +31,8 @@
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Marko uses your location to centre the map and find dark-sky observation spots near you.</string>
-    <key>MarkoCanopyBackendURL</key>
-    <string>$(MARKO_CANOPY_BACKEND_URL)</string>
+    <string>Penumbra uses your location to centre the map and find dark-sky observation spots near you.</string>
+    <key>PenumbraBackendURL</key>
+    <string>$(PENUMBRA_BACKEND_URL)</string>
 </dict>
 </plist>
