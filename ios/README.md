@@ -142,26 +142,29 @@ tier. The cache makes repeats free.
 wraps `DCAppAttestService`:
 
 1. On first launch the app generates a key in the secure enclave,
-   calls `attestKey` for an Apple-signed attestation, and POSTs
-   `{key_id, attestation, challenge}` to `/attest/register`.
+   fetches a single-use challenge from the backend's
+   `/attest/challenge`, calls `attestKey` against that challenge,
+   and POSTs `{key_id, attestation, challenge}` to
+   `/attest/register`.
 2. Each subsequent request to `/elevation/sample` or
    `/canopy/sample` carries `X-Attest-Key-Id`,
    `X-Attest-Assertion` (ECDSA-P256 over `SHA256(body ‖ challenge)`),
    and `X-Attest-Challenge` headers.
 
-The backend (`backend/canopy/attest.py`) verifies these against the
-public key it stored at registration. The cryptographic verification
-is currently a clearly-marked stub (the dev path,
-`APP_ATTEST_ENFORCE=0`, accepts any well-formed headers); flipping
-the env var to `1` requires implementing the cert-chain validation
-+ ECDSA signature check in `attest.py` — the TODO comments enumerate
-the exact RFC steps. This is intentional: the verification is
-meaningless without a real Apple Developer team ID and isn't
-testable from a sandbox.
+The backend verifies all of this for real
+(`backend/canopy/appattest_crypto.py`): cert-chain validation
+against the Apple App Attestation Root CA, nonce binding, rpIdHash
+= `SHA256(team.bundle)`, aaguid/environment match, ECDSA-P256
+signature verification, and atomic compare-and-set on the
+App Attest counter for replay protection. Set
+`APP_ATTEST_ENFORCE=1` on the backend to turn it on; the dev path
+(`0`) accepts any well-formed headers so the simulator can still
+exercise the rest of the plumbing.
 
 The entitlement (`Marko.entitlements`) ships with
 `com.apple.developer.devicecheck.appattest-environment = development`.
-Switch to `production` for App Store / TestFlight builds.
+Switch to `production` for App Store / TestFlight builds and set
+`APP_ATTEST_ENVIRONMENT=appattest` on the backend to match.
 
 ### Rate limiter & refunds
 

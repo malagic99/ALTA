@@ -7,7 +7,11 @@ requires a credentialed upstream:
   Earth Engine.
 - `POST /elevation/sample` — proxies the Google Maps Elevation API
   so the app never has to embed Google's key.
-- `POST /attest/register` — App Attest registration.
+- `POST /attest/challenge` — server-issued single-use nonce for
+  App Attest registration.
+- `POST /attest/register` — verifies a `DCAppAttestService`
+  attestation against Apple's App Attestation Root CA, stores the
+  device's public key.
 - `GET /health` — liveness probe.
 
 Both `sample` endpoints are gated by App Attest assertions
@@ -39,11 +43,18 @@ POST /elevation/sample
   "elevations_m": [1655.2, 1701.4, ...]
 }
 
+POST /attest/challenge
+→
+{
+  "challenge": "<base64url, 32 random bytes>",
+  "expires_at": 1700000000.0
+}
+
 POST /attest/register
 {
   "key_id": "<base64url>",
   "attestation": "<base64url CBOR>",
-  "challenge": "<base64url>"
+  "challenge": "<base64url, from /attest/challenge>"
 }
 →
 { "ok": true }
@@ -111,7 +122,7 @@ gcloud run deploy marko-backend \
   --region $REGION \
   --project $PROJECT_ID \
   --allow-unauthenticated \
-  --set-env-vars "GEE_SERVICE_ACCOUNT=$SVC_ACC,APPLE_TEAM_ID=$APPLE_TEAM,APPLE_BUNDLE_ID=$BUNDLE,APP_ATTEST_ENVIRONMENT=appattestdevelop,APP_ATTEST_ENFORCE=0" \
+  --set-env-vars "GEE_SERVICE_ACCOUNT=$SVC_ACC,APPLE_TEAM_ID=$APPLE_TEAM,APPLE_BUNDLE_ID=$BUNDLE,APP_ATTEST_ENVIRONMENT=appattestdevelop,APP_ATTEST_ENFORCE=1,FIRESTORE_PROJECT_ID=$PROJECT_ID" \
   --set-secrets "GEE_KEY_JSON=gee-key:latest,GOOGLE_MAPS_API_KEY=marko-google-maps:latest" \
   --memory 1Gi \
   --cpu 1 \
@@ -119,9 +130,46 @@ gcloud run deploy marko-backend \
   --max-instances 5
 ```
 
-When you finish the App Attest verification stub in `attest.py`,
-flip `APP_ATTEST_ENFORCE=1` and `APP_ATTEST_ENVIRONMENT=appattest`
-on the production deploy.
+For App Store / TestFlight builds, switch
+`APP_ATTEST_ENVIRONMENT=appattest` and make sure the iOS
+entitlement matches.
+
+## App Attest details
+
+Verification is real. The pipeline:
+
+1. **Server-issued challenges.** `/attest/challenge` mints a 32-byte
+   single-use nonce, persisted in `attestChallenges/{hex}` with an
+   `expires_at` field. The TTL is 5 minutes (`ATTEST_CHALLENGE_TTL`).
+   When `FIRESTORE_PROJECT_ID` is set, enable a TTL policy on the
+   collection's `expires_at` field so Firestore garbage-collects
+   spent challenges automatically.
+2. **Attestation.** `/attest/register` consumes the challenge in a
+   transaction (single-use enforced even under concurrent registers),
+   then verifies the attestation against Apple's App Attestation
+   Root CA — cert chain, nonce binding, rpIdHash =
+   SHA256(`APPLE_TEAM_ID.APPLE_BUNDLE_ID`), counter = 0, aaguid
+   matching the configured environment, and credentialId = keyId.
+   The leaf cert's public key is stored in
+   `attestKeys/{key_id}` with `sign_count = 0`.
+3. **Per-request assertions.** Both gated endpoints depend on the
+   `verify_assertion` helper. It loads the stored public key,
+   checks ECDSA-P256 over SHA256(authData ‖ clientDataHash), and
+   then atomically does compare-and-set on `sign_count` —
+   `update_sign_count_if_greater` only commits when the new counter
+   is strictly greater than the stored one, rejecting replays even
+   under concurrent traffic from the same device.
+
+### Required env
+
+| Var | Required? | Notes |
+|---|---|---|
+| `APP_ATTEST_ENFORCE` | yes | `1` in production. `0` for dev / simulator. |
+| `APP_ATTEST_ENVIRONMENT` | yes | `appattestdevelop` for Xcode-signed dev builds, `appattest` for App Store / TestFlight. Must match the iOS entitlement. |
+| `APPLE_TEAM_ID` | yes | Your Apple Developer team ID (10 chars). |
+| `APPLE_BUNDLE_ID` | yes | Defaults to `com.marko.astro`. |
+| `FIRESTORE_PROJECT_ID` | recommended | Without it the registration store and challenge store both fall back to in-memory dicts. Fine for one Cloud Run instance with `--max-instances 1`, broken otherwise. |
+| `ATTEST_CHALLENGE_TTL` | optional | Seconds; default 300. |
 
 Take the resulting `https://...run.app` URL and put it in the app:
 

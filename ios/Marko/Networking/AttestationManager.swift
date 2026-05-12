@@ -101,15 +101,19 @@ actor AttestationManager {
             throw AttestationError.generateKeyFailed(error)
         }
 
-        // 2. Build a challenge. In production, fetch a server-issued
-        //    nonce from a /attest/challenge endpoint so the attestation
-        //    can't be replayed. For dev-mode parity we use a random
-        //    UUID; the backend's APP_ATTEST_ENFORCE=1 path should
-        //    require a server-fetched challenge.
-        let challenge = Data(UUID().uuidString.utf8)
+        // 2. Fetch a single-use challenge from /attest/challenge.
+        //    The server tracks issued challenges and rejects reuse, so
+        //    a captured attestation can't be replayed against a fresh
+        //    registration request later.
+        let challenge: Data
+        do {
+            challenge = try await fetchChallenge(backendURL: backendURL)
+        } catch {
+            throw AttestationError.attestKeyFailed(error)
+        }
         let clientDataHash = Data(SHA256.hash(data: challenge))
 
-        // 3. Ask Apple to attest the key.
+        // 3. Ask Apple to attest the key against that challenge.
         let attestation: Data
         do {
             attestation = try await service.attestKey(keyId, clientDataHash: clientDataHash)
@@ -117,7 +121,8 @@ actor AttestationManager {
             throw AttestationError.attestKeyFailed(error)
         }
 
-        // 4. Send {keyId, attestation, challenge} to the backend.
+        // 4. Send {keyId, attestation, challenge} to the backend, which
+        //    consumes the challenge and verifies the attestation.
         try await postRegistration(
             backendURL: backendURL,
             keyId: keyId,
@@ -168,6 +173,37 @@ actor AttestationManager {
 
     // MARK: - Private
 
+    private struct ChallengeResponse: Decodable {
+        let challenge: String
+        let expiresAt: Double
+
+        enum CodingKeys: String, CodingKey {
+            case challenge
+            case expiresAt = "expires_at"
+        }
+    }
+
+    private func fetchChallenge(backendURL: URL) async throws -> Data {
+        var request = URLRequest(url: backendURL.appendingPathComponent("attest/challenge"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.timeoutInterval = 15
+
+        let (data, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse, 200..<300 ~= http.statusCode else {
+            let snippet = String(
+                data: data.prefix(512),
+                encoding: .utf8
+            )
+            throw AttestationError.backend(
+                (response as? HTTPURLResponse)?.statusCode ?? 0,
+                snippet
+            )
+        }
+        let decoded = try JSONDecoder().decode(ChallengeResponse.self, from: data)
+        return Data(base64URLDecoding: decoded.challenge) ?? Data(decoded.challenge.utf8)
+    }
+
     private func postRegistration(
         backendURL: URL,
         keyId: String,
@@ -205,5 +241,19 @@ private extension Data {
             .replacingOccurrences(of: "+", with: "-")
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "=", with: "")
+    }
+
+    /// Round-trips a server-issued base64url string back into bytes.
+    /// Returns nil if the string isn't valid base64url.
+    init?(base64URLDecoding string: String) {
+        var s = string
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        // Pad to a multiple of 4 — Apple's base64url-encoded payloads
+        // arrive without trailing '='.
+        let mod = s.count % 4
+        if mod > 0 { s.append(String(repeating: "=", count: 4 - mod)) }
+        guard let decoded = Data(base64Encoded: s) else { return nil }
+        self = decoded
     }
 }
