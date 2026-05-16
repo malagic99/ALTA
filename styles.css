@@ -102,8 +102,9 @@ main, .nav, .footer { position: relative; z-index: 1; }
   align-items: center;
 }
 .brand-logo {
-  height: 32px;
+  height: 45px;
   width: auto;
+  max-height: 45px;
   display: block;
 }
 
@@ -629,8 +630,9 @@ p { margin: 0; }
   flex-wrap: wrap;
 }
 .footer-logo {
-  height: 24px;
+  height: 36px;
   width: auto;
+  max-height: 36px;
   display: block;
 }
 .footer-brand p {
@@ -664,7 +666,7 @@ p { margin: 0; }
 
 @media (max-width: 640px) {
   .nav { padding: 14px 20px; }
-  .brand-logo { height: 26px; }
+  .brand-logo { height: 36px; max-height: 36px; }
   .nav-links {
     display: none;
     position: absolute;
