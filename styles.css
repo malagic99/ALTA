@@ -98,32 +98,13 @@ main, .nav, .footer { position: relative; z-index: 1; }
   background: rgba(5, 6, 10, 0.78);
 }
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-family: 'Space Grotesk', sans-serif;
-  font-weight: 600;
-  letter-spacing: .04em;
 }
-.brand-mark { display: inline-flex; }
-.brand-text {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: .12em;
-  color: var(--text);
-  position: relative;
-}
-/* Brand wordmark refraction effect — diagonal cut revealing gradient */
-.brand-text::after {
-  content: 'ALTA';
-  position: absolute;
-  inset: 0;
-  background: var(--grad-linear);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  clip-path: polygon(0 55%, 100% 35%, 100% 100%, 0 100%);
-  pointer-events: none;
+.brand-logo {
+  height: 32px;
+  width: auto;
+  display: block;
 }
 
 .nav-links {
@@ -312,10 +293,10 @@ p { margin: 0; }
 }
 .prism-svg {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 92%;
+  height: auto;
   z-index: 1;
-  filter: drop-shadow(0 12px 40px rgba(253, 11, 4, .25));
+  filter: drop-shadow(0 18px 50px rgba(253, 11, 4, .28));
   animation: floaty 9s ease-in-out infinite;
 }
 
@@ -647,11 +628,15 @@ p { margin: 0; }
   gap: 24px;
   flex-wrap: wrap;
 }
-.footer-brand .brand-text { font-size: 16px; }
+.footer-logo {
+  height: 24px;
+  width: auto;
+  display: block;
+}
 .footer-brand p {
   color: var(--dim);
   font-size: 13px;
-  margin-top: 4px;
+  margin-top: 10px;
 }
 .footer-meta { color: var(--dim); font-size: 13px; }
 
@@ -679,6 +664,7 @@ p { margin: 0; }
 
 @media (max-width: 640px) {
   .nav { padding: 14px 20px; }
+  .brand-logo { height: 26px; }
   .nav-links {
     display: none;
     position: absolute;
