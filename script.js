@@ -23,7 +23,7 @@ links?.querySelectorAll('a').forEach(a =>
 
 // Reveal on scroll
 const revealTargets = document.querySelectorAll(
-  '.section-head, .step, .card, .science, .timeline li, .member, .callout, .contact-card, .hero-inner, .hero-orbit, .band'
+  '.section-head, .step, .card, .science, .timeline li, .member, .callout, .contact-card, .hero-inner, .hero-prism, .band'
 );
 revealTargets.forEach(el => el.classList.add('reveal'));
 const io = new IntersectionObserver(
