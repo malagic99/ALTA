@@ -8,10 +8,17 @@
   <meta property="og:title" content="ALTA — Photonic Spacecraft Autonomy Platform" />
   <meta property="og:description" content="Light-speed autonomy for the next generation of SmallSat constellations." />
   <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ALTA — Photonic Spacecraft Autonomy Platform" />
+  <meta name="twitter:description" content="Light-speed autonomy for the next generation of SmallSat constellations." />
+  <meta name="twitter:image" content="assets/og-image.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="icon" type="image/png" href="assets/alta-mark.png" />
+  <link rel="icon" type="image/svg+xml" href="assets/alta-mark-color.svg" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -19,30 +26,7 @@
 
   <header class="nav" id="nav">
     <a class="brand" href="#top" aria-label="ALTA home">
-      <span class="brand-mark" aria-hidden="true">
-        <!-- ALTA refraction mark: triangular prism with internal light dispersion -->
-        <svg viewBox="0 0 100 88" width="32" height="28" role="img">
-          <defs>
-            <radialGradient id="altaGrad" cx="55%" cy="55%" r="65%">
-              <stop offset="10%" stop-color="#EABA01"/>
-              <stop offset="36%" stop-color="#FD0B04"/>
-              <stop offset="71%" stop-color="#752A90"/>
-              <stop offset="100%" stop-color="#060C83"/>
-            </radialGradient>
-          </defs>
-          <g fill="none" stroke="url(#altaGrad)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
-            <polygon points="50,4 96,84 4,84"/>
-            <path d="M50,4 L52,84"/>
-            <path d="M50,4 Q70,50 96,84"/>
-            <path d="M50,4 Q30,50 4,84"/>
-            <path d="M4,84 Q50,60 96,84"/>
-            <path d="M4,84 Q55,52 96,84" opacity=".7"/>
-            <path d="M50,4 Q78,40 96,84" opacity=".6"/>
-            <path d="M50,4 Q22,40 4,84" opacity=".6"/>
-          </g>
-        </svg>
-      </span>
-      <span class="brand-text">ALTA</span>
+      <img src="assets/alta-logo-white.svg" alt="ALTA" class="brand-logo" />
     </a>
     <nav class="nav-links" aria-label="Primary">
       <a href="#technology">Technology</a>
@@ -85,12 +69,6 @@
         <div class="prism-glow"></div>
         <svg viewBox="0 0 400 360" class="prism-svg">
           <defs>
-            <radialGradient id="prismFill" cx="55%" cy="55%" r="70%">
-              <stop offset="10%" stop-color="#EABA01" stop-opacity=".95"/>
-              <stop offset="36%" stop-color="#FD0B04" stop-opacity=".9"/>
-              <stop offset="71%" stop-color="#752A90" stop-opacity=".9"/>
-              <stop offset="100%" stop-color="#060C83" stop-opacity=".9"/>
-            </radialGradient>
             <linearGradient id="prismStroke" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stop-color="#EABA01"/>
               <stop offset="40%" stop-color="#FD0B04"/>
@@ -322,7 +300,7 @@
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-brand">
-        <span class="brand-text">ALTA</span>
+        <img src="assets/alta-logo-white.svg" alt="ALTA" class="footer-logo" />
         <p>Advanced Light Thinking Architecture · Photonic Spacecraft Autonomy</p>
       </div>
       <p class="footer-meta">© <span id="year"></span> ALTA. Built for the EIIS / Airbus Space Challenge.</p>
