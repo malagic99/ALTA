@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ALTA — Photonic Spacecraft Autonomy Platform</title>
+  <meta name="description" content="ALTA (Advanced Light Thinking Architecture) integrates photonic sensing, processing and communication into a single lightweight platform for SmallSat autonomy. ITAR-free EU supply chain, 1000x energy efficiency, 60% mass reduction." />
+  <meta property="og:title" content="ALTA — Photonic Spacecraft Autonomy Platform" />
+  <meta property="og:description" content="Light-speed autonomy for the next generation of SmallSat constellations." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <canvas id="starfield" aria-hidden="true"></canvas>
+
+  <header class="nav" id="nav">
+    <a class="brand" href="#top" aria-label="ALTA home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="28" height="28">
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#7df9ff"/>
+              <stop offset="100%" stop-color="#a78bfa"/>
+            </linearGradient>
+          </defs>
+          <circle cx="16" cy="16" r="3" fill="url(#g1)"/>
+          <circle cx="16" cy="16" r="9" fill="none" stroke="url(#g1)" stroke-width="1.2" opacity=".7"/>
+          <circle cx="16" cy="16" r="14" fill="none" stroke="url(#g1)" stroke-width="0.8" opacity=".35"/>
+        </svg>
+      </span>
+      <span class="brand-text">ALTA</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#technology">Technology</a>
+      <a href="#advantage">Advantage</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#team">Team</a>
+      <a href="#contact" class="nav-cta">Contact</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-inner">
+        <p class="eyebrow"><span class="dot"></span>Advanced Light Thinking Architecture</p>
+        <h1>
+          Spacecraft autonomy,<br />
+          at the <span class="grad">speed of light.</span>
+        </h1>
+        <p class="lede">
+          ALTA fuses photonic sensing, processing, and communication into a single lightweight
+          platform for SmallSat autonomy — breaking the thermal wall of traditional electronics
+          with an ITAR-free, sovereign EU supply chain.
+        </p>
+        <div class="hero-cta">
+          <a href="#technology" class="btn btn-primary">Explore the platform</a>
+          <a href="#contact" class="btn btn-ghost">Talk to the team →</a>
+        </div>
+
+        <ul class="hero-stats" role="list">
+          <li><strong>1000×</strong><span>energy efficiency vs. digital AI</span></li>
+          <li><strong>60%</strong><span>spacecraft mass reduction</span></li>
+          <li><strong>100 Gbps</strong><span>internal photonic bus</span></li>
+          <li><strong>10 Gbps</strong><span>laser downlink</span></li>
+        </ul>
+      </div>
+
+      <div class="hero-orbit" aria-hidden="true">
+        <div class="orbit orbit-1"><span class="sat"></span></div>
+        <div class="orbit orbit-2"><span class="sat"></span></div>
+        <div class="orbit orbit-3"></div>
+        <div class="core"></div>
+      </div>
+    </section>
+
+    <section class="band">
+      <p class="band-label">Built with the European photonics ecosystem</p>
+      <ul class="band-list" role="list">
+        <li>ASML</li>
+        <li>IMEC</li>
+        <li>FBGS</li>
+        <li>TESAT</li>
+        <li>ESA Alumni Network</li>
+        <li>Airbus · EIIS Space Challenge</li>
+      </ul>
+    </section>
+
+    <section id="technology" class="section">
+      <header class="section-head">
+        <p class="eyebrow"><span class="dot"></span>Technology</p>
+        <h2>Fiber Loop Photonics — a 4-step optical pipeline</h2>
+        <p class="section-sub">
+          ALTA replaces heavy, power-hungry electronic subsystems with a continuous optical path
+          from sensor to downlink. No EMI. Nanosecond decisions. Mass and watts saved by orders
+          of magnitude.
+        </p>
+      </header>
+
+      <div class="pipeline">
+        <article class="step">
+          <div class="step-num">01</div>
+          <h3>Sensing</h3>
+          <p class="step-tag">Fiber Bragg Gratings (FBG)</p>
+          <p>Rad-hard, passive optical sensors monitor thermal, vibration, and radiation events across the bus.</p>
+          <div class="step-meta">
+            <span class="trl trl-9">TRL 9</span>
+            <span>ESA / NASA qualified</span>
+          </div>
+        </article>
+
+        <article class="step">
+          <div class="step-num">02</div>
+          <h3>Processing</h3>
+          <p class="step-tag">Photonic Reservoir Computing</p>
+          <p>All-optical pattern and anomaly detection at light speed — O(1) energy scaling instead of O(N²).</p>
+          <div class="step-meta">
+            <span class="trl trl-mid">TRL 4–5</span>
+            <span>1000× efficiency vs. digital AI</span>
+          </div>
+        </article>
+
+        <article class="step">
+          <div class="step-num">03</div>
+          <h3>Internal Comms</h3>
+          <p class="step-tag">Fiber-Optic Backbone</p>
+          <p>A single fiber replaces ~100 copper wires for power and attitude coordination across the platform.</p>
+          <div class="step-meta">
+            <span class="trl trl-6">TRL 6</span>
+            <span>100 Gbps · 10× SpaceFibre</span>
+          </div>
+        </article>
+
+        <article class="step">
+          <div class="step-num">04</div>
+          <h3>External Link</h3>
+          <p class="step-tag">Laser Terminal</p>
+          <p>Decisions — not raw data — are downlinked. 95% on-board volume reduction means more science per pass.</p>
+          <div class="step-meta">
+            <span class="trl trl-67">TRL 6–7</span>
+            <span>10 Gbps optical downlink</span>
+          </div>
+        </article>
+      </div>
+
+      <aside class="callout">
+        <h4>Primary use case</h4>
+        <p>
+          Real-time autonomous anomaly response — e.g. immediate thermal-runaway detection
+          triggering autonomous venting, with no ground in the loop.
+        </p>
+      </aside>
+    </section>
+
+    <section id="advantage" class="section section-alt">
+      <header class="section-head">
+        <p class="eyebrow"><span class="dot"></span>Strategic Differentiation</p>
+        <h2>Sovereign by design. First mover by default.</h2>
+      </header>
+
+      <div class="cards">
+        <article class="card">
+          <div class="card-icon">⌬</div>
+          <h3>NATO Photonics Bridge</h3>
+          <p>EU-based supply chain anchored by ASML, IMEC, FBGS and Tesat. ITAR-free status enables frictionless export to U.S. defence primes.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">◈</div>
+          <h3>First-mover advantage</h3>
+          <p>U.S. systems are optimised for electronics, not photonics. ALTA establishes the new standard for autonomous constellations.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon">△</div>
+          <h3>$240M / yr by 2030</h3>
+          <p>SmallSat autonomy is projected to grow at 15% CAGR. ALTA targets the highest-margin layer of the stack: onboard intelligence.</p>
+        </article>
+      </div>
+
+      <div class="science">
+        <h3>Grounded in peer-reviewed science</h3>
+        <ul>
+          <li>
+            <strong>Wang et al. (2024)</strong> — <em>Optical next-generation reservoir computing.</em>
+            O(1) energy scaling vs. O(N²) for digital counterparts; NRMSE 0.0971 on chaotic forecasting with 10× less training data.
+          </li>
+          <li>
+            <strong>Duport et al. (2012)</strong> — <em>Nature Communications.</em>
+            First practical demonstration of all-optical reservoir computing using off-the-shelf fiber components, at parity with state-of-the-art digital implementations.
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="roadmap" class="section">
+      <header class="section-head">
+        <p class="eyebrow"><span class="dot"></span>Development Roadmap</p>
+        <h2>Gate-funded path to TRL 9</h2>
+        <p class="section-sub">From lab prototype to constellation deployment in four phases.</p>
+      </header>
+
+      <ol class="timeline" role="list">
+        <li>
+          <div class="tl-mark">P1</div>
+          <div class="tl-body">
+            <p class="tl-when">June 2026 · €375k</p>
+            <h3>FLP Lab Prototype</h3>
+            <p>Demonstrate the Fiber Loop Photonics pipeline end-to-end with 95% anomaly-detection accuracy.</p>
+          </div>
+        </li>
+        <li>
+          <div class="tl-mark">P2</div>
+          <div class="tl-body">
+            <p class="tl-when">2027 – 2028 · €2M</p>
+            <h3>CubeSat on-orbit demo</h3>
+            <p>Flight demonstration vs. an electronic baseline. Validate efficiency, mass and decision latency in LEO.</p>
+          </div>
+        </li>
+        <li>
+          <div class="tl-mark">P3</div>
+          <div class="tl-body">
+            <p class="tl-when">2029 · €10M</p>
+            <h3>Silicon photonics + OEM integration</h3>
+            <p>Shrink to wafer-scale silicon photonics. Integrate with European satellite OEM platforms.</p>
+          </div>
+        </li>
+        <li>
+          <div class="tl-mark tl-mark-final">P4</div>
+          <div class="tl-body">
+            <p class="tl-when">2030+ · €50M+</p>
+            <h3>TRL 9 constellation deployment</h3>
+            <p>Operational photonic autonomy across SmallSat constellations — sovereign, scalable, light-speed.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="team" class="section section-alt">
+      <header class="section-head">
+        <p class="eyebrow"><span class="dot"></span>The Team</p>
+        <h2>Engineers, builders, operators</h2>
+        <p class="section-sub">A founding team across business, systems, and photonics — with an ESA-, Airbus- and defence-adjacent network.</p>
+      </header>
+
+      <div class="team">
+        <article class="member">
+          <div class="member-avatar" aria-hidden="true">MA</div>
+          <h3>Marko Alagić</h3>
+          <p class="role">Business Lead</p>
+          <p class="bio">MSc, Business and Administration. Strategy, fundraising and partnerships.</p>
+        </article>
+        <article class="member">
+          <div class="member-avatar" aria-hidden="true">KÇ</div>
+          <h3>Kerem Çelebi</h3>
+          <p class="role">Systems Engineering</p>
+          <p class="bio">BSc, Industrial Engineering. Mission systems, integration and operations.</p>
+        </article>
+        <article class="member">
+          <div class="member-avatar" aria-hidden="true">BA</div>
+          <h3>Bushra Alzadjali</h3>
+          <p class="role">Photonics Lead</p>
+          <p class="bio">BSc, Aerospace Engineering. Optical architecture and photonic subsystems.</p>
+        </article>
+      </div>
+
+      <p class="network">
+        <strong>Network:</strong> ESA alumni (incl. Hady Milani, Forbes 30u30), Airbus-adjacent advisors, top-tier defence pitch finalists.
+      </p>
+    </section>
+
+    <section id="contact" class="section contact">
+      <div class="contact-card">
+        <h2>Build the photonic stack with us.</h2>
+        <p>
+          ALTA was founded in response to the Airbus / EIIS Annual Space Challenge.
+          We are now scoping pilot integrations with European satellite primes,
+          defence partners and research institutions.
+        </p>
+        <div class="contact-actions">
+          <a class="btn btn-primary" href="mailto:hello@alta.space">hello@alta.space</a>
+          <a class="btn btn-ghost" href="#top">Back to top ↑</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="brand-text">ALTA</span>
+        <p>Advanced Light Thinking Architecture · Photonic Spacecraft Autonomy</p>
+      </div>
+      <p class="footer-meta">© <span id="year"></span> ALTA. Built for the EIIS / Airbus Space Challenge.</p>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
