@@ -435,12 +435,12 @@ p { margin: 0; }
 .section {
   max-width: var(--max);
   margin: 0 auto;
-  padding: 120px 32px;
+  padding: 96px 32px;
 }
 .section-alt {
   background: linear-gradient(180deg, transparent, rgba(255,255,255,.02) 30%, rgba(255,255,255,.02) 70%, transparent);
   max-width: none;
-  padding: 120px 32px;
+  padding: 96px 32px;
 }
 .section-alt > * { max-width: var(--max); margin-left: auto; margin-right: auto; }
 
@@ -581,6 +581,20 @@ p { margin: 0; }
 }
 .card h3 { margin-bottom: 10px; }
 .card p { color: var(--muted); }
+.card-cite {
+  margin-top: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: var(--dim) !important;
+}
+.card-cite a {
+  color: var(--brand-yellow);
+  text-decoration: underline;
+  text-decoration-color: rgba(234, 186, 1, .35);
+  text-underline-offset: 3px;
+}
+.card-cite a:hover { text-decoration-color: var(--brand-yellow); }
 
 .science {
   padding: 36px;
