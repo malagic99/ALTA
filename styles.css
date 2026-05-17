@@ -102,8 +102,9 @@ main, .nav, .footer { position: relative; z-index: 1; }
   align-items: center;
 }
 .brand-logo {
-  height: 32px;
+  height: 45px;
   width: auto;
+  max-height: 45px;
   display: block;
 }
 
@@ -166,12 +167,12 @@ main, .nav, .footer { position: relative; z-index: 1; }
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
 }
 .btn-primary {
-  background: var(--grad);
+  background: var(--grad-linear);
   color: #fff;
   font-weight: 600;
-  box-shadow: 0 8px 30px rgba(253, 11, 4, .25);
+  box-shadow: 0 6px 18px -4px rgba(253, 11, 4, .35);
 }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 40px rgba(117, 42, 144, .35); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 28px -4px rgba(117, 42, 144, .45); }
 .btn-ghost {
   background: rgba(255,255,255,.03);
   color: var(--text);
@@ -270,6 +271,11 @@ p { margin: 0; }
   color: var(--muted);
   line-height: 1.4;
 }
+.hero-stats li span::first-letter {
+  font-weight: 700;
+  color: var(--brand-yellow);
+  font-size: 14px;
+}
 
 /* Prism / refraction visual */
 .hero-prism {
@@ -330,17 +336,48 @@ p { margin: 0; }
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  gap: 36px 56px;
+  gap: 14px 16px;
   max-width: var(--max);
   margin: 0 auto;
 }
 .band-list li {
+  position: relative;
+  isolation: isolate;
+  padding: 10px 22px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.02);
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 500;
   color: var(--muted);
-  font-size: 15px;
-  letter-spacing: .04em;
+  font-size: 14px;
+  letter-spacing: .06em;
+  cursor: default;
+  overflow: hidden;
+  transition:
+    padding .35s cubic-bezier(.2, .8, .2, 1),
+    color .25s ease,
+    border-color .25s ease,
+    transform .35s cubic-bezier(.2, .8, .2, 1),
+    box-shadow .25s ease;
 }
+.band-list li::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--grad-linear);
+  opacity: 0;
+  transition: opacity .3s ease;
+  z-index: -1;
+}
+.band-list li:hover {
+  padding: 10px 34px;
+  color: #fff;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -6px rgba(253, 11, 4, .45);
+}
+.band-list li:hover::before { opacity: 1; }
 
 /* ---------- SECTIONS ---------- */
 .section {
@@ -385,11 +422,31 @@ p { margin: 0; }
   box-shadow: var(--shadow-glow);
 }
 .step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(234, 186, 1, .45);
+  background: radial-gradient(circle at 35% 30%, rgba(234, 186, 1, .22), rgba(234, 186, 1, .04) 70%);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--brand-yellow);
-  margin-bottom: 28px;
-  letter-spacing: .12em;
+  margin-bottom: 24px;
+  letter-spacing: 0;
+  box-shadow:
+    0 0 0 4px rgba(234, 186, 1, .06),
+    0 6px 22px -6px rgba(234, 186, 1, .35);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.step:hover .step-num {
+  transform: translateY(-2px);
+  border-color: var(--brand-yellow);
+  box-shadow:
+    0 0 0 6px rgba(234, 186, 1, .08),
+    0 10px 28px -6px rgba(234, 186, 1, .55);
 }
 .step h3 { margin-bottom: 6px; }
 .step-tag {
@@ -493,8 +550,8 @@ p { margin: 0; }
   top: 18px; bottom: 18px;
   left: 23px;
   width: 1px;
-  background: linear-gradient(180deg, var(--brand-yellow), var(--brand-red), var(--brand-purple), var(--brand-blue));
-  opacity: .6;
+  background: linear-gradient(180deg, var(--brand-blue), var(--brand-purple), var(--brand-red), var(--brand-yellow));
+  opacity: .7;
 }
 .timeline li {
   display: grid;
@@ -629,8 +686,9 @@ p { margin: 0; }
   flex-wrap: wrap;
 }
 .footer-logo {
-  height: 24px;
+  height: 36px;
   width: auto;
+  max-height: 36px;
   display: block;
 }
 .footer-brand p {
@@ -664,7 +722,7 @@ p { margin: 0; }
 
 @media (max-width: 640px) {
   .nav { padding: 14px 20px; }
-  .brand-logo { height: 26px; }
+  .brand-logo { height: 36px; max-height: 36px; }
   .nav-links {
     display: none;
     position: absolute;
