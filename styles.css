@@ -324,7 +324,7 @@ p { margin: 0; }
 .hero-prism {
   position: relative;
   width: 100%;
-  max-width: 480px;
+  max-width: 380px;
   aspect-ratio: 1 / 1;
   margin-left: auto;
   display: flex;
@@ -342,7 +342,7 @@ p { margin: 0; }
 }
 .prism-svg {
   position: relative;
-  width: 92%;
+  width: 82%;
   height: auto;
   z-index: 1;
   filter: drop-shadow(0 18px 50px rgba(253, 11, 4, .28));
@@ -803,6 +803,18 @@ p { margin: 0; }
     font-size: 15px;
   }
   .nav-links a:last-child { border-bottom: none; }
+  /* Inside the mobile burger menu, strip the Contact CTA back to a plain link */
+  .nav-links .nav-cta {
+    padding: 12px 0;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    box-shadow: none;
+    color: var(--muted) !important;
+    font-weight: 400;
+  }
+  .nav-links .nav-cta:last-child { border-bottom: none; }
+  .nav-links .nav-cta:hover { box-shadow: none; color: var(--text) !important; }
   .nav-toggle { display: inline-flex; }
 
   .hero { padding: 40px 20px 60px; }
