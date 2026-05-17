@@ -20,13 +20,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="assets/alta-mark-color.svg" />
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Theme init - runs before paint to avoid flash of wrong theme.
+    // Default is dark; user toggle persists in localStorage.
+    (function() {
+      try {
+        var t = localStorage.getItem('alta-theme');
+        if (t !== 'light' && t !== 'dark') t = 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
 </head>
 <body>
   <canvas id="starfield" aria-hidden="true"></canvas>
 
   <header class="nav" id="nav">
     <a class="brand" href="#top" aria-label="ALTA home">
-      <img src="assets/alta-logo-white.svg" alt="ALTA" class="brand-logo" width="132" height="45" />
+      <img src="assets/alta-logo-white.svg" alt="ALTA" class="brand-logo brand-logo-dark" width="132" height="45" />
+      <img src="assets/alta-logo-black.svg" alt="ALTA" class="brand-logo brand-logo-light" width="132" height="45" />
     </a>
     <nav class="nav-links" aria-label="Primary">
       <a href="#technology">Technology</a>
@@ -35,6 +49,22 @@
       <a href="#team">Team</a>
       <a href="#contact" class="nav-cta">Contact</a>
     </nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme">
+      <svg class="theme-icon icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <svg class="theme-icon icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/>
+        <line x1="12" y1="2"  x2="12" y2="5"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+        <line x1="2"  y1="12" x2="5"  y2="12"/>
+        <line x1="19" y1="12" x2="22" y2="12"/>
+        <line x1="4.9"  y1="4.9"  x2="7"    y2="7"/>
+        <line x1="17"   y1="17"   x2="19.1" y2="19.1"/>
+        <line x1="4.9"  y1="19.1" x2="7"    y2="17"/>
+        <line x1="17"   y1="7"    x2="19.1" y2="4.9"/>
+      </svg>
+    </button>
     <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -283,7 +313,8 @@
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-brand">
-        <img src="assets/alta-logo-white.svg" alt="ALTA" class="footer-logo" width="105" height="36" />
+        <img src="assets/alta-logo-white.svg" alt="ALTA" class="footer-logo brand-logo-dark" width="105" height="36" />
+        <img src="assets/alta-logo-black.svg" alt="ALTA" class="footer-logo brand-logo-light" width="105" height="36" />
         <p>Advanced Light Thinking Architecture · Photonic Spacecraft Autonomy</p>
       </div>
       <p class="footer-meta">© <span id="year"></span> ALTA. Built for the EIIS / Airbus Space Challenge.</p>
