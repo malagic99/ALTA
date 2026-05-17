@@ -1,13 +1,16 @@
 // Year
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// Theme toggle (initial value is set by the inline script in <head> to avoid flash)
-const themeToggle = document.getElementById('themeToggle');
-themeToggle?.addEventListener('click', () => {
+// Theme toggle — delegate from document so it survives any re-render or
+// timing weirdness. Initial value is set by the inline <head> script.
+document.addEventListener('click', (e) => {
+  const t = e.target.closest && e.target.closest('#themeToggle');
+  if (!t) return;
+  e.preventDefault();
   const html = document.documentElement;
   const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
   html.setAttribute('data-theme', next);
-  try { localStorage.setItem('alta-theme', next); } catch (e) {}
+  try { localStorage.setItem('alta-theme', next); } catch (err) {}
 });
 
 // Sticky nav state
