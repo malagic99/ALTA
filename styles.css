@@ -464,12 +464,12 @@ p { margin: 0; }
 .section {
   max-width: var(--max);
   margin: 0 auto;
-  padding: 96px 32px;
+  padding: 64px 32px;
 }
 .section-alt {
   background: linear-gradient(180deg, transparent, rgba(255,255,255,.02) 30%, rgba(255,255,255,.02) 70%, transparent);
   max-width: none;
-  padding: 96px 32px;
+  padding: 64px 32px;
 }
 .section-alt > * { max-width: var(--max); margin-left: auto; margin-right: auto; }
 
@@ -656,7 +656,10 @@ p { margin: 0; }
   font-size: 15px;
 }
 .science strong { color: var(--text); }
+.science strong a { color: inherit; text-decoration: underline; text-decoration-color: rgba(234, 186, 1, .35); text-underline-offset: 3px; }
+.science strong a:hover { text-decoration-color: var(--brand-yellow); }
 .science em { color: var(--brand-yellow); font-style: italic; }
+.science .journal { font-style: italic; opacity: .85; }
 
 /* ---------- TIMELINE ---------- */
 .timeline {
@@ -1053,6 +1056,8 @@ p { margin: 0; }
   color: var(--brand-purple);
 }
 [data-theme="light"] .science em { color: var(--brand-purple); }
+[data-theme="light"] .science strong a { text-decoration-color: rgba(117, 42, 144, .35); }
+[data-theme="light"] .science strong a:hover { text-decoration-color: var(--brand-purple); }
 
 /* Nav-CTA hover ring takes a deeper shadow on light */
 [data-theme="light"] .nav-cta:hover {
