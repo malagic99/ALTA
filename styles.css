@@ -151,7 +151,7 @@ main, .nav, .footer { position: relative; z-index: 1; }
   border-color: var(--brand-yellow);
   background: rgba(234, 186, 1, .08);
 }
-.theme-icon { display: block; }
+.theme-icon { display: block; pointer-events: none; }
 [data-theme="dark"]  .icon-sun  { display: none; }
 [data-theme="light"] .icon-moon { display: none; }
 
@@ -939,19 +939,30 @@ p { margin: 0; }
   text-decoration-color: var(--brand-purple);
 }
 
-/* Eyebrow / accent dots stay yellow but get a slightly darker companion shadow */
+/* Light mode pulls every yellow accent into brand-purple territory for
+   contrast and visual cohesion against the white surface */
 [data-theme="light"] .eyebrow .dot {
-  box-shadow: 0 0 10px rgba(234, 186, 1, .6);
+  background: var(--brand-purple);
+  box-shadow: 0 0 10px rgba(117, 42, 144, .6);
 }
 
-/* Step number circles — deepen the ring for visibility on light bg */
 [data-theme="light"] .step-num {
-  border-color: rgba(234, 186, 1, .65);
-  background: radial-gradient(circle at 35% 30%, rgba(234, 186, 1, .28), rgba(234, 186, 1, .06) 70%);
-  color: #8a6d00;
+  border-color: rgba(117, 42, 144, .55);
+  background: radial-gradient(circle at 35% 30%, rgba(117, 42, 144, .20), rgba(117, 42, 144, .04) 70%);
+  color: var(--brand-purple);
   box-shadow:
-    0 0 0 4px rgba(234, 186, 1, .10),
-    0 6px 22px -8px rgba(234, 186, 1, .55);
+    0 0 0 4px rgba(117, 42, 144, .08),
+    0 6px 22px -8px rgba(117, 42, 144, .45);
+}
+[data-theme="light"] .step:hover .step-num {
+  border-color: var(--brand-purple);
+  box-shadow:
+    0 0 0 6px rgba(117, 42, 144, .10),
+    0 10px 28px -8px rgba(117, 42, 144, .55);
+}
+
+[data-theme="light"] .hero-stats li span::first-letter {
+  color: var(--brand-purple);
 }
 
 /* Section panels with white tint — invert to a subtle dark wash */
@@ -981,7 +992,7 @@ p { margin: 0; }
 }
 [data-theme="light"] .tl-mark {
   background: #ffffff;
-  color: #8a6d00;
+  color: var(--brand-purple);
 }
 [data-theme="light"] .contact-card {
   background:
@@ -990,15 +1001,16 @@ p { margin: 0; }
     #ffffff;
 }
 
-/* TRL badges — deepen ink for contrast on light */
-[data-theme="light"] .trl-9   { background: rgba(234, 186, 1, .18); color: #7a5f00; }
-[data-theme="light"] .trl-mid { background: rgba(253, 11, 4, .12);  color: #b3140e; }
-[data-theme="light"] .trl-6   { background: rgba(117, 42, 144, .14); color: #5a2070; }
-[data-theme="light"] .trl-67  { background: rgba(6, 12, 131, .14);   color: #1a1e85; }
+/* TRL badges — deeper ink, purple-tilted across the board for cohesion */
+[data-theme="light"] .trl-9   { background: rgba(117, 42, 144, .12); color: #4a1a60; }
+[data-theme="light"] .trl-mid { background: rgba(253, 11, 4, .12);   color: #b3140e; }
+[data-theme="light"] .trl-6   { background: rgba(117, 42, 144, .16); color: #5a2070; }
+[data-theme="light"] .trl-67  { background: rgba(6, 12, 131, .12);   color: #1a1e85; }
 
-/* Hero prism glow — pull intensity back so it doesn't blow out white */
-[data-theme="light"] .prism-glow { opacity: .35; filter: blur(70px); }
-[data-theme="light"] .prism-svg  { filter: drop-shadow(0 18px 50px rgba(117, 42, 144, .25)); }
+/* Hero prism — kill the rear glow entirely on light; the mark stands on
+   its own against the white background, with a soft purple drop-shadow */
+[data-theme="light"] .prism-glow { display: none; }
+[data-theme="light"] .prism-svg  { filter: drop-shadow(0 14px 36px rgba(117, 42, 144, .18)); }
 
 /* Roles / step tags — these were brand yellow; use purple for legibility on white */
 [data-theme="light"] .role,
