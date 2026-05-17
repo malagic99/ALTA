@@ -167,7 +167,13 @@ main, .nav, .footer { position: relative; z-index: 1; }
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
 }
 .btn-primary {
-  background: var(--grad-linear);
+  background: linear-gradient(
+    to right,
+    var(--brand-yellow) 0%,
+    var(--brand-red)    35%,
+    var(--brand-purple) 70%,
+    var(--brand-blue)   100%
+  );
   color: #fff;
   font-weight: 600;
   box-shadow: 0 6px 18px -4px rgba(253, 11, 4, .35);
