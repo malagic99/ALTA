@@ -201,6 +201,12 @@ p { margin: 0; }
   color: transparent;
 }
 
+/* Inline copy highlight — brand yellow accent for key terms */
+.hl {
+  color: var(--brand-yellow);
+  font-weight: 600;
+}
+
 .eyebrow {
   display: inline-flex;
   align-items: center;
@@ -340,9 +346,12 @@ p { margin: 0; }
   max-width: var(--max);
   margin: 0 auto;
 }
-.band-list li {
+.band-list li { display: inline-flex; }
+.band-list a {
   position: relative;
   isolation: isolate;
+  display: inline-flex;
+  align-items: center;
   padding: 10px 22px;
   border: 1px solid var(--line-strong);
   border-radius: 999px;
@@ -352,7 +361,9 @@ p { margin: 0; }
   color: var(--muted);
   font-size: 14px;
   letter-spacing: .06em;
-  cursor: default;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
   overflow: hidden;
   transition:
     padding .35s cubic-bezier(.2, .8, .2, 1),
@@ -361,7 +372,7 @@ p { margin: 0; }
     transform .35s cubic-bezier(.2, .8, .2, 1),
     box-shadow .25s ease;
 }
-.band-list li::before {
+.band-list a::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -370,14 +381,18 @@ p { margin: 0; }
   transition: opacity .3s ease;
   z-index: -1;
 }
-.band-list li:hover {
+.band-list a:hover {
   padding: 10px 34px;
   color: #fff;
   border-color: transparent;
   transform: translateY(-2px);
   box-shadow: 0 10px 24px -6px rgba(253, 11, 4, .45);
 }
-.band-list li:hover::before { opacity: 1; }
+.band-list a:hover::before { opacity: 1; }
+.band-list a:focus-visible {
+  outline: 2px solid var(--brand-yellow);
+  outline-offset: 3px;
+}
 
 /* ---------- SECTIONS ---------- */
 .section {
