@@ -33,6 +33,32 @@ links?.querySelectorAll('a').forEach(a =>
   })
 );
 
+// Progress dots — active state tracks which section is in view
+(() => {
+  const dots = document.querySelectorAll('.progress-dots a');
+  if (!dots.length) return;
+  const map = new Map();
+  dots.forEach(a => {
+    const id = a.getAttribute('data-section');
+    const target = id === 'top' ? document.getElementById('top') : document.getElementById(id);
+    if (target) map.set(target, a);
+  });
+  const setActive = (a) => {
+    dots.forEach(d => d.classList.toggle('active', d === a));
+  };
+  const obs = new IntersectionObserver((entries) => {
+    // Pick the entry closest to the top of the viewport
+    const visible = entries
+      .filter(e => e.isIntersecting)
+      .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+    if (visible.length) {
+      const a = map.get(visible[0].target);
+      if (a) setActive(a);
+    }
+  }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+  map.forEach((_, el) => obs.observe(el));
+})();
+
 // Reveal on scroll
 const revealTargets = document.querySelectorAll(
   '.section-head, .step, .card, .science, .timeline li, .member, .callout, .contact-card, .hero-inner, .hero-prism, .band'

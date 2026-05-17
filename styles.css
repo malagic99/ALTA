@@ -83,6 +83,61 @@ main, .nav, .footer { position: relative; z-index: 1; }
 section[id], main[id] { scroll-margin-top: 90px; }
 main[id="top"] { scroll-margin-top: 0; }
 
+/* ---------- PROGRESS DOTS ---------- */
+.progress-dots {
+  position: fixed;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 40;
+  padding: 14px 8px;
+  border-radius: 999px;
+  background: rgba(5, 6, 10, 0.35);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line);
+}
+.progress-dots a {
+  display: block;
+  width: 14px;
+  height: 14px;
+  position: relative;
+  text-decoration: none;
+}
+.progress-dots a span {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+  background: transparent;
+  transition: all .25s ease;
+}
+.progress-dots a:hover span {
+  border-color: var(--brand-yellow);
+  transform: scale(1.3);
+}
+.progress-dots a.active span {
+  background: var(--brand-yellow);
+  border-color: var(--brand-yellow);
+  box-shadow: 0 0 10px rgba(234, 186, 1, .6);
+}
+[data-theme="light"] .progress-dots {
+  background: rgba(255, 255, 255, 0.6);
+}
+[data-theme="light"] .progress-dots a:hover span {
+  border-color: var(--brand-purple);
+}
+[data-theme="light"] .progress-dots a.active span {
+  background: var(--brand-purple);
+  border-color: var(--brand-purple);
+  box-shadow: 0 0 10px rgba(117, 42, 144, .55);
+}
+@media (max-width: 900px) {
+  .progress-dots { display: none; }
+}
+
 /* ---------- NAV ---------- */
 .nav {
   position: sticky;
@@ -581,6 +636,32 @@ p { margin: 0; }
     0 0 0 6px rgba(234, 186, 1, .08),
     0 10px 28px -6px rgba(234, 186, 1, .55);
 }
+/* Light-pulse traveling through the FLP pipeline, sensing -> external link.
+   A faint ring expands out of each step-num in sequence every 6s. */
+.step-num { position: relative; }
+.step-num::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 1.5px solid var(--brand-yellow);
+  opacity: 0;
+  pointer-events: none;
+  animation: stepPulse 6s ease-out infinite;
+}
+.step:nth-child(1) .step-num::after { animation-delay: 0.0s; }
+.step:nth-child(2) .step-num::after { animation-delay: 0.9s; }
+.step:nth-child(3) .step-num::after { animation-delay: 1.8s; }
+.step:nth-child(4) .step-num::after { animation-delay: 2.7s; }
+@keyframes stepPulse {
+  0%  { opacity: 0;   transform: scale(1);   border-width: 1.5px; }
+  8%  { opacity: 0.9; transform: scale(1);   border-width: 1.5px; }
+  22% { opacity: 0;   transform: scale(1.6); border-width: 0.5px; }
+  100%{ opacity: 0;   transform: scale(1);   border-width: 1.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step-num::after { animation: none; }
+}
 .step h3 { margin-bottom: 6px; }
 .step-tag {
   font-family: 'JetBrains Mono', monospace;
@@ -947,6 +1028,114 @@ p { margin: 0; }
 }
 
 /* ============================================================
+   PRINT STYLESHEET
+   Cmd+P from the live site produces a clean B/W handout.
+   ============================================================ */
+@media print {
+  :root, [data-theme="dark"], [data-theme="light"] {
+    --bg: #ffffff;
+    --bg-elev: #ffffff;
+    --text: #000000;
+    --muted: #333333;
+    --dim: #666666;
+    --line: #cccccc;
+    --line-strong: #999999;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000 !important;
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+  /* Hide all chrome and decorative layers */
+  .nav, .footer, #starfield, .progress-dots, .theme-toggle, .nav-toggle,
+  .hero-prism, .prism-glow, .why-now,
+  .reveal { opacity: 1 !important; transform: none !important; }
+  .nav, .footer, #starfield, .progress-dots, .theme-toggle, .nav-toggle,
+  .hero-prism { display: none !important; }
+
+  .hero {
+    min-height: auto !important;
+    grid-template-columns: 1fr !important;
+    padding: 0 0 16pt 0 !important;
+    page-break-after: avoid;
+  }
+  .hero-cta { display: none !important; }
+  .hero h1 { font-size: 22pt !important; margin-bottom: 8pt; }
+  .lede { font-size: 11pt !important; }
+
+  .section, .section-alt {
+    padding: 14pt 0 !important;
+    background: none !important;
+    page-break-inside: auto;
+  }
+  .section-head { margin-bottom: 12pt !important; }
+  .section-head h2 { font-size: 16pt !important; }
+  .section-sub { font-size: 11pt !important; }
+
+  h1, h2, h3, h4 {
+    color: #000 !important;
+    page-break-after: avoid;
+    text-wrap: balance;
+  }
+
+  /* Gradient text -> solid black */
+  .grad, .hl, .hero-stats strong {
+    background: none !important;
+    color: #000 !important;
+    -webkit-text-fill-color: #000 !important;
+    -webkit-background-clip: border-box !important;
+    background-clip: border-box !important;
+  }
+
+  /* Cards / steps / members — flatten styling */
+  .step, .card, .member, .science, .contact-card, .callout {
+    background: #ffffff !important;
+    border: 1px solid #ccc !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    padding: 10pt !important;
+  }
+  .step p, .card p, .member p, .science li { color: #222 !important; }
+
+  /* Step numbers / icons / TRL chips */
+  .step-num, .card-icon, .tl-mark, .member-avatar {
+    background: #fff !important;
+    border: 1px solid #333 !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 11pt !important;
+  }
+  .step-num::after { display: none !important; }
+  .trl { background: #f0f0f0 !important; color: #000 !important; }
+
+  .pipeline, .cards, .team { grid-template-columns: 1fr 1fr !important; gap: 10pt !important; }
+  .timeline::before { background: #999 !important; }
+
+  /* Make every external link's URL visible after the link text */
+  a { color: #000 !important; text-decoration: underline; }
+  a[href^="http"]::after {
+    content: ' (' attr(href) ')';
+    font-size: 8pt;
+    color: #555;
+    word-break: break-all;
+  }
+  /* …but not for partner-band, footer, anchor-only, image links */
+  .band-list a[href^="http"]::after,
+  .footer a[href^="http"]::after,
+  a.brand::after,
+  a[href^="#"]::after { content: ''; }
+
+  .contact-card { text-align: left !important; }
+  .contact-actions { display: none !important; }
+
+  @page { margin: 18mm 16mm; }
+}
+
+/* ============================================================
    LIGHT THEME
    Restrained per brand book: gradient is an accent, not a wash.
    Triangle and wordmark switch to the black logo lockup.
@@ -1028,6 +1217,9 @@ p { margin: 0; }
   box-shadow:
     0 0 0 6px rgba(117, 42, 144, .10),
     0 10px 28px -8px rgba(117, 42, 144, .55);
+}
+[data-theme="light"] .step-num::after {
+  border-color: var(--brand-purple);
 }
 
 [data-theme="light"] .hero-stats li span::first-letter {
