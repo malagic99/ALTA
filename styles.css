@@ -85,14 +85,14 @@ main, .nav, .footer { position: relative; z-index: 1; }
   z-index: 50;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
   padding: 16px 32px;
   backdrop-filter: blur(14px);
   background: rgba(5, 6, 10, 0.55);
   border-bottom: 1px solid transparent;
   transition: border-color .25s ease, background .25s ease;
 }
+.nav-links { margin-left: auto; }
 .nav.scrolled {
   border-bottom-color: var(--line);
   background: rgba(5, 6, 10, 0.78);
@@ -129,6 +129,35 @@ main, .nav, .footer { position: relative; z-index: 1; }
   border-color: var(--brand-yellow);
   box-shadow: 0 0 20px rgba(234, 186, 1, .25);
 }
+
+/* ---------- THEME TOGGLE ---------- */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-left: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  transition: color .2s ease, border-color .2s ease, background .2s ease;
+}
+.theme-toggle:hover {
+  color: var(--brand-yellow);
+  border-color: var(--brand-yellow);
+  background: rgba(234, 186, 1, .08);
+}
+.theme-icon { display: block; }
+[data-theme="dark"]  .icon-sun  { display: none; }
+[data-theme="light"] .icon-moon { display: none; }
+
+/* ---------- LOGO SWAP ---------- */
+[data-theme="dark"]  .brand-logo-light { display: none; }
+[data-theme="light"] .brand-logo-dark  { display: none; }
 
 .nav-toggle {
   display: none;
@@ -830,6 +859,8 @@ p { margin: 0; }
   .nav-links .nav-cta:last-child { border-bottom: none; }
   .nav-links .nav-cta:hover { box-shadow: none; color: var(--text) !important; }
   .nav-toggle { display: inline-flex; }
+  /* On mobile nav-links is hidden, so theme-toggle takes over pushing to the right */
+  .theme-toggle { margin-left: auto; }
 
   .hero { padding: 40px 20px 60px; }
   .hero-stats { grid-template-columns: 1fr 1fr; }
@@ -844,4 +875,159 @@ p { margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   .prism-svg, .prism-glow, .reveal { animation: none !important; transition: none !important; }
+}
+
+/* ============================================================
+   LIGHT THEME
+   Restrained per brand book: gradient is an accent, not a wash.
+   Triangle and wordmark switch to the black logo lockup.
+   ============================================================ */
+[data-theme="light"] {
+  --bg:       #f7f5f0;
+  --bg-elev:  #ffffff;
+  --bg-soft:  #efece4;
+  --line:        rgba(12, 10, 24, 0.10);
+  --line-strong: rgba(12, 10, 24, 0.22);
+  --text:  #0c0a18;
+  --muted: #4c4a5c;
+  --dim:   #76748a;
+}
+
+[data-theme="light"] body {
+  background:
+    radial-gradient(900px 700px at 80% -10%, rgba(117, 42, 144, .06), transparent 65%),
+    radial-gradient(700px 500px at -5% 25%, rgba(234, 186, 1, .07), transparent 65%),
+    radial-gradient(600px 400px at 50% 110%, rgba(6, 12, 131, .05), transparent 70%),
+    var(--bg);
+}
+
+/* Hide the starfield on light - light stars on a light field are invisible */
+[data-theme="light"] #starfield { opacity: 0; }
+
+/* Translucent nav background */
+[data-theme="light"] .nav {
+  background: rgba(247, 245, 240, 0.65);
+}
+[data-theme="light"] .nav.scrolled {
+  background: rgba(247, 245, 240, 0.88);
+}
+
+/* Text gradient — drop the yellow stop so 'emerges' / numbers read
+   clearly against the light page; deep stops only. */
+[data-theme="light"] .grad,
+[data-theme="light"] .hero-stats strong {
+  background: linear-gradient(120deg,
+    var(--brand-red) 0%,
+    var(--brand-purple) 55%,
+    var(--brand-blue) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Inline highlight — use brand purple on light for legibility */
+[data-theme="light"] .hl { color: var(--brand-purple); }
+
+/* Citations / footnote links — purple has the contrast yellow lacks */
+[data-theme="light"] .hero-stats-note a,
+[data-theme="light"] .card-cite a {
+  color: var(--brand-purple);
+  text-decoration-color: rgba(117, 42, 144, .35);
+}
+[data-theme="light"] .hero-stats-note a:hover,
+[data-theme="light"] .card-cite a:hover {
+  text-decoration-color: var(--brand-purple);
+}
+
+/* Eyebrow / accent dots stay yellow but get a slightly darker companion shadow */
+[data-theme="light"] .eyebrow .dot {
+  box-shadow: 0 0 10px rgba(234, 186, 1, .6);
+}
+
+/* Step number circles — deepen the ring for visibility on light bg */
+[data-theme="light"] .step-num {
+  border-color: rgba(234, 186, 1, .65);
+  background: radial-gradient(circle at 35% 30%, rgba(234, 186, 1, .28), rgba(234, 186, 1, .06) 70%);
+  color: #8a6d00;
+  box-shadow:
+    0 0 0 4px rgba(234, 186, 1, .10),
+    0 6px 22px -8px rgba(234, 186, 1, .55);
+}
+
+/* Section panels with white tint — invert to a subtle dark wash */
+[data-theme="light"] .section-alt {
+  background: linear-gradient(180deg, transparent, rgba(12, 10, 24, .025) 30%, rgba(12, 10, 24, .025) 70%, transparent);
+}
+
+/* Surface tints across the site */
+[data-theme="light"] .band {
+  background: rgba(12, 10, 24, 0.02);
+}
+[data-theme="light"] .band-list a {
+  background: rgba(255, 255, 255, 0.7);
+}
+[data-theme="light"] .btn-ghost {
+  background: rgba(255, 255, 255, 0.6);
+}
+[data-theme="light"] .step {
+  background: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, .7));
+}
+[data-theme="light"] .card,
+[data-theme="light"] .member {
+  background: #ffffff;
+}
+[data-theme="light"] .science {
+  background: rgba(255, 255, 255, 0.6);
+}
+[data-theme="light"] .tl-mark {
+  background: #ffffff;
+  color: #8a6d00;
+}
+[data-theme="light"] .contact-card {
+  background:
+    radial-gradient(600px 300px at 50% 0%, rgba(253, 11, 4, .08), transparent 70%),
+    radial-gradient(500px 300px at 80% 100%, rgba(117, 42, 144, .10), transparent 70%),
+    #ffffff;
+}
+
+/* TRL badges — deepen ink for contrast on light */
+[data-theme="light"] .trl-9   { background: rgba(234, 186, 1, .18); color: #7a5f00; }
+[data-theme="light"] .trl-mid { background: rgba(253, 11, 4, .12);  color: #b3140e; }
+[data-theme="light"] .trl-6   { background: rgba(117, 42, 144, .14); color: #5a2070; }
+[data-theme="light"] .trl-67  { background: rgba(6, 12, 131, .14);   color: #1a1e85; }
+
+/* Hero prism glow — pull intensity back so it doesn't blow out white */
+[data-theme="light"] .prism-glow { opacity: .35; filter: blur(70px); }
+[data-theme="light"] .prism-svg  { filter: drop-shadow(0 18px 50px rgba(117, 42, 144, .25)); }
+
+/* Roles / step tags — these were brand yellow; use purple for legibility on white */
+[data-theme="light"] .role,
+[data-theme="light"] .step-tag,
+[data-theme="light"] .callout h4,
+[data-theme="light"] .tl-when {
+  color: var(--brand-purple);
+}
+[data-theme="light"] .science em { color: var(--brand-purple); }
+
+/* Nav-CTA hover ring takes a deeper shadow on light */
+[data-theme="light"] .nav-cta:hover {
+  box-shadow: 0 0 18px rgba(117, 42, 144, .15);
+  border-color: var(--brand-purple);
+  color: var(--brand-purple) !important;
+}
+[data-theme="light"] .btn-ghost:hover {
+  border-color: var(--brand-purple);
+  color: var(--brand-purple);
+}
+[data-theme="light"] .theme-toggle:hover {
+  color: var(--brand-purple);
+  border-color: var(--brand-purple);
+  background: rgba(117, 42, 144, .06);
+}
+
+/* Mobile menu surface on light */
+@media (max-width: 640px) {
+  [data-theme="light"] .nav-links {
+    background: #ffffff;
+  }
 }
