@@ -6,12 +6,35 @@ Audience:   you, in front of a Mac, with no prior iOS / GCP experience.
 Time:       ~2 hours to first build on a device.
             ~1 day to working backend + device build talking to it.
             ~1 week to App Store live.
-Cost:       Apple Developer $99/year. Google Cloud realistically $0/mo
-            on free tier.
+Cost:       Apple Developer $99/year (FREE PATH BELOW skips this).
+            Google Cloud realistically $0/mo on free tier.
 
 Read the whole thing once before starting. Each step assumes the
 previous one finished cleanly. If you skip ahead and something fails,
 go back to the step you skipped.
+
+================================================================
+PICK YOUR PATH FIRST
+================================================================
+
+FREE TIER PATH (test on your own iPhone, no $99 yet)
+  • Skip:  STEP 1 entirely (no paid Apple Developer membership)
+  • Skip:  STEP 11 entirely (no App Attest, no enforcement flip)
+  • At    STEP 7, use APP_ATTEST_ENFORCE=0 (as written)
+  • At    STEP 8.2, your "team" is the free Apple ID team
+          Xcode auto-creates when you sign in
+  • Caveat: builds expire on the device after 7 days; you
+          reconnect to Xcode and re-build. Nothing else changes.
+  • Caveat: backend URL is unprotected. Don't share it publicly.
+  • Caveat: cannot use TestFlight or App Store with the free tier.
+
+PAID PATH (intend to ship to TestFlight / App Store)
+  • Do every step in order. App Attest is on. 1-year provisioning
+    profiles instead of 7-day. Cleanly publishable.
+
+The codebase ships configured for the FREE PATH out of the box
+(Penumbra.entitlements has App Attest commented out). To enable
+App Attest later, see the comments inside that file.
 
 ================================================================
 STEP 0 — WHAT YOU NEED ON YOUR MACHINE
@@ -46,8 +69,16 @@ STEP 0 — WHAT YOU NEED ON YOUR MACHINE
       a real device for full testing.
 
 ================================================================
-STEP 1 — APPLE DEVELOPER ACCOUNT
+STEP 1 — APPLE DEVELOPER ACCOUNT  [PAID PATH ONLY]
 ================================================================
+
+>>> FREE PATH: SKIP THIS ENTIRE STEP. <<<
+>>> Xcode will assign you a "Personal Team" automatically when <<<
+>>> you sign into your Apple ID in step 8.2. The Team ID it <<<
+>>> generates is what you'll use on the backend in step 7.2 — <<<
+>>> note it down from Xcode → Settings → Accounts → your Apple <<<
+>>> ID → Manage Certificates (the 10-char string in parentheses <<<
+>>> next to "Personal Team"). <<<
 
 1.1)  Go to https://developer.apple.com/programs/enroll/
       Sign in with your Apple ID and pay the $99/year membership.
@@ -255,10 +286,21 @@ STEP 8 — XCODE PROJECT
       a) Click the blue "Penumbra" icon at the top.
       b) Under TARGETS → Penumbra → tab "Signing & Capabilities".
       c) Tick "Automatically manage signing".
-      d) Team: select your Apple Developer team from step 1.
+      d) Team: select your team.
+         • PAID PATH: pick your Apple Developer team from step 1.
+         • FREE PATH: pick "<Your Name> (Personal Team)". If you
+           don't see it, click "Add an Account…" and sign in
+           with your Apple ID first.
       e) Bundle Identifier: should already say com.penumbra.astro.
-      f) Click "+ Capability" (top left of this tab).
-      g) Double-click "App Attest". A new section appears.
+         • FREE PATH only: if Xcode complains that the bundle ID
+           is unavailable, change the second segment to something
+           personal, e.g. com.YOURNAME.penumbra. Free Apple IDs
+           share a namespace so popular names get taken.
+      f) PAID PATH: Click "+ Capability" (top left of this tab),
+         then double-click "App Attest". A new section appears.
+      g) FREE PATH: SKIP the "+ Capability" step. The entitlement
+         file already has App Attest commented out — Xcode will
+         sign cleanly with the empty entitlement set.
 
 8.3)  Plug your iPhone in. The first time you connect it, the phone
       asks "Trust this computer?" — tap Trust.
@@ -328,8 +370,16 @@ STEP 10 — VERIFY THE DAILY RATE LIMIT
       Good. Cache + rate limit are working.
 
 ================================================================
-STEP 11 — TURN ON REAL APP ATTEST VERIFICATION
+STEP 11 — TURN ON REAL APP ATTEST VERIFICATION  [PAID PATH ONLY]
 ================================================================
+
+>>> FREE PATH: SKIP THIS ENTIRE STEP. <<<
+>>> App Attest cannot be enabled on a free Apple ID. Leave the <<<
+>>> backend at APP_ATTEST_ENFORCE=0 and DO NOT share the Cloud <<<
+>>> Run URL publicly — anyone with it could call your endpoints. <<<
+>>> When you upgrade to a paid membership later, follow steps <<<
+>>> 1, 11, and the instructions inside <<<
+>>> ios/Penumbra/Resources/Penumbra.entitlements <<<
 
 Up to now the backend has been in dev mode (APP_ATTEST_ENFORCE=0),
 which means anyone with the URL can hit it. Time to lock it down.
@@ -365,6 +415,14 @@ which means anyone with the URL can hit it. Time to lock it down.
         the entitlement file says "development" (it does by default)
       - The phone hasn't actually re-registered yet — uninstall
         and reinstall Penumbra to force a fresh registration
+
+================================================================
+STEPS 12-16 — POLISH + SHIP  [PAID PATH ONLY]
+================================================================
+
+>>> FREE PATH: STOP HERE. You have a working dev build on your <<<
+>>> phone. Steps 12-16 cover App Store submission, which is not <<<
+>>> available on a free Apple ID. Come back when you upgrade. <<<
 
 ================================================================
 STEP 12 — APP ICON (required for submission)
@@ -562,6 +620,30 @@ C.5)  Map shows but Bortle estimate is "—"
 C.6)  Daily limit hit at 5/5
       → That's the design. Resets at 00:00 UTC. Cache hits don't
         count, so re-pinning a recent spot is free.
+
+C.7)  [FREE PATH] App stops launching after a week with
+      "Untrusted Developer" or "Could not launch Penumbra"
+      → 7-day provisioning profile expired. Plug the phone
+        back in, open Xcode, hit Play (⌘R) to re-sign and
+        re-install. Lasts another 7 days.
+
+C.8)  [FREE PATH] Xcode error: "Provisioning profile doesn't
+      support the App Attest capability"
+      → Your Penumbra.entitlements file still has App Attest
+        enabled despite being on the free tier. Open the file
+        and confirm the lines about
+        `com.apple.developer.devicecheck.appattest-environment`
+        are commented out (wrapped in <!-- -->). Free Apple IDs
+        cannot use App Attest.
+
+C.9)  [FREE PATH] Xcode error: "Failed to register bundle
+      identifier com.penumbra.astro"
+      → Free Apple IDs share a global bundle namespace and
+        common IDs get squatted. Change the bundle ID to
+        something personal under
+          ios/project.yml → PRODUCT_BUNDLE_IDENTIFIER
+        e.g. com.YOURNAME.penumbra. Re-run xcodegen generate
+        and try again.
 
 ================================================================
 APPENDIX D — DAY-2 OPS
