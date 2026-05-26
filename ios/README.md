@@ -138,6 +138,14 @@ tier. The cache makes repeats free.
 
 ### App Attest
 
+> The repo ships with App Attest **commented out** in
+> `Penumbra.entitlements` so a free Apple ID can build the project
+> without the paid Developer Program ($99/year). The runtime
+> gracefully falls into a "DEV_" path that the backend accepts when
+> `APP_ATTEST_ENFORCE=0`. To turn real verification on, see
+> `BUILD_INSTRUCTIONS.txt` Step 11 and the comments inside the
+> entitlement file.
+
 `AttestationManager` (`ios/Penumbra/Networking/AttestationManager.swift`)
 wraps `DCAppAttestService`:
 

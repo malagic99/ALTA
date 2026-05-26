@@ -3,13 +3,48 @@
 <plist version="1.0">
 <dict>
     <!--
-        App Attest environment.
-        - "development" while debugging on real hardware via Xcode.
-        - "production" for App Store / TestFlight builds.
-        Switch the value (or split into Debug.entitlements /
-        Release.entitlements) when you ship.
+        ====================================================
+        App Attest is currently DISABLED in this entitlement.
+        ====================================================
+
+        Why: the App Attest capability requires a PAID Apple
+        Developer Program membership ($99/year). The empty
+        entitlement set below lets the project build with a
+        FREE Apple ID, so you can install on your phone for
+        development without paying yet.
+
+        Penumbra was written to degrade gracefully when this
+        capability is missing:
+          • AttestationManager.swift checks
+            `DCAppAttestService.shared.isSupported` and, when
+            false, emits a "DEV_…" key-id with a placeholder
+            assertion header.
+          • The backend's dev-mode path (APP_ATTEST_ENFORCE=0,
+            see BUILD_INSTRUCTIONS.txt Step 7) accepts those
+            headers without cryptographic verification.
+
+        So with this file as-is + `APP_ATTEST_ENFORCE=0` on
+        the backend, the full feature surface works for
+        development. You just shouldn't expose that backend
+        URL to the public — anyone with it could call your
+        endpoints.
+
+        ------------------------------------------------
+        TO ENABLE APP ATTEST (paid membership only):
+        ------------------------------------------------
+        1. Pay the $99/year fee at developer.apple.com
+        2. Register your bundle ID with the App Attest
+           capability ticked (BUILD_INSTRUCTIONS.txt §1.3)
+        3. In Xcode → Signing & Capabilities tab →
+           "+ Capability" → add "App Attest"
+        4. UNCOMMENT the two lines below
+        5. Redeploy the backend with APP_ATTEST_ENFORCE=1
+        6. For App Store / TestFlight builds, also change
+           "development" → "production" below AND set
+           APP_ATTEST_ENVIRONMENT=appattest on the backend.
+
+        <key>com.apple.developer.devicecheck.appattest-environment</key>
+        <string>development</string>
     -->
-    <key>com.apple.developer.devicecheck.appattest-environment</key>
-    <string>development</string>
 </dict>
 </plist>
