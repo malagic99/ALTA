@@ -1,0 +1,598 @@
+================================================================
+PENUMBRA — STEP-BY-STEP BUILD & SHIP RUNBOOK
+================================================================
+
+Audience:   you, in front of a Mac, with no prior iOS / GCP experience.
+Time:       ~2 hours to first build on a device.
+            ~1 day to working backend + device build talking to it.
+            ~1 week to App Store live.
+Cost:       Apple Developer $99/year. Google Cloud realistically $0/mo
+            on free tier.
+
+Read the whole thing once before starting. Each step assumes the
+previous one finished cleanly. If you skip ahead and something fails,
+go back to the step you skipped.
+
+================================================================
+STEP 0 — WHAT YOU NEED ON YOUR MACHINE
+================================================================
+
+0.1)  A Mac running macOS 14 or newer.
+
+0.2)  Xcode 15 or newer, from the Mac App Store.
+      First launch takes ~15 minutes; let it download iOS SDKs.
+
+0.3)  Command-line tools:
+
+         xcode-select --install
+
+0.4)  Homebrew (https://brew.sh) if you don't have it:
+
+         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+0.5)  Google Cloud CLI:
+
+         brew install --cask google-cloud-sdk
+         gcloud init                       # opens browser, sign in
+         gcloud auth application-default login
+
+0.6)  (Optional but recommended) xcodegen, so the Xcode project file
+      is generated from project.yml instead of committed:
+
+         brew install xcodegen
+
+0.7)  An iPhone running iOS 17 or newer, with a Lightning or USB-C
+      cable. App Attest does NOT work in the simulator; you need
+      a real device for full testing.
+
+================================================================
+STEP 1 — APPLE DEVELOPER ACCOUNT
+================================================================
+
+1.1)  Go to https://developer.apple.com/programs/enroll/
+      Sign in with your Apple ID and pay the $99/year membership.
+      Approval is usually instant for individuals.
+
+1.2)  Once approved, go to
+      https://developer.apple.com/account
+      and note your TEAM ID (top-right, a 10-character string
+      like ABC123XYZ4). Write it down — you will paste it into
+      Xcode and Cloud Run later.
+
+1.3)  Register the app's bundle identifier:
+      https://developer.apple.com/account/resources/identifiers/list
+      → click the + button → App IDs → Continue
+      → Description: "Penumbra"
+      → Bundle ID: Explicit, com.penumbra.astro
+      → Scroll down and CHECK the "App Attest" capability
+      → Continue → Register
+
+================================================================
+STEP 2 — GOOGLE CLOUD PROJECT
+================================================================
+
+Throughout this section, replace YOUR_PROJECT_ID with whatever
+unique ID you pick (e.g. penumbra-astro-prod). Replace YOUR_TEAM
+with the team ID from step 1.2.
+
+2.1)  Create the project:
+
+         gcloud projects create YOUR_PROJECT_ID --name="Penumbra"
+         gcloud config set project YOUR_PROJECT_ID
+
+2.2)  Link a billing account. Find yours:
+
+         gcloud billing accounts list
+
+      Then link it:
+
+         gcloud billing projects link YOUR_PROJECT_ID \
+             --billing-account=YOUR_BILLING_ACCOUNT_ID
+
+2.3)  Enable the APIs the backend uses:
+
+         gcloud services enable \
+             run.googleapis.com \
+             secretmanager.googleapis.com \
+             firestore.googleapis.com \
+             earthengine.googleapis.com \
+             maps-elevation-backend.googleapis.com \
+             cloudbuild.googleapis.com
+
+2.4)  Approve Earth Engine for non-commercial use (one-time):
+      https://earthengine.google.com/signup/
+      Pick your project from step 2.1. Approval is usually
+      within a few minutes.
+
+================================================================
+STEP 3 — GOOGLE MAPS API KEY (server-side only)
+================================================================
+
+3.1)  Create the key. The console flow is easier:
+      https://console.cloud.google.com/apis/credentials
+      → Create credentials → API key
+      → Click the new key → Edit
+      → API restrictions → "Restrict key" → tick ONLY
+        "Maps Elevation API"
+      → Save
+
+3.2)  Copy the keyString (starts with AIza...). You will save it
+      to Secret Manager in step 5.
+
+      NOTE: The key never ships in the iOS binary. No bundle-ID
+      restriction needed because the key only ever exists on the
+      backend.
+
+================================================================
+STEP 4 — GOOGLE EARTH ENGINE SERVICE ACCOUNT
+================================================================
+
+4.1)  Create a service account for the backend to authenticate with
+      Earth Engine:
+
+         gcloud iam service-accounts create gee-canopy \
+             --display-name="Penumbra GEE canopy sampler"
+
+4.2)  Download a JSON key for it:
+
+         gcloud iam service-accounts keys create gee-key.json \
+             --iam-account=gee-canopy@YOUR_PROJECT_ID.iam.gserviceaccount.com
+
+4.3)  Register the service account with Earth Engine:
+      https://signup.earthengine.google.com/#!/service_accounts
+      Paste the email
+        gee-canopy@YOUR_PROJECT_ID.iam.gserviceaccount.com
+      Approval is usually instant.
+
+================================================================
+STEP 5 — SECRET MANAGER (store the keys safely)
+================================================================
+
+5.1)  Save the Earth Engine key:
+
+         gcloud secrets create gee-key --data-file=gee-key.json
+
+5.2)  Save the Google Maps key (paste the AIza... value):
+
+         echo -n "AIzaSy...PASTE_KEY_HERE" | \
+             gcloud secrets create penumbra-google-maps --data-file=-
+
+5.3)  Grant the Cloud Run service account read access to both:
+
+         PROJECT_NUMBER=$(gcloud projects describe YOUR_PROJECT_ID \
+             --format='value(projectNumber)')
+         SVC_ACCT="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+
+         for SECRET in gee-key penumbra-google-maps; do
+             gcloud secrets add-iam-policy-binding $SECRET \
+                 --member="serviceAccount:$SVC_ACCT" \
+                 --role="roles/secretmanager.secretAccessor"
+         done
+
+5.4)  Once secrets are in place, delete the local copy:
+
+         rm gee-key.json
+
+================================================================
+STEP 6 — FIRESTORE (for App Attest state)
+================================================================
+
+6.1)  Create the database:
+
+         gcloud firestore databases create \
+             --location=us-central \
+             --type=firestore-native
+
+6.2)  Enable a TTL policy so expired App Attest challenges
+      garbage-collect themselves:
+
+         gcloud firestore fields ttls update expires_at \
+             --collection-group=attestChallenges \
+             --enable-ttl
+
+================================================================
+STEP 7 — DEPLOY THE BACKEND TO CLOUD RUN
+================================================================
+
+7.1)  From the repo root:
+
+         cd backend/penumbra
+
+7.2)  Deploy. Substitute YOUR_TEAM (from step 1.2) and
+      YOUR_PROJECT_ID:
+
+         gcloud run deploy penumbra-backend \
+             --source . \
+             --region us-central1 \
+             --allow-unauthenticated \
+             --set-env-vars "GEE_SERVICE_ACCOUNT=gee-canopy@YOUR_PROJECT_ID.iam.gserviceaccount.com,APPLE_TEAM_ID=YOUR_TEAM,APPLE_BUNDLE_ID=com.penumbra.astro,APP_ATTEST_ENVIRONMENT=appattestdevelop,APP_ATTEST_ENFORCE=0,FIRESTORE_PROJECT_ID=YOUR_PROJECT_ID" \
+             --set-secrets "GEE_KEY_JSON=gee-key:latest,GOOGLE_MAPS_API_KEY=penumbra-google-maps:latest" \
+             --memory 1Gi \
+             --cpu 1 \
+             --concurrency 10 \
+             --max-instances 5
+
+      The build takes 3-5 minutes the first time. When it finishes
+      the output ends with:
+
+         Service URL: https://penumbra-backend-XXXXX-uc.a.run.app
+
+      COPY THAT URL. You will paste it into the iOS app's Settings
+      in step 9.
+
+      WHY APP_ATTEST_ENFORCE=0:
+      Dev mode. The backend accepts well-formed App Attest headers
+      without verifying them cryptographically, so you can test the
+      pipeline on a real device before turning enforcement on. You
+      flip this to 1 in step 11.
+
+7.3)  Smoke test:
+
+         curl https://penumbra-backend-XXXXX-uc.a.run.app/health
+
+      Expect:  {"ok": true, "default_asset": "projects/sat-io/..."}
+
+         curl -X POST https://penumbra-backend-XXXXX-uc.a.run.app/attest/challenge
+
+      Expect:  {"challenge": "...", "expires_at": ...}
+
+      If both succeed, backend is live. Move on.
+
+================================================================
+STEP 8 — XCODE PROJECT
+================================================================
+
+8.1)  In the repo, generate the Xcode project file:
+
+         cd ios
+         xcodegen generate
+         open Penumbra.xcodeproj
+
+      If you skipped xcodegen in step 0.6, see Appendix A.
+
+8.2)  In Xcode, with the project navigator open on the left:
+
+      a) Click the blue "Penumbra" icon at the top.
+      b) Under TARGETS → Penumbra → tab "Signing & Capabilities".
+      c) Tick "Automatically manage signing".
+      d) Team: select your Apple Developer team from step 1.
+      e) Bundle Identifier: should already say com.penumbra.astro.
+      f) Click "+ Capability" (top left of this tab).
+      g) Double-click "App Attest". A new section appears.
+
+8.3)  Plug your iPhone in. The first time you connect it, the phone
+      asks "Trust this computer?" — tap Trust.
+
+8.4)  At the top of the Xcode window, next to the Play button,
+      there is a destination picker. Click it and select your
+      iPhone (not a simulator).
+
+8.5)  Press the Play button (⌘R). The first build takes ~3 minutes.
+
+      The first time you run, the phone shows:
+        "Untrusted Developer."
+      To fix:
+        Settings app → General → VPN & Device Management →
+        select your developer profile → Trust.
+
+      Then go back to Xcode and press Play again.
+
+================================================================
+STEP 9 — CONNECT THE APP TO THE BACKEND
+================================================================
+
+9.1)  Penumbra launches. The status banner says
+      "Open Settings to add your Penumbra backend URL."
+
+9.2)  Tap the gear icon (top right).
+
+9.3)  Paste the Cloud Run URL from step 7.2 into the field.
+      Tap Save.
+
+9.4)  Back on the map, allow the location permission when prompted.
+
+9.5)  Long-press anywhere on the map. A cyan crosshair appears.
+
+9.6)  Tap "Calculate horizon". If everything is wired up correctly:
+
+      - Status banner shows "Horizon computed. 4 of 5 calls left today."
+      - The horizon card slides up with a circular radar.
+      - A Bortle row shows a colour-graded badge with a label like
+        "Rural sky".
+      - A target list shows "Milky Way core: clears 11:34 PM, dips
+        2:08 AM (peak 18°)" rows.
+
+      If you see "App Attest setup: ..." in the status banner,
+      that's fine in dev mode — the app registered against the
+      backend's permissive dev path. Move on.
+
+      If you see an HTTP error, check:
+      - Did you paste the URL correctly (including https:// prefix)?
+      - Did the backend deploy succeed in step 7?
+      - Run the curl health check again.
+
+================================================================
+STEP 10 — VERIFY THE DAILY RATE LIMIT
+================================================================
+
+10.1) Drop a pin in a different location (long-press elsewhere).
+
+10.2) Tap Calculate horizon. The quota pill in the status banner
+      now shows 3/5.
+
+10.3) Drop the same first pin again (long-press the original spot).
+
+10.4) Tap Calculate horizon. Status shows "Served from offline
+      cache. No quota used." — quota stays the same.
+
+      Good. Cache + rate limit are working.
+
+================================================================
+STEP 11 — TURN ON REAL APP ATTEST VERIFICATION
+================================================================
+
+Up to now the backend has been in dev mode (APP_ATTEST_ENFORCE=0),
+which means anyone with the URL can hit it. Time to lock it down.
+
+11.1) Redeploy with enforcement on. From backend/penumbra/:
+
+         gcloud run deploy penumbra-backend \
+             --source . \
+             --region us-central1 \
+             --update-env-vars "APP_ATTEST_ENFORCE=1"
+
+11.2) On your phone, fully quit Penumbra (swipe up from bottom,
+      flick the app away). Reopen it.
+
+11.3) The first request will trigger AttestationManager to:
+      - fetch a challenge from /attest/challenge
+      - call DCAppAttestService.attestKey
+      - POST /attest/register
+
+      This happens silently. The status banner stays normal.
+
+11.4) Tap Calculate horizon. Should still work. The backend is
+      now verifying every request's ECDSA signature against Apple's
+      App Attestation Root CA.
+
+      If it fails, check Cloud Run logs:
+         gcloud run services logs read penumbra-backend \
+             --region us-central1 --limit 50
+
+      Common causes:
+      - APPLE_TEAM_ID env var wrong on the backend (re-check step 7.2)
+      - APP_ATTEST_ENVIRONMENT must be "appattestdevelop" while
+        the entitlement file says "development" (it does by default)
+      - The phone hasn't actually re-registered yet — uninstall
+        and reinstall Penumbra to force a fresh registration
+
+================================================================
+STEP 12 — APP ICON (required for submission)
+================================================================
+
+12.1) Produce ONE 1024x1024 PNG file. No transparency, no rounded
+      corners (Apple rounds them).
+
+      Quick options:
+      - Hire on Fiverr ($30-100, 24-48h turnaround)
+      - DIY in Figma / Affinity Designer / Pixelmator
+      - AI generator like Midjourney at 1024² then cleanup
+
+      Avoid: text in the icon, busy detail (illegible at 60×60).
+
+12.2) In Xcode, in the project navigator on the left, open
+      Penumbra → Resources → drag the 1024.png into the
+      Assets.xcassets → AppIcon slot (Single Size).
+
+12.3) Build and run again. Home-screen icon shows your art.
+
+================================================================
+STEP 13 — LAUNCH SCREEN (already done — black flash)
+================================================================
+
+You already have a valid launch screen via the empty
+UILaunchScreen dict in Info.plist. Apple accepts it. The screen
+shows black for ~0.5s before the app loads. If you want a logo
+to flash there, see Appendix B.
+
+================================================================
+STEP 14 — PRIVACY MANIFEST (required since Apple Q2 2024)
+================================================================
+
+Apple requires a PrivacyInfo.xcprivacy file. Penumbra collects
+only the user's coarse location (to centre the map) and stores
+nothing on a remote server beyond what the backend proxy logs.
+
+14.1) In Xcode: File → New → File → "App Privacy" template →
+      save as PrivacyInfo.xcprivacy in Penumbra/Resources/.
+
+14.2) In the editor that opens, declare:
+
+      Privacy Tracking Enabled:          NO
+      Privacy Tracking Domains:          (empty)
+      Privacy Nutrition Label Types:     LocationPrecise
+                                           - Linked to user: NO
+                                           - Used for tracking: NO
+                                           - Purpose: AppFunctionality
+      Privacy Accessed API Types:        UserDefaults (CA92.1)
+
+14.3) Save. Xcode bundles it automatically.
+
+================================================================
+STEP 15 — TESTFLIGHT (internal testers, instant)
+================================================================
+
+15.1) In Xcode: Product → Archive. Takes 2-3 minutes.
+
+15.2) When done, the Organizer window opens. Click "Distribute App".
+
+15.3) App Store Connect → Upload → tick "Strip Swift symbols"
+      and "Upload your app's symbols" → Next → Upload.
+
+15.4) Wait 10-30 min for Apple to process the build. You'll get
+      an email when it's ready.
+
+15.5) Go to https://appstoreconnect.apple.com → My Apps → Penumbra
+      → TestFlight tab.
+
+15.6) Add yourself + any friends as Internal Testers (no Apple
+      review needed for internal). They install via the TestFlight
+      app on iOS.
+
+================================================================
+STEP 16 — APP STORE SUBMISSION (1-3 day review)
+================================================================
+
+16.1) In App Store Connect, create the app listing:
+      - Name: Penumbra
+      - Subtitle: ~30 chars, e.g. "Find dark skies tonight"
+      - Description: marketing copy
+      - Keywords: astrophotography, astronomy, milky way, dark sky,
+        bortle, light pollution, stars
+      - Support URL: a webpage with your contact email
+      - Privacy Policy URL: a webpage with your privacy policy
+
+      You need to host these two pages somewhere. GitHub Pages
+      is free and adequate.
+
+16.2) App Privacy questionnaire (left sidebar in App Store Connect):
+      - Data collected: Coarse Location → for App Functionality
+      - Tracking: NO
+      - Third-party SDKs collecting data: NONE
+
+16.3) Screenshots — 6.7" and 6.5" iPhone required, more if you
+      want iPad. Real device captures (Apple rejects simulator
+      screenshots). Take with your iPhone:
+      - Home with horizon radar and target clearance times visible
+      - Settings sheet
+      - Multiple pins on the map
+
+16.4) Pricing: Free.
+
+16.5) Click "Submit for Review". Apple typically responds within
+      24-72 hours.
+
+16.6) Common rejection reasons to pre-empt:
+      - Missing Privacy Policy URL → make sure it loads in incognito
+      - Location permission justification unclear → already covered
+        by NSLocationWhenInUseUsageDescription in Info.plist
+      - Privacy manifest missing → step 14
+      - App crashes on launch → fix in Xcode, archive again
+
+================================================================
+APPENDIX A — WITHOUT XCODEGEN
+================================================================
+
+If you didn't install xcodegen in step 0.6:
+
+A.1)  In Xcode: File → New → Project → iOS → App → Next
+      Product Name:        Penumbra
+      Team:                your team from step 1
+      Organization Id:     com.penumbra
+      Interface:           SwiftUI
+      Language:            Swift
+      Storage:             SwiftData
+      Minimum Deployment:  iOS 17.0
+
+A.2)  Save anywhere — Xcode creates a default project.
+
+A.3)  In Xcode's project navigator, DELETE the boilerplate
+      ContentView.swift and PenumbraApp.swift.
+
+A.4)  Drag the contents of ios/Penumbra/ (in the repo) into the
+      project navigator. Choose "Create groups", tick "Copy items
+      if needed", add to the Penumbra target.
+
+A.5)  Replace the auto-generated Info.plist with
+      ios/Penumbra/Resources/Info.plist from the repo.
+
+A.6)  In project settings → Build Settings → search for
+      "Code Signing Entitlements" → set to
+        Penumbra/Resources/Penumbra.entitlements
+
+A.7)  Continue from step 8.2.
+
+================================================================
+APPENDIX B — CUSTOM LAUNCH SCREEN
+================================================================
+
+B.1)  File → New → File → "Launch Screen" template.
+      Save as LaunchScreen.storyboard in Penumbra/Resources/.
+
+B.2)  Drag a UIImageView into the centre, point it at the AppIcon
+      asset (or a logo PNG), add Auto Layout constraints
+      (center X, center Y, width=120, aspect ratio 1:1).
+
+B.3)  In project settings → General → Launch Screen File →
+      pick LaunchScreen.
+
+B.4)  Remove the UILaunchScreen dict from Info.plist so the
+      storyboard wins.
+
+================================================================
+APPENDIX C — TROUBLESHOOTING
+================================================================
+
+C.1)  Backend returns 401 on /attest/register
+      → APP_ATTEST_ENFORCE=1 but the cryptographic verification
+        failed. Check APPLE_TEAM_ID matches your real team ID.
+        Check APP_ATTEST_ENVIRONMENT matches the entitlement
+        ("appattestdevelop" while the .entitlements file says
+        "development"; "appattest" for "production").
+
+C.2)  Cloud Run logs flooded with "Unknown attest key id"
+      → A device that registered against an old project is hitting
+        the new backend. Uninstall + reinstall Penumbra on the
+        device to force a fresh DCAppAttestService key.
+
+C.3)  Xcode build error: "App Attest entitlement not allowed"
+      → You skipped step 1.3. Register the bundle ID and enable
+        the App Attest capability in the developer portal.
+
+C.4)  "Server is missing GOOGLE_MAPS_API_KEY"
+      → The secret wasn't mounted. Re-run step 5 and re-deploy
+        step 7. Check the deploy output for the
+        "--set-secrets GOOGLE_MAPS_API_KEY=..." line.
+
+C.5)  Map shows but Bortle estimate is "—"
+      → OpenStreetMap Overpass API was slow or down. The horizon
+        + clearance still work; this is a soft-fail. Try again
+        in a few minutes.
+
+C.6)  Daily limit hit at 5/5
+      → That's the design. Resets at 00:00 UTC. Cache hits don't
+        count, so re-pinning a recent spot is free.
+
+================================================================
+APPENDIX D — DAY-2 OPS
+================================================================
+
+D.1)  See current backend logs:
+
+         gcloud run services logs read penumbra-backend \
+             --region us-central1 --limit 100
+
+D.2)  Update only env vars without redeploy:
+
+         gcloud run services update penumbra-backend \
+             --region us-central1 \
+             --update-env-vars KEY=VALUE
+
+D.3)  Re-deploy after code changes:
+
+         cd backend/penumbra
+         gcloud run deploy penumbra-backend --source . \
+             --region us-central1
+
+D.4)  Rotate the Google Maps key (recommended every 90 days):
+
+         echo -n "NEW_KEY" | gcloud secrets versions add \
+             penumbra-google-maps --data-file=-
+
+         # Cloud Run picks up the new :latest version on next request.
+
+================================================================
+END
+================================================================
+
+You shipped a real iOS app. Drink water.

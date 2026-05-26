@@ -171,11 +171,9 @@ Verification is real. The pipeline:
 | `FIRESTORE_PROJECT_ID` | recommended | Without it the registration store and challenge store both fall back to in-memory dicts. Fine for one Cloud Run instance with `--max-instances 1`, broken otherwise. |
 | `ATTEST_CHALLENGE_TTL` | optional | Seconds; default 300. |
 
-Take the resulting `https://...run.app` URL and put it in the app:
-
-```
-EXPO_PUBLIC_CANOPY_BACKEND_URL=https://penumbra-backend-xxxx-uc.a.run.app
-```
+Take the resulting `https://...run.app` URL and paste it into the
+iOS app's Settings sheet (the gear icon in the top-right). It's
+stored in the device Keychain; see `ios/Penumbra/Networking/SecretsStore.swift`.
 
 ## Notes
 

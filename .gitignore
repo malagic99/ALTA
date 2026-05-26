@@ -1,16 +1,5 @@
-node_modules/
-.expo/
-dist/
-web-build/
-*.log
-.env
-.env.local
+# macOS
 .DS_Store
-
-# Expo-generated native build dirs (we don't store these); the
-# top-level `ios/` folder holds our native SwiftUI source and is
-# intentionally tracked.
-android/
 
 # Xcode build artefacts
 ios/build/
@@ -21,3 +10,9 @@ ios/*.xcworkspace/
 # Local API keys (BYOK lives in the Keychain at runtime; the xcconfig
 # is only a developer convenience for build-time defaults).
 ios/Penumbra/Resources/Secrets.xcconfig
+
+# Backend local virtualenv + secrets
+backend/penumbra/.venv/
+backend/penumbra/__pycache__/
+backend/penumbra/*.json
+backend/penumbra/.env
