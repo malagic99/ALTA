@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Xcode build artefacts
+ios/build/
+ios/DerivedData/
+ios/Penumbra.xcodeproj/
+ios/*.xcworkspace/
+
+# Local API keys (BYOK lives in the Keychain at runtime; the xcconfig
+# is only a developer convenience for build-time defaults).
+ios/Penumbra/Resources/Secrets.xcconfig
+
+# Backend local virtualenv + secrets
+backend/penumbra/.venv/
+backend/penumbra/__pycache__/
+backend/penumbra/*.json
+backend/penumbra/.env

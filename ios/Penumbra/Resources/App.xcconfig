@@ -1,0 +1,19 @@
+// Default build settings, applied to both Debug and Release.
+//
+// Real configuration lives in Secrets.xcconfig (gitignored). The
+// optional include below pulls it in when present and silently
+// no-ops when not — meaning the project still builds cleanly on a
+// fresh clone before anyone has pasted credentials, with empty
+// placeholders in Info.plist that the in-app Settings sheet can
+// fill in at runtime (see SecretsStore.swift).
+//
+// The Google Maps API key is no longer a build setting: the
+// backend proxy holds it server-side and the iOS app talks to the
+// proxy via App Attest. Only the backend URL lives here.
+//
+// xcconfig precedence: later assignments win. So the empty default
+// here is overridden by Secrets.xcconfig if it defines the same key.
+
+PENUMBRA_BACKEND_URL =
+
+#include? "Secrets.xcconfig"
