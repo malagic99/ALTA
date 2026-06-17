@@ -712,6 +712,137 @@ p { margin: 0; }
 .callout h4 { margin-bottom: 8px; color: var(--brand-yellow); }
 .callout p { color: var(--text); font-size: 16px; }
 
+/* ---------- USE CASES (BENTO) ---------- */
+.use-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 20px;
+}
+.use-card {
+  position: relative;
+  isolation: isolate;
+  padding: 28px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.005));
+  border: 1px solid var(--line);
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  grid-column: span 3;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.use-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-glow);
+}
+/* Spectral hairline that reveals on hover, matching the brand book accent */
+.use-card::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    var(--brand-yellow) 0%,
+    var(--brand-red) 35%,
+    var(--brand-purple) 70%,
+    var(--brand-blue) 100%
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .5s cubic-bezier(.2,.7,.2,1);
+  z-index: 1;
+}
+.use-card:hover::after { transform: scaleX(1); }
+
+/* Lead card spans 3 cols × 2 rows */
+.use-card-lead {
+  grid-column: span 3;
+  grid-row: span 2;
+  padding: 40px;
+}
+.use-card-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(60% 50% at 85% 12%, rgba(253, 11, 4, .14), transparent 60%);
+  pointer-events: none;
+}
+
+/* Icon puck — same recipe as .card-icon but its own class so visual
+   parity is preserved without grid-class coupling */
+.use-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  border: 1.5px solid rgba(234, 186, 1, .55);
+  background: radial-gradient(circle at 35% 30%, rgba(234, 186, 1, .28), rgba(234, 186, 1, .05) 70%);
+  color: var(--brand-yellow);
+  box-shadow:
+    0 0 0 5px rgba(234, 186, 1, .08),
+    0 8px 26px -6px rgba(234, 186, 1, .45);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.use-icon svg { width: 24px; height: 24px; }
+.use-card:hover .use-icon {
+  transform: translateY(-2px);
+  border-color: var(--brand-yellow);
+  box-shadow:
+    0 0 0 7px rgba(234, 186, 1, .12),
+    0 12px 32px -6px rgba(234, 186, 1, .65);
+}
+.use-card-lead .use-icon { width: 60px; height: 60px; margin-bottom: 28px; }
+.use-card-lead .use-icon svg { width: 28px; height: 28px; }
+
+.use-card h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.use-card-lead h3 { font-size: 28px; margin-bottom: 14px; }
+.use-card > p {
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.55;
+  flex: 1;
+}
+.use-card-lead > p { font-size: 16px; max-width: 460px; }
+
+.use-tags {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.use-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--dim);
+  border: 1px solid var(--line-strong);
+  border-radius: 99px;
+  padding: 5px 11px;
+  white-space: nowrap;
+}
+
+@media (max-width: 960px) {
+  .use-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .use-card { grid-column: span 1; }
+  .use-card-lead { grid-column: span 2; grid-row: auto; padding: 32px; }
+  .use-card-lead h3 { font-size: 24px; }
+}
+@media (max-width: 640px) {
+  .use-grid { grid-template-columns: 1fr; }
+  .use-card, .use-card-lead { grid-column: span 1; }
+  .use-card-lead { padding: 28px; }
+}
+
 /* ---------- ADVANTAGE CARDS ---------- */
 .cards {
   display: grid;
@@ -1089,7 +1220,7 @@ p { margin: 0; }
   }
 
   /* Cards / steps / members — flatten styling */
-  .step, .card, .member, .science, .contact-card, .callout {
+  .step, .card, .member, .science, .contact-card, .callout, .use-card {
     background: #ffffff !important;
     border: 1px solid #ccc !important;
     color: #000 !important;
@@ -1097,10 +1228,12 @@ p { margin: 0; }
     page-break-inside: avoid;
     padding: 10pt !important;
   }
-  .step p, .card p, .member p, .science li { color: #222 !important; }
+  .step p, .card p, .member p, .science li, .use-card p { color: #222 !important; }
+  .use-card-glow, .use-card::after { display: none !important; }
+  .use-card-lead { grid-column: span 2 !important; grid-row: auto !important; }
 
   /* Step numbers / icons / TRL chips */
-  .step-num, .card-icon, .tl-mark, .member-avatar {
+  .step-num, .card-icon, .use-icon, .tl-mark, .member-avatar {
     background: #fff !important;
     border: 1px solid #333 !important;
     color: #000 !important;
@@ -1111,8 +1244,9 @@ p { margin: 0; }
   }
   .step-num::after { display: none !important; }
   .trl { background: #f0f0f0 !important; color: #000 !important; }
+  .use-tag { color: #444 !important; border-color: #999 !important; }
 
-  .pipeline, .cards, .team { grid-template-columns: 1fr 1fr !important; gap: 10pt !important; }
+  .pipeline, .cards, .team, .use-grid { grid-template-columns: 1fr 1fr !important; gap: 10pt !important; }
   .timeline::before { background: #999 !important; }
 
   /* Make every external link's URL visible after the link text */
@@ -1260,6 +1394,29 @@ p { margin: 0; }
     0 8px 26px -6px rgba(117, 42, 144, .55);
 }
 [data-theme="light"] .card:hover .card-icon {
+  border-color: var(--brand-purple);
+  box-shadow:
+    0 0 0 7px rgba(117, 42, 144, .14),
+    0 12px 32px -6px rgba(117, 42, 144, .70);
+}
+
+/* Use cases — light theme: white surfaces, purple icon accent, purple
+   glow on the lead card to match the rest of the light palette */
+[data-theme="light"] .use-card {
+  background: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, .7));
+}
+[data-theme="light"] .use-card-glow {
+  background: radial-gradient(60% 50% at 85% 12%, rgba(117, 42, 144, .12), transparent 60%);
+}
+[data-theme="light"] .use-icon {
+  border-color: rgba(117, 42, 144, .70);
+  background: radial-gradient(circle at 35% 30%, rgba(117, 42, 144, .26), rgba(117, 42, 144, .05) 70%);
+  color: var(--brand-purple);
+  box-shadow:
+    0 0 0 5px rgba(117, 42, 144, .10),
+    0 8px 26px -6px rgba(117, 42, 144, .55);
+}
+[data-theme="light"] .use-card:hover .use-icon {
   border-color: var(--brand-purple);
   box-shadow:
     0 0 0 7px rgba(117, 42, 144, .14),
