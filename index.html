@@ -622,109 +622,103 @@
           </li>
         </ul>
 
-        <figure class="wang-viz" data-arch="photonic" aria-labelledby="wang-viz-title">
+        <figure class="wang-viz" data-task="medium" aria-labelledby="wang-viz-title">
           <figcaption class="wang-viz-head">
-            <p class="eyebrow"><span class="dot"></span>Interactive · Architecture comparison</p>
-            <h4 id="wang-viz-title">Same task. Two architectures. <span class="hl">Different physics.</span></h4>
-            <p class="wang-viz-sub">A reservoir of N&nbsp;=&nbsp;500 nodes. Toggle the substrate — watch where the energy goes.</p>
+            <p class="eyebrow"><span class="dot"></span>Interactive · Chip footprint at scale</p>
+            <h4 id="wang-viz-title">Same task. Same answer. <span class="hl">Different silicon.</span></h4>
+            <p class="wang-viz-sub">Photonic dies stay postage-stamp size as task complexity grows. Silicon needs more cores, more area, more power. Drag a complexity to see what each looks like at scale.</p>
           </figcaption>
 
-          <div class="wang-toggle" role="tablist" aria-label="Compute architecture">
-            <button class="wang-toggle-btn is-active" role="tab" aria-selected="true" data-arch="photonic" type="button">
-              <span class="wang-toggle-dot" aria-hidden="true"></span>
-              Photonic FLP
+          <div class="wang-task-toggle" role="tablist" aria-label="Task complexity">
+            <button class="wang-task-btn" role="tab" data-task="low" type="button">
+              <span class="wang-task-tag">Lo</span>
+              <span class="wang-task-label">Single sensor</span>
+              <span class="wang-task-sub">~10 inputs</span>
             </button>
-            <button class="wang-toggle-btn" role="tab" aria-selected="false" data-arch="silicon" type="button">
-              <span class="wang-toggle-dot" aria-hidden="true"></span>
-              Silicon Digital
+            <button class="wang-task-btn is-active" role="tab" data-task="medium" type="button" aria-selected="true">
+              <span class="wang-task-tag">Md</span>
+              <span class="wang-task-label">Anomaly classify</span>
+              <span class="wang-task-sub">~100 inputs</span>
             </button>
-            <div class="wang-toggle-pill" aria-hidden="true"></div>
+            <button class="wang-task-btn" role="tab" data-task="high" type="button">
+              <span class="wang-task-tag">Hi</span>
+              <span class="wang-task-label">Full autonomy</span>
+              <span class="wang-task-sub">~500 inputs</span>
+            </button>
           </div>
 
           <div class="wang-stage" role="tabpanel">
-            <svg class="wang-arch wang-arch-photonic is-active" viewBox="0 0 420 280" data-arch="photonic" preserveAspectRatio="xMidYMid meet" aria-label="Photonic fiber-loop reservoir with one nonlinear node and time-multiplexed virtual neurons">
-              <defs>
-                <linearGradient id="wangFiberRing" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stop-color="#EABA01" stop-opacity=".35"/>
-                  <stop offset="50%" stop-color="#EABA01" stop-opacity="1"/>
-                  <stop offset="100%" stop-color="#EABA01" stop-opacity=".35"/>
-                </linearGradient>
-                <radialGradient id="wangFiberPulseGlow">
-                  <stop offset="0%" stop-color="#EABA01"/>
-                  <stop offset="60%" stop-color="#EABA01" stop-opacity=".4"/>
-                  <stop offset="100%" stop-color="#EABA01" stop-opacity="0"/>
-                </radialGradient>
-                <path id="wangFiberPath" d="M 345 140 A 135 85 0 1 1 75 140 A 135 85 0 1 1 345 140" fill="none"/>
-              </defs>
+            <div class="wang-chip-row">
+              <div class="wang-chip wang-chip-photonic">
+                <div class="wang-chip-head">
+                  <div class="wang-chip-name">Photonic FLP</div>
+                  <div class="wang-chip-frame">postage stamp</div>
+                </div>
+                <div class="wang-chip-mount">
+                  <svg viewBox="0 0 120 80" class="wang-chip-svg wang-chip-svg-photonic" aria-label="Photonic chip footprint" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                      <path id="wangPhotonicChipLoop" d="M 88 40 A 28 18 0 1 1 32 40 A 28 18 0 1 1 88 40" fill="none"/>
+                      <radialGradient id="wangPhotonicChipGlow"><stop offset="0%" stop-color="#EABA01"/><stop offset="100%" stop-color="#EABA01" stop-opacity="0"/></radialGradient>
+                    </defs>
+                    <rect x="3" y="3" width="114" height="74" rx="6" fill="rgba(234,186,1,.04)" stroke="#EABA01" stroke-width="1.4"/>
+                    <line x1="6"   y1="40" x2="32"  y2="40" stroke="#EABA01" stroke-width=".9"/>
+                    <line x1="88"  y1="40" x2="114" y2="40" stroke="#EABA01" stroke-width=".9"/>
+                    <circle cx="6"   cy="40" r="1.8" fill="#EABA01"/>
+                    <circle cx="114" cy="40" r="1.8" fill="#EABA01"/>
+                    <ellipse cx="60" cy="40" rx="28" ry="18" fill="none" stroke="#EABA01" stroke-width="1.1" opacity=".75"/>
+                    <circle cx="32" cy="40" r="2.6" fill="#FD0B04"/>
+                    <g fill="#EABA01" opacity=".55">
+                      <circle cx="84" cy="48" r=".9"/><circle cx="78" cy="55" r=".9"/>
+                      <circle cx="68" cy="58" r=".9"/><circle cx="52" cy="58" r=".9"/>
+                      <circle cx="42" cy="55" r=".9"/><circle cx="36" cy="48" r=".9"/>
+                      <circle cx="36" cy="32" r=".9"/><circle cx="42" cy="25" r=".9"/>
+                      <circle cx="52" cy="22" r=".9"/><circle cx="68" cy="22" r=".9"/>
+                      <circle cx="78" cy="25" r=".9"/><circle cx="84" cy="32" r=".9"/>
+                    </g>
+                    <circle r="3.4" fill="url(#wangPhotonicChipGlow)" opacity=".75"><animateMotion dur="4.5s" repeatCount="indefinite"><mpath href="#wangPhotonicChipLoop"/></animateMotion></circle>
+                    <circle r="1.6" fill="#fff"><animateMotion dur="4.5s" repeatCount="indefinite"><mpath href="#wangPhotonicChipLoop"/></animateMotion></circle>
+                  </svg>
+                </div>
+                <dl class="wang-chip-spec">
+                  <div><dt>Footprint</dt><dd>~1 cm²</dd></div>
+                  <div><dt>Resource</dt><dd>1 fiber loop</dd></div>
+                  <div><dt>Power</dt><dd>~5 mW</dd></div>
+                </dl>
+              </div>
 
-              <ellipse cx="210" cy="140" rx="135" ry="85" fill="none" stroke="url(#wangFiberRing)" stroke-width="2.5"/>
+              <div class="wang-chip-vs" aria-hidden="true"><span>vs.</span></div>
 
-              <g class="wang-photonic-neurons" fill="#EABA01" opacity=".55"></g>
-
-              <line x1="18"  y1="140" x2="73"  y2="140" stroke="currentColor" stroke-width="1.4" opacity=".55"/>
-              <text x="18"   y="128" font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".7">input</text>
-              <line x1="347" y1="140" x2="402" y2="140" stroke="#EABA01" stroke-width="1.6"/>
-              <text x="402"  y="128" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="10" fill="#EABA01">readout</text>
-
-              <circle cx="210" cy="55" r="7" fill="#FD0B04"/>
-              <circle cx="210" cy="55" r="11" fill="none" stroke="#FD0B04" stroke-width="1" opacity=".55"/>
-              <text x="210" y="40" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#FD0B04">nonlinear node</text>
-
-              <circle r="14" fill="url(#wangFiberPulseGlow)" opacity=".7">
-                <animateMotion dur="6s" repeatCount="indefinite"><mpath href="#wangFiberPath"/></animateMotion>
-              </circle>
-              <circle r="4" fill="#EABA01">
-                <animateMotion dur="6s" repeatCount="indefinite"><mpath href="#wangFiberPath"/></animateMotion>
-              </circle>
-
-              <text x="210" y="252" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#EABA01" opacity=".9">N = 500 virtual neurons · time-multiplexed in one fiber</text>
-            </svg>
-
-            <svg class="wang-arch wang-arch-silicon" viewBox="0 0 420 280" data-arch="silicon" preserveAspectRatio="xMidYMid meet" hidden aria-label="Silicon grid of 500 digital cores with quadratic interconnect overhead">
-              <defs>
-                <radialGradient id="wangHeatGlow">
-                  <stop offset="0%" stop-color="#FD0B04" stop-opacity=".55"/>
-                  <stop offset="100%" stop-color="#FD0B04" stop-opacity="0"/>
-                </radialGradient>
-              </defs>
-              <g class="wang-silicon-connections" stroke="#FD0B04" stroke-width="0.5" opacity=".22"></g>
-              <g class="wang-silicon-nodes" fill="#FD0B04"></g>
-              <g class="wang-silicon-heat">
-                <circle cx="120" cy="100" r="0" fill="url(#wangHeatGlow)"><animate attributeName="r" values="0;36;0" dur="3.6s" repeatCount="indefinite"/></circle>
-                <circle cx="280" cy="140" r="0" fill="url(#wangHeatGlow)"><animate attributeName="r" values="0;36;0" dur="3.6s" begin="1.2s" repeatCount="indefinite"/></circle>
-                <circle cx="200" cy="180" r="0" fill="url(#wangHeatGlow)"><animate attributeName="r" values="0;36;0" dur="3.6s" begin="2.4s" repeatCount="indefinite"/></circle>
-              </g>
-              <text x="210" y="252" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#FD0B04" opacity=".9">N = 500 digital cores · N² = 250 000 interconnects</text>
-            </svg>
-          </div>
-
-          <div class="wang-stats" role="status" aria-live="polite">
-            <div class="wang-stat" data-show="photonic">
-              <span class="wang-stat-label">Power scaling</span>
-              <strong class="wang-stat-value">O(1)</strong>
-            </div>
-            <div class="wang-stat" data-show="photonic">
-              <span class="wang-stat-label">Energy / inference</span>
-              <strong class="wang-stat-value">~5 mW</strong>
-            </div>
-            <div class="wang-stat is-headline" data-show="photonic">
-              <span class="wang-stat-label">Vs. silicon at N&nbsp;=&nbsp;500</span>
-              <strong class="wang-stat-value">2 500× less</strong>
-            </div>
-
-            <div class="wang-stat" data-show="silicon" hidden>
-              <span class="wang-stat-label">Power scaling</span>
-              <strong class="wang-stat-value">O(N²)</strong>
-            </div>
-            <div class="wang-stat" data-show="silicon" hidden>
-              <span class="wang-stat-label">Energy / inference</span>
-              <strong class="wang-stat-value">~12.5 W</strong>
-            </div>
-            <div class="wang-stat is-headline is-warning" data-show="silicon" hidden>
-              <span class="wang-stat-label">Bottleneck</span>
-              <strong class="wang-stat-value">N²&nbsp;interconnect</strong>
+              <div class="wang-chip wang-chip-silicon">
+                <div class="wang-chip-head">
+                  <div class="wang-chip-name">Silicon Digital</div>
+                  <div class="wang-chip-frame" data-spec="frame">credit card</div>
+                </div>
+                <div class="wang-chip-mount">
+                  <svg viewBox="0 0 280 180" class="wang-chip-svg wang-chip-svg-silicon" aria-label="Silicon chip footprint" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                      <radialGradient id="wangSiliconHeat"><stop offset="0%" stop-color="#FD0B04" stop-opacity=".55"/><stop offset="100%" stop-color="#FD0B04" stop-opacity="0"/></radialGradient>
+                    </defs>
+                    <rect class="wang-silicon-die" x="3" y="3" width="274" height="174" rx="6" fill="rgba(253,11,4,.04)" stroke="#FD0B04" stroke-width="1.4"/>
+                    <g class="wang-silicon-cores" fill="#FD0B04"></g>
+                    <g class="wang-silicon-heat"></g>
+                  </svg>
+                </div>
+                <dl class="wang-chip-spec">
+                  <div><dt>Footprint</dt><dd data-spec="footprint">~6 cm²</dd></div>
+                  <div><dt>Cores</dt><dd data-spec="cores">~48 cores</dd></div>
+                  <div><dt>Power</dt><dd data-spec="power" class="is-warm">~3 W</dd></div>
+                </dl>
+              </div>
             </div>
           </div>
+
+          <p class="wang-takeaway">
+            At <span class="wang-takeaway-task">anomaly-classification</span> complexity, the silicon implementation needs
+            <strong class="wang-takeaway-stat" data-show="area">~6× the die area</strong>
+            and <strong class="wang-takeaway-stat is-warm" data-show="power">~600× the power</strong>
+            of the photonic equivalent — for the same inference accuracy.
+          </p>
+          <p class="wang-disclaimer">Illustrative scales · numbers based on Wang et&nbsp;al. 2025 (O(1) vs O(N²) energy) and typical commercial digital-reservoir footprints at each task scale.</p>
         </figure>
       </div>
     </section>
