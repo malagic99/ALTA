@@ -146,83 +146,97 @@ revealTargets.forEach(el => io.observe(el));
   });
 })();
 
-// (2) Wang interactive chart — slider drives O(N²) digital curve vs O(1) photonic line
+// (2) Wang architecture toggle — Photonic FLP vs Silicon Digital
 (() => {
-  const slider = document.getElementById('wangN');
-  const out = document.getElementById('wangNValue');
-  const ratioEl = document.getElementById('wangRatio');
-  const svg = document.querySelector('.wang-chart-svg');
-  if (!slider || !svg) return;
+  const viz = document.querySelector('.wang-viz');
+  if (!viz) return;
+  const buttons = viz.querySelectorAll('.wang-toggle-btn');
+  const archs   = viz.querySelectorAll('.wang-arch');
+  const stats   = viz.querySelectorAll('.wang-stat');
 
-  const digitalPath = svg.querySelector('.wang-digital');
-  const digitalFill = svg.querySelector('.wang-digital-fill');
-  const markerLine  = svg.querySelector('.wang-marker-line');
-  const markerD     = svg.querySelector('.wang-marker-digital');
-  const markerP     = svg.querySelector('.wang-marker-photonic');
-
-  // Chart geometry inside viewBox (0..600 x 0..280)
-  const X0 = 60, X1 = 580;      // x-axis pixel range
-  const Y_TOP = 40, Y_BOT = 240; // y-axis pixel range
-  const N_MIN = 10, N_MAX = 1000;
-  // Log scale: 10¹ at y=Y_BOT-... wait, y=220 is photonic baseline.
-  // We map energy 1..10000 onto y 220..40. log10(1)=0 -> 220, log10(10⁴)=4 -> 40.
-  // So y(e) = 220 - (log10(e) / 4) * 180
-  const PHOTONIC_BASE_Y = 220;
-  const TOP_Y = 40;
-  const yForEnergy = (e) => {
-    const logE = Math.log10(Math.max(1, e));
-    return PHOTONIC_BASE_Y - (logE / 4) * (PHOTONIC_BASE_Y - TOP_Y);
-  };
-  const xForN = (n) => X0 + ((n - N_MIN) / (N_MAX - N_MIN)) * (X1 - X0);
-  const energyDigital = (n) => Math.pow(n / N_MIN, 2);   // normalized: 1 at N=10
-
-  // Build the digital curve once (it's static; only the marker moves with slider)
-  let stroke = 'M';
-  let fill = `M ${X0} ${PHOTONIC_BASE_Y}`;
-  for (let n = N_MIN; n <= N_MAX; n += 5) {
-    const x = xForN(n);
-    const y = yForEnergy(energyDigital(n));
-    stroke += ` ${x.toFixed(1)} ${y.toFixed(1)}`;
-    fill += ` L ${x.toFixed(1)} ${y.toFixed(1)}`;
+  // Distribute N virtual neurons around the photonic fiber loop
+  const photoNeurons = viz.querySelector('.wang-photonic-neurons');
+  if (photoNeurons) {
+    const cx = 210, cy = 140, rx = 135, ry = 85;
+    const count = 36;
+    let html = '';
+    for (let i = 0; i < count; i++) {
+      const t = (i / count) * Math.PI * 2;
+      const x = cx + rx * Math.cos(t);
+      const y = cy + ry * Math.sin(t);
+      html += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5"/>`;
+    }
+    photoNeurons.innerHTML = html;
   }
-  fill += ` L ${X1} ${PHOTONIC_BASE_Y} Z`;
-  digitalPath.setAttribute('d', stroke);
-  digitalFill.setAttribute('d', fill);
 
-  const fmt = (n) => {
-    if (n >= 1000) return `${Math.round(n / 100) / 10}k×`;
-    if (n >= 100)  return `${Math.round(n)}×`;
-    if (n >= 10)   return `${Math.round(n)}×`;
-    return `${n.toFixed(1)}×`;
-  };
+  // Lay out the silicon node grid + spaghetti interconnects
+  const silNodes = viz.querySelector('.wang-silicon-nodes');
+  const silConn  = viz.querySelector('.wang-silicon-connections');
+  if (silNodes && silConn) {
+    const cols = 18, rows = 9;
+    const left = 40, top = 50, gx = 19, gy = 18;
+    const pts = [];
+    let nodeHtml = '';
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const x = left + c * gx;
+        const y = top + r * gy;
+        pts.push([x, y]);
+        nodeHtml += `<rect x="${x - 2.5}" y="${y - 2.5}" width="5" height="5" rx=".8"/>`;
+      }
+    }
+    silNodes.innerHTML = nodeHtml;
+    // Sparse but recognisably crisscross interconnects
+    let connHtml = '';
+    const total = 110;
+    for (let i = 0; i < total; i++) {
+      const a = pts[(i * 31) % pts.length];
+      const b = pts[(i * 71 + 5) % pts.length];
+      if (a === b) continue;
+      connHtml += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`;
+    }
+    silConn.innerHTML = connHtml;
+  }
 
-  const update = () => {
-    const n = Number(slider.value);
-    const x = xForN(n);
-    const yDigital = yForEnergy(energyDigital(n));
-    markerLine.setAttribute('x1', x); markerLine.setAttribute('x2', x);
-    markerD.setAttribute('cx', x); markerD.setAttribute('cy', yDigital);
-    markerP.setAttribute('cx', x);
-    out.value = n;
-    const ratio = energyDigital(n);
-    ratioEl.textContent = fmt(ratio);
+  const setArch = (target) => {
+    viz.dataset.arch = target;
+    buttons.forEach(btn => {
+      const active = btn.dataset.arch === target;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-selected', String(active));
+    });
+    archs.forEach(svg => {
+      const show = svg.dataset.arch === target;
+      svg.hidden = !show;
+      // wait a frame so the transition kicks in after hidden flip
+      requestAnimationFrame(() => svg.classList.toggle('is-active', show));
+    });
+    stats.forEach(stat => {
+      const show = stat.dataset.show === target;
+      stat.hidden = !show;
+    });
   };
-  slider.addEventListener('input', update);
-  update();
+  buttons.forEach(btn => btn.addEventListener('click', () => setArch(btn.dataset.arch)));
+  // initial pulse to settle animation state
+  setArch('photonic');
 })();
 
-// (3) Anomaly response simulator — staged pulse with timing readouts
+// (3) Anomaly response simulator — stage-by-stage activation, layout-agnostic
 (() => {
   const sim = document.querySelector('.anomaly-sim');
   if (!sim) return;
   const trigger = sim.querySelector('.anomaly-trigger');
-  const pulse = sim.querySelector('.anomaly-sim-pulse');
   const status = sim.querySelector('.anomaly-status');
   const stages = Array.from(sim.querySelectorAll('.anomaly-stage'));
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Stage timing copy (display only; actual animation pacing below)
   const timing = ['0.4 ns', '1.2 ns', '2 ns', '~1 μs'];
+  const statusByStage = [
+    'Thermal anomaly detected · sensing…',
+    'Pattern matched · inferring response…',
+    'Decision: vent · dispatching command…',
+    'Autonomous venting initiated · zero ground latency',
+  ];
 
   const reset = () => {
     sim.dataset.state = 'idle';
@@ -230,47 +244,34 @@ revealTargets.forEach(el => io.observe(el));
       s.classList.remove('is-active', 'is-done');
       s.querySelector('.anomaly-stage-time').textContent = '— ' + (i < 3 ? 'ns' : 'μs');
     });
-    pulse.style.left = '14%';
-    pulse.style.opacity = '0';
     status.textContent = 'Idle · awaiting event';
     trigger.disabled = false;
   };
 
-  // Stage positions across the rail (visual stops: 0%, 33%, 66%, 100% along the rail
-  // which sits from 14% to 86% of the track width)
-  const stagePositions = [14, 38, 62, 86];
-
   const run = () => {
     trigger.disabled = true;
     sim.dataset.state = 'running';
-    status.textContent = 'Thermal anomaly detected · propagating…';
-    pulse.style.opacity = '1';
-    pulse.style.left = stagePositions[0] + '%';
+    const stepDuration = reduced ? 320 : 700;
 
-    // Stage-by-stage activation with realistic-looking timing copy
-    const stepDuration = reduced ? 250 : 700;
     stages.forEach((stage, i) => {
       setTimeout(() => {
-        stage.classList.add('is-active');
-        stage.querySelector('.anomaly-stage-time').textContent = timing[i];
+        // Carry the previous stage from active to done so the rail "fills"
         if (i > 0) {
           stages[i - 1].classList.remove('is-active');
           stages[i - 1].classList.add('is-done');
         }
-        pulse.style.transition = `left ${stepDuration / 1000}s cubic-bezier(.4, .8, .4, 1)`;
-        if (i < stages.length - 1) {
-          pulse.style.left = stagePositions[i + 1] + '%';
-        }
-        if (i === 2) status.textContent = 'Decision: vent · dispatching command…';
+        stage.classList.add('is-active');
+        stage.querySelector('.anomaly-stage-time').textContent = timing[i];
+        status.textContent = statusByStage[i];
+
         if (i === stages.length - 1) {
+          // Hold the last active state briefly, then settle to "done"
           setTimeout(() => {
             stage.classList.remove('is-active');
             stage.classList.add('is-done');
             sim.dataset.state = 'done';
-            pulse.style.opacity = '0';
-            status.textContent = 'Autonomous venting initiated · zero ground latency';
             trigger.disabled = false;
-          }, stepDuration * 0.7);
+          }, stepDuration * 0.9);
         }
       }, i * stepDuration);
     });
