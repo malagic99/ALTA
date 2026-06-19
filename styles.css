@@ -692,9 +692,10 @@ p { margin: 0; }
   min-width: 0;
   line-height: 1.35;
 }
-/* Unified compact-label recipe. Filled variant = .trl (TRL badges),
-   ghost variant = .use-tag (Market chips). Same font, padding, shape. */
-.trl, .use-tag {
+/* Unified compact-label recipe.  Filled = .trl (TRL badges) and .step-pill
+   (filled brand-yellow); ghost = .use-tag (Markets chips).  Same font, padding,
+   shape — only fill/outline treatment differs. */
+.trl, .use-tag, .step-pill {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   letter-spacing: .08em;
@@ -820,16 +821,10 @@ p { margin: 0; }
   margin: 20px 0 0;
 }
 .step-pill {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--brand-yellow);
   border: 1px solid rgba(234, 186, 1, .35);
   background: rgba(234, 186, 1, .06);
-  padding: 4px 11px;
-  border-radius: 99px;
-  white-space: nowrap;
 }
 .step-why {
   margin-top: 22px !important;
