@@ -77,59 +77,41 @@ revealTargets.forEach(el => io.observe(el));
 
 // ===== Interactive features =====
 
-// (1) FLP step expander — click a card, panel slides in below with schematic + explainer
+// (1) FLP step expander — in-place expansion; clicked card spans full row and reveals detail
 (() => {
   const steps = document.querySelectorAll('.step[data-step]');
-  const panel = document.getElementById('step-detail-panel');
-  if (!steps.length || !panel) return;
-  const inner = panel.querySelector('.step-detail-inner');
-  const closeBtn = panel.querySelector('.step-detail-close');
+  if (!steps.length) return;
 
-  const close = (focusReturn) => {
-    panel.hidden = true;
-    panel.classList.remove('is-open');
-    steps.forEach(s => s.setAttribute('aria-expanded', 'false'));
-    if (focusReturn) focusReturn.focus();
+  const closeAll = () => {
+    steps.forEach(s => {
+      s.classList.remove('is-expanded');
+      s.setAttribute('aria-expanded', 'false');
+      const exp = s.querySelector('.step-expand');
+      if (exp) exp.hidden = true;
+    });
   };
 
-  const open = (n) => {
-    const tpl = document.getElementById(`step-template-${n}`);
-    if (!tpl) return;
-    const fragment = tpl.content.cloneNode(true);
-    // Fade out current content, swap, fade in
-    if (!panel.hidden) {
-      panel.classList.add('is-animating');
-      setTimeout(() => {
-        inner.innerHTML = '';
-        inner.appendChild(fragment);
-        panel.classList.remove('is-animating');
-      }, 180);
-    } else {
-      inner.innerHTML = '';
-      inner.appendChild(fragment);
-      panel.hidden = false;
-      requestAnimationFrame(() => panel.classList.add('is-open'));
-    }
-    steps.forEach(s => {
-      s.setAttribute('aria-expanded', s.dataset.step === String(n) ? 'true' : 'false');
-    });
-    // Scroll into view if needed (gentle nudge, not jarring jump)
+  const open = (step) => {
+    closeAll();
+    step.classList.add('is-expanded');
+    step.setAttribute('aria-expanded', 'true');
+    const exp = step.querySelector('.step-expand');
+    if (exp) exp.hidden = false;
+    // Gentle scroll-into-view if the bottom of the card is below the fold
     setTimeout(() => {
-      const rect = panel.getBoundingClientRect();
-      if (rect.bottom > window.innerHeight) {
-        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      const rect = step.getBoundingClientRect();
+      if (rect.top < 80) {
+        window.scrollBy({ top: rect.top - 90, behavior: 'smooth' });
       }
-    }, 220);
+    }, 60);
   };
 
   steps.forEach(step => {
     const trigger = () => {
-      const n = Number(step.dataset.step);
-      const isOpen = step.getAttribute('aria-expanded') === 'true';
-      if (isOpen) close(step); else open(n);
+      const isOpen = step.classList.contains('is-expanded');
+      if (isOpen) closeAll(); else open(step);
     };
     step.addEventListener('click', (e) => {
-      // Don't trigger if user clicked an internal link inside the card
       if (e.target.closest('a')) return;
       trigger();
     });
@@ -140,9 +122,8 @@ revealTargets.forEach(el => io.observe(el));
       }
     });
   });
-  closeBtn?.addEventListener('click', () => close());
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !panel.hidden) close();
+    if (e.key === 'Escape') closeAll();
   });
 })();
 
@@ -221,13 +202,16 @@ revealTargets.forEach(el => io.observe(el));
   setArch('photonic');
 })();
 
-// (3) Anomaly response simulator — stage-by-stage activation, layout-agnostic
+// (3) Anomaly response simulator — collapsed by default; expand → trigger → stage-by-stage reveal
 (() => {
   const sim = document.querySelector('.anomaly-sim');
   if (!sim) return;
+  const launch = sim.querySelector('.anomaly-launch');
+  const runner = sim.querySelector('.anomaly-runner');
   const trigger = sim.querySelector('.anomaly-trigger');
   const status = sim.querySelector('.anomaly-status');
   const stages = Array.from(sim.querySelectorAll('.anomaly-stage'));
+  if (!launch || !runner || !trigger) return;
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const timing = ['0.4 ns', '1.2 ns', '2 ns', '~1 μs'];
@@ -238,24 +222,39 @@ revealTargets.forEach(el => io.observe(el));
     'Autonomous venting initiated · zero ground latency',
   ];
 
-  const reset = () => {
-    sim.dataset.state = 'idle';
+  const resetStages = () => {
     stages.forEach((s, i) => {
       s.classList.remove('is-active', 'is-done');
       s.querySelector('.anomaly-stage-time').textContent = '— ' + (i < 3 ? 'ns' : 'μs');
     });
-    status.textContent = 'Idle · awaiting event';
+  };
+
+  const collapse = () => {
+    sim.dataset.state = 'collapsed';
+    launch.setAttribute('aria-expanded', 'false');
+    runner.hidden = true;
+    resetStages();
+    status.textContent = 'Awaiting trigger…';
+    trigger.disabled = false;
+  };
+
+  const expand = () => {
+    sim.dataset.state = 'open';
+    launch.setAttribute('aria-expanded', 'true');
+    runner.hidden = false;
+    resetStages();
+    status.textContent = 'Awaiting trigger…';
     trigger.disabled = false;
   };
 
   const run = () => {
     trigger.disabled = true;
     sim.dataset.state = 'running';
-    const stepDuration = reduced ? 320 : 700;
+    resetStages();
+    const stepDuration = reduced ? 320 : 950;
 
     stages.forEach((stage, i) => {
       setTimeout(() => {
-        // Carry the previous stage from active to done so the rail "fills"
         if (i > 0) {
           stages[i - 1].classList.remove('is-active');
           stages[i - 1].classList.add('is-done');
@@ -265,7 +264,6 @@ revealTargets.forEach(el => io.observe(el));
         status.textContent = statusByStage[i];
 
         if (i === stages.length - 1) {
-          // Hold the last active state briefly, then settle to "done"
           setTimeout(() => {
             stage.classList.remove('is-active');
             stage.classList.add('is-done');
@@ -277,8 +275,10 @@ revealTargets.forEach(el => io.observe(el));
     });
   };
 
+  launch.addEventListener('click', () => {
+    if (sim.dataset.state === 'collapsed') expand(); else collapse();
+  });
   trigger.addEventListener('click', () => {
-    if (sim.dataset.state === 'done') reset();
     requestAnimationFrame(run);
   });
 })();
