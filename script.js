@@ -61,7 +61,7 @@ links?.querySelectorAll('a').forEach(a =>
 
 // Reveal on scroll
 const revealTargets = document.querySelectorAll(
-  '.section-head, .step, .card, .science, .timeline li, .member, .callout, .contact-card, .hero-inner, .hero-prism, .band'
+  '.section-head, .step, .card, .science, .timeline li, .member, .callout, .contact-card, .hero-inner, .hero-prism, .band, .arch'
 );
 revealTargets.forEach(el => el.classList.add('reveal'));
 const io = new IntersectionObserver(
@@ -127,120 +127,8 @@ revealTargets.forEach(el => io.observe(el));
   });
 })();
 
-// (2) Wang chip-footprint viz — toggle task complexity; photonic die stays small, silicon grows
-(() => {
-  const viz = document.querySelector('.wang-viz');
-  if (!viz) return;
-  const taskBtns = viz.querySelectorAll('.wang-task-btn');
-  const siliconSvg = viz.querySelector('.wang-chip-svg-silicon');
-  const siliconDie = viz.querySelector('.wang-silicon-die');
-  const coresG = viz.querySelector('.wang-silicon-cores');
-  const heatG  = viz.querySelector('.wang-silicon-heat');
-  if (!siliconSvg || !coresG) return;
-
-  // Per-task chip data. Numbers are illustrative — area ~linear in N, energy ~N² per Wang 2025.
-  const tasks = {
-    low: {
-      svg:   { w: 130, h: 84  },
-      die:   { x: 3, y: 3, rxKey: 5 },
-      cores: { cols: 4, rows: 2 },
-      heat:  [[0.35, 0.5]],
-      label: 'single-sensor',
-      frame: 'fingernail',
-      footprint: '~1.5 cm²',
-      coresLabel: '~8 cores',
-      power: '~80 mW',
-      areaFactor: '~1.5×',
-      powerFactor: '~16×',
-    },
-    medium: {
-      svg:   { w: 220, h: 140 },
-      cores: { cols: 8, rows: 5 },
-      heat:  [[0.30, 0.4], [0.70, 0.65]],
-      label: 'anomaly-classification',
-      frame: 'credit card',
-      footprint: '~6 cm²',
-      coresLabel: '~40 cores',
-      power: '~3 W',
-      areaFactor: '~6×',
-      powerFactor: '~600×',
-    },
-    high: {
-      svg:   { w: 340, h: 218 },
-      cores: { cols: 14, rows: 9 },
-      heat:  [[0.22, 0.35], [0.55, 0.55], [0.82, 0.7]],
-      label: 'full-autonomy',
-      frame: 'paperback',
-      footprint: '~15 cm²',
-      coresLabel: '~126 cores',
-      power: '~25 W',
-      areaFactor: '~15×',
-      powerFactor: '~5 000×',
-    },
-  };
-
-  const setTask = (task) => {
-    const d = tasks[task];
-    if (!d) return;
-    viz.dataset.task = task;
-
-    // Resize the SVG (viewBox + width/height) and the die rectangle
-    siliconSvg.setAttribute('viewBox', `0 0 ${d.svg.w} ${d.svg.h}`);
-    siliconDie.setAttribute('width',  d.svg.w - 6);
-    siliconDie.setAttribute('height', d.svg.h - 6);
-
-    // Lay out the cores grid inside the die
-    const padX = 14, padY = 14;
-    const innerW = d.svg.w - 2 * padX;
-    const innerH = d.svg.h - 2 * padY;
-    const cellW = innerW / d.cores.cols;
-    const cellH = innerH / d.cores.rows;
-    const coreSize = Math.max(2.5, Math.min(cellW, cellH) * 0.55);
-    let coresHtml = '';
-    for (let r = 0; r < d.cores.rows; r++) {
-      for (let c = 0; c < d.cores.cols; c++) {
-        const cx = padX + c * cellW + cellW / 2;
-        const cy = padY + r * cellH + cellH / 2;
-        const opacity = 0.45 + Math.random() * 0.35;
-        coresHtml += `<rect x="${(cx - coreSize/2).toFixed(2)}" y="${(cy - coreSize/2).toFixed(2)}" width="${coreSize.toFixed(2)}" height="${coreSize.toFixed(2)}" rx=".8" opacity="${opacity.toFixed(2)}"/>`;
-      }
-    }
-    coresG.innerHTML = coresHtml;
-
-    // Heat blobs scaled to the die area; cycle their radius via SMIL
-    let heatHtml = '';
-    const heatR = Math.min(d.svg.w, d.svg.h) * 0.22;
-    d.heat.forEach(([fx, fy], i) => {
-      const cx = padX + fx * innerW;
-      const cy = padY + fy * innerH;
-      const dur = 3.6 + i * 0.4;
-      const begin = (i * 1.2).toFixed(2);
-      heatHtml += `<circle cx="${cx.toFixed(2)}" cy="${cy.toFixed(2)}" r="0" fill="url(#wangSiliconHeat)"><animate attributeName="r" values="0;${heatR.toFixed(1)};0" dur="${dur}s" begin="${begin}s" repeatCount="indefinite"/></circle>`;
-    });
-    heatG.innerHTML = heatHtml;
-
-    // Update spec readouts
-    viz.querySelector('[data-spec="frame"]').textContent = d.frame;
-    viz.querySelector('[data-spec="footprint"]').textContent = d.footprint;
-    viz.querySelector('[data-spec="cores"]').textContent = d.coresLabel;
-    viz.querySelector('[data-spec="power"]').textContent = d.power;
-
-    // Update buttons
-    taskBtns.forEach(btn => {
-      const active = btn.dataset.task === task;
-      btn.classList.toggle('is-active', active);
-      btn.setAttribute('aria-selected', String(active));
-    });
-
-    // Update takeaway line
-    viz.querySelector('.wang-takeaway-task').textContent = d.label;
-    viz.querySelector('[data-show="area"]').textContent  = `${d.areaFactor} the die area`;
-    viz.querySelector('[data-show="power"]').textContent = `${d.powerFactor} the power`;
-  };
-
-  taskBtns.forEach(btn => btn.addEventListener('click', () => setTask(btn.dataset.task)));
-  setTask('medium');
-})();
+// (2) Wang architecture-comparison viz — now lives in /arch-compare.js
+//     auto-mounts on [data-arch-compare]; no logic needed here.
 
 // (3) Anomaly response simulator — collapsed by default; expand → trigger → stage-by-stage reveal
 (() => {
