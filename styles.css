@@ -1741,6 +1741,97 @@ p { margin: 0; }
 }
 .network strong { color: var(--text); }
 
+/* ---------- SISTER PROJECT (Deuterium Orbital cross-reference) ---------- */
+.sister-project {
+  margin: 32px auto 0;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.sister-project-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.sister-project-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 20px 22px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.005));
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease, background .25s ease;
+}
+.sister-project-card:hover {
+  border-color: var(--brand-yellow);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+  background:
+    radial-gradient(600px 160px at 80% 0%, rgba(234, 186, 1, .06), transparent 60%),
+    linear-gradient(180deg, rgba(234, 186, 1, .035), rgba(255,255,255,.005));
+}
+.sister-project-body { flex: 1; min-width: 0; }
+.sister-project-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.sister-project-tag {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.sister-project-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  color: var(--muted);
+  transition: color .25s ease, border-color .25s ease, background .25s ease, transform .25s ease;
+  flex-shrink: 0;
+}
+.sister-project-card:hover .sister-project-arrow {
+  color: var(--brand-yellow);
+  border-color: var(--brand-yellow);
+  background: rgba(234, 186, 1, .08);
+  transform: translate(2px, -2px);
+}
+
+/* Footer sister line */
+.footer-sister {
+  color: var(--dim) !important;
+  font-size: 12px !important;
+  margin-top: 8px !important;
+}
+.footer-sister a {
+  color: var(--brand-yellow);
+  text-decoration: underline;
+  text-decoration-color: rgba(234, 186, 1, .35);
+  text-underline-offset: 3px;
+  transition: text-decoration-color .2s ease;
+}
+.footer-sister a:hover { text-decoration-color: var(--brand-yellow); }
+
+@media (max-width: 640px) {
+  .sister-project-card { padding: 18px; gap: 12px; }
+  .sister-project-name { font-size: 15px; }
+  .sister-project-tag { font-size: 13px; }
+}
+
 /* ---------- CONTACT ---------- */
 .contact { padding-top: 80px; padding-bottom: 120px; }
 .contact-card {
@@ -2157,6 +2248,26 @@ p { margin: 0; }
     radial-gradient(500px 300px at 80% 100%, rgba(117, 42, 144, .10), transparent 70%),
     #ffffff;
 }
+
+[data-theme="light"] .sister-project-card {
+  background: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, .7));
+}
+[data-theme="light"] .sister-project-card:hover {
+  border-color: var(--brand-purple);
+  background:
+    radial-gradient(600px 160px at 80% 0%, rgba(117, 42, 144, .06), transparent 60%),
+    linear-gradient(180deg, rgba(117, 42, 144, .035), rgba(255, 255, 255, .7));
+}
+[data-theme="light"] .sister-project-card:hover .sister-project-arrow {
+  color: var(--brand-purple);
+  border-color: var(--brand-purple);
+  background: rgba(117, 42, 144, .08);
+}
+[data-theme="light"] .footer-sister a {
+  color: var(--brand-purple);
+  text-decoration-color: rgba(117, 42, 144, .35);
+}
+[data-theme="light"] .footer-sister a:hover { text-decoration-color: var(--brand-purple); }
 
 /* TRL badges — deeper ink, purple-tilted across the board for cohesion */
 [data-theme="light"] .trl-9   { background: rgba(117, 42, 144, .12); color: #4a1a60; }
