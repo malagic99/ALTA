@@ -1748,7 +1748,12 @@ p { margin: 0; }
   height: 48px;
   border-radius: 50%;
   border: 1.5px solid rgba(234, 186, 1, .55);
-  background: radial-gradient(circle at 35% 30%, rgba(234, 186, 1, .26), rgba(234, 186, 1, .05) 70%);
+  /* Opaque base matching the page bg sits behind the gold wash, so the
+     timeline gradient line is clipped by the disc instead of showing
+     through its semi-transparent fill. */
+  background:
+    radial-gradient(circle at 35% 30%, rgba(234, 186, 1, .26), rgba(234, 186, 1, .05) 70%),
+    var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1761,12 +1766,15 @@ p { margin: 0; }
     0 8px 24px -6px rgba(234, 186, 1, .40);
 }
 .tl-mark-final {
-  background: var(--grad);
+  /* Dark base behind the brand gradient keeps the disc solid on either
+     theme; the gradient paints on top.  Tighter glow to stop the halo
+     banding against the body bg at high zoom. */
+  background: var(--grad), var(--bg);
   color: #fff;
   border: 1.5px solid transparent;
   box-shadow:
-    0 0 0 5px rgba(253, 11, 4, .12),
-    0 0 32px rgba(253, 11, 4, .55);
+    0 0 0 4px rgba(253, 11, 4, .14),
+    0 0 20px rgba(253, 11, 4, .35);
 }
 .tl-when {
   font-family: 'JetBrains Mono', monospace;
@@ -2348,7 +2356,12 @@ p { margin: 0; }
 }
 [data-theme="light"] .tl-mark {
   border-color: rgba(117, 42, 144, .65);
-  background: radial-gradient(circle at 35% 30%, rgba(117, 42, 144, .22), rgba(117, 42, 144, .05) 70%);
+  /* Opaque white base behind the purple wash — same reason as the dark
+     theme: hides the timeline gradient line that would otherwise show
+     through this disc's low-opacity fill. */
+  background:
+    radial-gradient(circle at 35% 30%, rgba(117, 42, 144, .22), rgba(117, 42, 144, .05) 70%),
+    #ffffff;
   color: var(--brand-purple);
   box-shadow:
     0 0 0 5px rgba(117, 42, 144, .10),
