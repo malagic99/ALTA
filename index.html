@@ -168,32 +168,7 @@
           <div class="step-expand" hidden>
             <div class="step-expand-grid">
               <figure class="step-expand-visual">
-                <svg viewBox="0 0 480 220" class="step-anim step-anim-1" aria-hidden="true">
-                  <defs>
-                    <linearGradient id="fbgFiber" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%"  stop-color="#EABA01" stop-opacity=".25"/>
-                      <stop offset="50%" stop-color="#EABA01" stop-opacity=".75"/>
-                      <stop offset="100%" stop-color="#EABA01" stop-opacity=".25"/>
-                    </linearGradient>
-                    <radialGradient id="fbgPulseGlow"><stop offset="0%" stop-color="#EABA01"/><stop offset="100%" stop-color="#EABA01" stop-opacity="0"/></radialGradient>
-                  </defs>
-                  <rect x="50" y="102" width="380" height="16" rx="3" fill="none" stroke="url(#fbgFiber)" stroke-width="1.5"/>
-                  <g class="step-anim-gratings" stroke="#EABA01" stroke-width="1.5">
-                    <line x1="180" y1="96" x2="180" y2="124"/><line x1="198" y1="96" x2="198" y2="124"/>
-                    <line x1="216" y1="96" x2="216" y2="124"/><line x1="234" y1="96" x2="234" y2="124"/>
-                    <line x1="252" y1="96" x2="252" y2="124"/><line x1="270" y1="96" x2="270" y2="124"/>
-                    <line x1="288" y1="96" x2="288" y2="124"/><line x1="306" y1="96" x2="306" y2="124"/>
-                  </g>
-                  <text x="58" y="80" font-family="'JetBrains Mono', monospace" font-size="11" fill="currentColor" opacity=".7">broadband λ&nbsp;→</text>
-                  <text x="420" y="80" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="11" fill="#EABA01">←&nbsp;λ_Bragg</text>
-                  <text x="243" y="170" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="currentColor" opacity=".55">Δ temp · Δ strain · Δ radiation</text>
-                  <text x="243" y="200" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".4">Wavelength shift ∝ measurand</text>
-
-                  <circle r="11" fill="url(#fbgPulseGlow)" opacity=".75"><animate attributeName="cx" values="60;180;180" keyTimes="0;.5;1" dur="4s" repeatCount="indefinite"/><animate attributeName="cy" values="110;110;110" dur="4s" repeatCount="indefinite"/></circle>
-                  <circle r="4" fill="#fff"><animate attributeName="cx" values="60;180;180" keyTimes="0;.5;1" dur="4s" repeatCount="indefinite"/><animate attributeName="cy" values="110;110;110" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" keyTimes="0;.4;.55" dur="4s" repeatCount="indefinite"/></circle>
-                  <circle r="11" fill="url(#fbgPulseGlow)"><animate attributeName="cx" values="180;420" keyTimes="0;1" begin=".5s;4.5s" dur="3.5s" fill="freeze"/><animate attributeName="cy" values="110;110" dur="3.5s" begin=".5s;4.5s"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.05;.85;1" begin=".5s;4.5s" dur="3.5s"/></circle>
-                  <circle r="4" fill="#EABA01"><animate attributeName="cx" values="180;420" keyTimes="0;1" begin=".5s;4.5s" dur="3.5s" fill="freeze"/><animate attributeName="cy" values="110;110" dur="3.5s" begin=".5s;4.5s"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.05;.85;1" begin=".5s;4.5s" dur="3.5s"/></circle>
-                </svg>
+                <alta-fbg class="step-anim step-anim-1"></alta-fbg>
               </figure>
               <div class="step-expand-prose">
                 <p class="step-expand-eyebrow">How it works</p>
@@ -224,12 +199,7 @@
           <div class="step-expand" hidden>
             <div class="step-expand-grid">
               <figure class="step-expand-visual">
-                <!-- Replaces the ellipse+orbit SMIL with the new photonic delay-reservoir
-                     animation (90 inward bars, nonlinear node, anomaly cycle). Rendered
-                     by arch-compare.js on [data-arch-compare]. -->
-                <div class="step-anim step-anim--prc" data-arch-compare data-default="photonic" data-n="500">
-                  <div class="arch-stage" role="img" aria-label="Photonic delay reservoir: one nonlinear node on a fiber loop forms N virtual neurons."></div>
-                </div>
+                <alta-prc class="step-anim step-anim-2"></alta-prc>
               </figure>
               <div class="step-expand-prose">
                 <p class="step-expand-eyebrow">How it works</p>
@@ -260,32 +230,7 @@
           <div class="step-expand" hidden>
             <div class="step-expand-grid">
               <figure class="step-expand-visual">
-                <svg viewBox="0 0 480 220" class="step-anim step-anim-3" aria-hidden="true">
-                  <rect x="200" y="90" width="80" height="40" rx="8" fill="rgba(234, 186, 1, .08)" stroke="#EABA01" stroke-width="1.5"/>
-                  <text x="240" y="115" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#EABA01">WDM hub</text>
-                  <g stroke-width="1.4" opacity=".75" fill="none">
-                    <line x1="60"  y1="40"  x2="200" y2="102" stroke="#EABA01"/>
-                    <line x1="60"  y1="110" x2="200" y2="110" stroke="#FD0B04" opacity=".8"/>
-                    <line x1="60"  y1="180" x2="200" y2="118" stroke="#A965C9"/>
-                    <line x1="280" y1="102" x2="420" y2="40"  stroke="#EABA01"/>
-                    <line x1="280" y1="110" x2="420" y2="110" stroke="#FD0B04" opacity=".8"/>
-                    <line x1="280" y1="118" x2="420" y2="180" stroke="#A965C9"/>
-                  </g>
-                  <g font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".7">
-                    <text x="48" y="44"  text-anchor="end">power</text>
-                    <text x="48" y="114" text-anchor="end">attitude</text>
-                    <text x="48" y="184" text-anchor="end">payload</text>
-                    <text x="432" y="44">comms</text>
-                    <text x="432" y="114">thermal</text>
-                    <text x="432" y="184">guidance</text>
-                  </g>
-                  <g class="step-anim-packets">
-                    <circle r="3.5" fill="#EABA01"><animate attributeName="cx" values="68;200;280;412" keyTimes="0;.4;.6;1" dur="3s" repeatCount="indefinite"/><animate attributeName="cy" values="40;102;102;40" keyTimes="0;.4;.6;1" dur="3s" repeatCount="indefinite"/></circle>
-                    <circle r="3.5" fill="#FD0B04"><animate attributeName="cx" values="68;200;280;412" keyTimes="0;.4;.6;1" dur="3s" begin="-1s" repeatCount="indefinite"/><animate attributeName="cy" values="110;110;110;110" dur="3s" begin="-1s" repeatCount="indefinite"/></circle>
-                    <circle r="3.5" fill="#A965C9"><animate attributeName="cx" values="68;200;280;412" keyTimes="0;.4;.6;1" dur="3s" begin="-2s" repeatCount="indefinite"/><animate attributeName="cy" values="180;118;118;180" keyTimes="0;.4;.6;1" dur="3s" begin="-2s" repeatCount="indefinite"/></circle>
-                  </g>
-                  <text x="240" y="200" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".4">One fiber · WDM-multiplexed · 100 Gbps</text>
-                </svg>
+                <alta-wdm class="step-anim step-anim-3"></alta-wdm>
               </figure>
               <div class="step-expand-prose">
                 <p class="step-expand-eyebrow">How it works</p>
@@ -316,23 +261,7 @@
           <div class="step-expand" hidden>
             <div class="step-expand-grid">
               <figure class="step-expand-visual">
-                <svg viewBox="0 0 480 220" class="step-anim step-anim-4" aria-hidden="true">
-                  <defs>
-                    <radialGradient id="laserPulse"><stop offset="0%" stop-color="#EABA01"/><stop offset="100%" stop-color="#EABA01" stop-opacity="0"/></radialGradient>
-                  </defs>
-                  <rect x="208" y="22" width="64" height="34" rx="4" fill="rgba(234,186,1,.06)" stroke="currentColor" stroke-width="1.4" opacity=".75"/>
-                  <rect x="184" y="32" width="22" height="14" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/>
-                  <rect x="274" y="32" width="22" height="14" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/>
-                  <text x="240" y="42" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".75">satellite</text>
-                  <line x1="240" y1="58" x2="240" y2="180" stroke="#EABA01" stroke-width="2" opacity=".55" stroke-dasharray="5 4"/>
-                  <text x="260" y="120" font-family="'JetBrains Mono', monospace" font-size="11" fill="#EABA01">10 Gbps · 1550 nm</text>
-                  <circle r="12" fill="url(#laserPulse)" opacity=".7"><animate attributeName="cy" values="60;178" dur="2.4s" repeatCount="indefinite"/></circle>
-                  <circle r="4" fill="#fff"><animate attributeName="cy" values="60;178" dur="2.4s" repeatCount="indefinite"/><animate attributeName="cx" values="240;240" dur="2.4s" repeatCount="indefinite"/></circle>
-                  <circle cx="240" cy="180" r="18" fill="none" stroke="#EABA01" stroke-width="1.5" opacity="0"><animate attributeName="opacity" values="0;.9;0" dur="2.4s" repeatCount="indefinite"/><animate attributeName="r" values="6;26;26" dur="2.4s" repeatCount="indefinite"/></circle>
-                  <path d="M 90 195 L 240 180 L 390 195 Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55"/>
-                  <line x1="110" y1="195" x2="370" y2="195" stroke="currentColor" stroke-width="1" opacity=".4" stroke-dasharray="2 3"/>
-                  <text x="240" y="212" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".4">Ground station · 95% raw-data volume eliminated on-board</text>
-                </svg>
+                <alta-downlink class="step-anim step-anim-4"></alta-downlink>
               </figure>
               <div class="step-expand-prose">
                 <p class="step-expand-eyebrow">How it works</p>
@@ -887,5 +816,10 @@
   <script src="script.js" defer></script>
   <script src="arch-compare.js" defer></script>
   <script src="thermal-demo.js" defer></script>
+  <script src="pipeline/alta-anim-base.js" defer></script>
+  <script src="pipeline/alta-fbg.js" defer></script>
+  <script src="pipeline/alta-prc.js" defer></script>
+  <script src="pipeline/alta-wdm.js" defer></script>
+  <script src="pipeline/alta-downlink.js" defer></script>
 </body>
 </html>

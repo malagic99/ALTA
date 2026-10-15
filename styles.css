@@ -2539,3 +2539,28 @@ p { margin: 0; }
     background: #ffffff;
   }
 }
+
+/* PIPELINE "Look inside" components (alta-fbg / alta-prc / alta-wdm /
+   alta-downlink).  Hosts must shrink to their SVG so the aspect-ratio
+   rules in .step-anim keep the diagram inside the dark card frame. */
+alta-fbg, alta-prc, alta-wdm, alta-downlink {
+  display: block;
+  width: 100%;
+  color: var(--text);
+}
+alta-fbg > svg, alta-prc > svg, alta-wdm > svg, alta-downlink > svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Light-theme SVG overrides.  The components set the neutral ink / muted
+   / steel colors as `fill` and `stroke` attributes on individual elements;
+   CSS `fill` / `stroke` properties override those attributes.  Brand hues
+   (gold / red / purple / indigo / orange / hot-white) are left alone. */
+[data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [fill="#C3C8F0"] { fill: var(--text); }
+[data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [fill="#A7ADDE"] { fill: var(--muted); }
+[data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [fill="#8A93C8"] { fill: var(--muted); }
+[data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [stroke="#8A93C8"] { stroke: var(--muted); }
+[data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [fill="#0C0F1B"] { fill: #ffffff; }
+[data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [stroke="#C3C8F0"] { stroke: var(--text); }
