@@ -19,19 +19,45 @@ const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
 onScroll();
 window.addEventListener('scroll', onScroll, { passive: true });
 
-// Mobile menu
-const toggle = document.getElementById('navToggle');
-const links = document.querySelector('.nav-links');
-toggle?.addEventListener('click', () => {
-  const open = links.classList.toggle('open');
-  toggle.setAttribute('aria-expanded', String(open));
-});
-links?.querySelectorAll('a').forEach(a =>
-  a.addEventListener('click', () => {
+// Mobile menu — toggle with icon swap (hamburger ↔ X), Escape to close,
+// outside-click dismissal, and link-click dismissal.  Focus returns to
+// the toggle button so keyboard users don't lose their place.
+(() => {
+  const toggle = document.getElementById('navToggle');
+  const links = document.querySelector('.nav-links');
+  if (!toggle || !links) return;
+
+  const close = ({ focusReturn } = {}) => {
+    if (!links.classList.contains('open')) return;
     links.classList.remove('open');
-    toggle?.setAttribute('aria-expanded', 'false');
-  })
-);
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Open menu');
+    if (focusReturn) toggle.focus();
+  };
+  const open = () => {
+    links.classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.setAttribute('aria-label', 'Close menu');
+  };
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (links.classList.contains('open')) close({ focusReturn: true });
+    else open();
+  });
+  links.querySelectorAll('a').forEach(a =>
+    a.addEventListener('click', () => close())
+  );
+  // Outside-click dismissal
+  document.addEventListener('click', (e) => {
+    if (!links.classList.contains('open')) return;
+    if (links.contains(e.target) || toggle.contains(e.target)) return;
+    close();
+  });
+  // Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && links.classList.contains('open')) close({ focusReturn: true });
+  });
+})();
 
 // Progress dots — active state tracks which section is in view
 (() => {
@@ -59,21 +85,64 @@ links?.querySelectorAll('a').forEach(a =>
   map.forEach((_, el) => obs.observe(el));
 })();
 
-// Reveal on scroll
-const revealTargets = document.querySelectorAll(
-  '.section-head, .step, .card, .science, .timeline li, .member, .callout, .contact-card, .hero-inner, .hero-prism, .band, .arch'
-);
-revealTargets.forEach(el => el.classList.add('reveal'));
-const io = new IntersectionObserver(
-  entries => entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('in');
-      io.unobserve(e.target);
-    }
-  }),
-  { threshold: 0.12 }
-);
-revealTargets.forEach(el => io.observe(el));
+// Reveal on scroll — but ONLY if IntersectionObserver exists and the user
+// hasn't asked for reduced motion.  If either is false, content stays
+// visible immediately (never hidden behind an animation that won't play).
+(() => {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const targets = document.querySelectorAll(
+    '.section-head, .step, .card, .science, .timeline li, .member, .callout, .contact-card, .hero-inner, .hero-prism, .band, .arch'
+  );
+  if (reduced || typeof IntersectionObserver === 'undefined') {
+    targets.forEach(el => el.classList.add('reveal', 'in'));
+    return;
+  }
+  targets.forEach(el => el.classList.add('reveal'));
+  const io = new IntersectionObserver(
+    entries => entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    }),
+    { threshold: 0.12 }
+  );
+  targets.forEach(el => io.observe(el));
+})();
+
+// Copy email — clipboard with success / error feedback and a text-select
+// fallback for browsers / contexts where navigator.clipboard is unavailable
+(() => {
+  const btn = document.querySelector('.btn-copy[data-copy]');
+  if (!btn) return;
+  const label = btn.querySelector('.btn-copy-label');
+  const original = label ? label.textContent : btn.textContent;
+  const flash = (cls, text) => {
+    btn.classList.add(cls);
+    if (label) label.textContent = text; else btn.textContent = text;
+    setTimeout(() => {
+      btn.classList.remove(cls);
+      if (label) label.textContent = original; else btn.textContent = original;
+    }, 1800);
+  };
+  const copyFallback = (text) => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.position = 'absolute'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); flash('is-copied', 'Email copied'); }
+    catch { flash('is-error', 'Copy failed · select the email instead'); }
+    document.body.removeChild(ta);
+  };
+  btn.addEventListener('click', async () => {
+    const text = btn.dataset.copy;
+    if (!text) return;
+    if (navigator.clipboard && window.isSecureContext) {
+      try { await navigator.clipboard.writeText(text); flash('is-copied', 'Email copied'); }
+      catch { copyFallback(text); }
+    } else { copyFallback(text); }
+  });
+})();
 
 // ===== Interactive features =====
 
@@ -101,7 +170,8 @@ revealTargets.forEach(el => io.observe(el));
     setTimeout(() => {
       const rect = step.getBoundingClientRect();
       if (rect.top < 80) {
-        window.scrollBy({ top: rect.top - 90, behavior: 'smooth' });
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollBy({ top: rect.top - 96, behavior: prefersReduced ? 'auto' : 'smooth' });
       }
     }, 60);
   };
@@ -260,7 +330,7 @@ revealTargets.forEach(el => io.observe(el));
     }));
   };
 
-  const draw = (t) => {
+  const paint = (t) => {
     ctx.clearRect(0, 0, w, h);
     for (const s of stars) {
       const flicker = reduced ? s.a : s.a * (0.7 + 0.3 * Math.sin(t * 0.002 + s.tw));
@@ -273,10 +343,11 @@ revealTargets.forEach(el => io.observe(el));
         if (s.y > h) { s.y = 0; s.x = Math.random() * w; }
       }
     }
-    requestAnimationFrame(draw);
   };
+  const loop = (t) => { paint(t); if (!reduced) requestAnimationFrame(loop); };
 
   resize();
-  window.addEventListener('resize', resize);
-  requestAnimationFrame(draw);
+  // Repaint static starfield on resize when reduced-motion is on
+  window.addEventListener('resize', () => { resize(); if (reduced) paint(0); });
+  requestAnimationFrame(loop);
 })();
