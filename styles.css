@@ -1122,261 +1122,306 @@ p { margin: 0; }
   .arch-fact-v { font-size: 16px; }
 }
 
-/* ---------- ANOMALY SIMULATOR ---------- */
-.anomaly-sim {
-  margin-top: 24px;
-}
-
-/* Launch button — collapsed state, single big button to start */
-.anomaly-launch {
+/* ---------- THERMAL-RUNAWAY DEMO (thermal-demo.js) ----------
+   Namespaced .tr-* classes so nothing collides with site styles.
+   Scene (12 battery cells + fiber + PRC + backbone + vent louvers) is
+   rendered by /thermal-demo.js into .tr-scene; CSS below only styles
+   the surrounding shell, stage cards, event-clock bar and compare strip. */
+.tr {
+  margin: 0;
+  padding: 32px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.005));
   display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  padding: 16px 20px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--line-strong);
-  background: rgba(234, 186, 1, .04);
-  color: var(--text);
-  cursor: pointer;
-  text-align: left;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 15px;
-  font-weight: 500;
-  transition: border-color .25s ease, background .25s ease, color .25s ease;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
 }
-.anomaly-launch:hover {
-  border-color: var(--brand-yellow);
-  background: rgba(234, 186, 1, .08);
-}
-.anomaly-launch-icon {
+.tr > header { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.tr-eyebrow {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  background: rgba(234, 186, 1, .14);
-  color: var(--brand-yellow);
-  flex-shrink: 0;
-}
-.anomaly-launch-label { flex: 1; min-width: 0; }
-.anomaly-launch-meta {
+  gap: 12px;
+  margin: 0;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  letter-spacing: .04em;
-  color: var(--dim);
-  flex-shrink: 0;
-}
-.anomaly-launch-chevron {
-  flex-shrink: 0;
+  letter-spacing: .14em;
+  text-transform: uppercase;
   color: var(--muted);
-  transition: transform .35s cubic-bezier(.2, .8, .2, 1);
+  font-weight: 500;
 }
-.anomaly-sim[data-state="open"] .anomaly-launch,
-.anomaly-sim[data-state="running"] .anomaly-launch,
-.anomaly-sim[data-state="done"] .anomaly-launch {
-  border-color: var(--brand-yellow);
-  background: rgba(234, 186, 1, .08);
+.tr-eyebrow::before {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--brand-red);
+  box-shadow: 0 0 10px var(--brand-red);
+  flex-shrink: 0;
 }
-.anomaly-sim[data-state="open"] .anomaly-launch-chevron,
-.anomaly-sim[data-state="running"] .anomaly-launch-chevron,
-.anomaly-sim[data-state="done"] .anomaly-launch-chevron { transform: rotate(180deg); }
+.tr-title {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-wrap: balance;
+}
+.tr-title em {
+  font-style: normal;
+  color: var(--brand-yellow);
+  font-weight: 600;
+}
+.tr-sub {
+  margin: 0;
+  max-width: 700px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--muted);
+  text-wrap: pretty;
+}
 
-/* The runner — expanded simulator */
-.anomaly-runner {
-  margin-top: 14px;
-  padding: 22px;
-  border-radius: var(--radius-sm);
+.tr-viz {
   background: rgba(0, 0, 0, .25);
   border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  color: var(--text);
 }
-/* Vertical stage list: each stage = puck + label + collapsible description */
-.anomaly-sim-flow {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.tr-bar {
   display: flex;
-  flex-direction: column;
-  gap: 0;
-  position: relative;
-  counter-reset: stage;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
 }
-.anomaly-stage {
-  position: relative;
-  padding: 14px 0 14px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.anomaly-stage:not(:last-child) {
-  border-bottom: 1px solid var(--line);
-}
-.anomaly-stage-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-/* Vertical connector from puck of stage N to puck of stage N+1 */
-.anomaly-stage:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  left: 24px;
-  top: 60px;
-  bottom: -2px;
-  width: 2px;
-  background: var(--line-strong);
-  border-radius: 2px;
-  transition: background .4s ease;
-}
-.anomaly-stage.is-done::after,
-.anomaly-stage.is-active::after {
-  background: linear-gradient(to bottom, var(--brand-yellow), rgba(234, 186, 1, .45));
-}
-.anomaly-stage-desc {
-  margin: 0 0 0 64px;
-  padding: 12px 16px;
-  background: rgba(234, 186, 1, .05);
-  border: 1px solid rgba(234, 186, 1, .15);
-  border-radius: 8px;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.55;
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  transition: opacity .35s ease, max-height .45s ease, padding .35s ease, margin-top .35s ease;
-  margin-top: 0;
-}
-.anomaly-stage.is-active .anomaly-stage-desc,
-.anomaly-stage.is-done .anomaly-stage-desc {
-  opacity: 1;
-  max-height: 220px;
-  margin-top: 6px;
-}
-.anomaly-stage.is-done .anomaly-stage-desc {
-  opacity: .75;
-  background: rgba(234, 186, 1, .03);
-}
-.anomaly-stage-puck {
-  position: relative;
-  width: 48px; height: 48px;
-  border-radius: 50%;
-  border: 1.5px solid var(--line-strong);
-  background: var(--bg-elev);
-  display: flex; align-items: center; justify-content: center;
+.tr-kicker {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: .02em;
+  letter-spacing: .14em;
+  text-transform: uppercase;
   color: var(--muted);
-  transition: border-color .35s ease, color .35s ease, box-shadow .35s ease, transform .35s cubic-bezier(.2, .8, .2, 1);
-  flex-shrink: 0;
-  z-index: 1;
 }
-.anomaly-stage.is-active .anomaly-stage-puck {
-  border-color: var(--brand-yellow);
-  color: var(--brand-yellow);
-  box-shadow:
-    0 0 0 5px rgba(234, 186, 1, .14),
-    0 0 26px rgba(234, 186, 1, .55);
-  transform: scale(1.04);
-}
-.anomaly-stage.is-done .anomaly-stage-puck {
-  border-color: rgba(234, 186, 1, .55);
-  color: var(--brand-yellow);
-  box-shadow: 0 0 0 4px rgba(234, 186, 1, .08);
-}
-/* Outward pulse ring on the active stage */
-.anomaly-stage.is-active .anomaly-stage-puck::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  border: 1.5px solid var(--brand-yellow);
-  animation: anomalyPulse 1.1s ease-out infinite;
-}
-@keyframes anomalyPulse {
-  0%   { transform: scale(1);   opacity: .8; }
-  100% { transform: scale(1.55); opacity: 0; }
-}
-.anomaly-stage-body {
+.tr-clockrow {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 14px;
-  flex: 1;
-  min-width: 0;
+  margin-top: 4px;
 }
-.anomaly-stage-label {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 15px;
-  font-weight: 500;
+.tr-clock {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 36px;
+  line-height: 1;
   color: var(--text);
-  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  min-width: 6.5ch;
+  font-weight: 500;
 }
-.anomaly-stage-time {
+.tr-slow {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
-  letter-spacing: .04em;
   color: var(--dim);
-  transition: color .35s ease;
-  flex-shrink: 0;
 }
-.anomaly-stage.is-active .anomaly-stage-time,
-.anomaly-stage.is-done   .anomaly-stage-time { color: var(--brand-yellow); }
-
-.anomaly-sim-control {
+.tr-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
   flex-wrap: wrap;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
+  gap: 14px;
+  font-size: 13.5px;
+  color: var(--muted);
 }
-.anomaly-trigger {
+/* Trigger button: solid dark + yellow outline so white-ish text has
+   guaranteed contrast and the brand accent still reads. */
+.tr-trigger {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  border: 1px solid var(--brand-yellow);
-  background: rgba(234, 186, 1, .08);
+  padding: 11px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--brand-yellow);
+  background: rgba(234, 186, 1, .12);
   color: var(--brand-yellow);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  letter-spacing: .04em;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
-  transition: background .25s ease, box-shadow .25s ease;
+  transition: background .2s ease, box-shadow .2s ease;
 }
-.anomaly-trigger:hover {
-  background: rgba(234, 186, 1, .14);
+.tr-trigger:hover {
+  background: rgba(234, 186, 1, .20);
   box-shadow: 0 4px 18px -4px rgba(234, 186, 1, .45);
 }
-.anomaly-trigger:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
-.anomaly-status {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: var(--muted);
-  letter-spacing: .04em;
-  flex: 1;
-  text-align: right;
+.tr-trigger:focus-visible {
+  outline: 2px solid var(--brand-yellow);
+  outline-offset: 3px;
 }
-.anomaly-sim[data-state="done"] .anomaly-status { color: var(--brand-yellow); }
+.tr-trigger[data-state="running"] {
+  background: rgba(255, 255, 255, .04);
+  border-color: var(--line-strong);
+  color: var(--muted);
+  cursor: default;
+  box-shadow: none;
+}
+.tr-scene {
+  width: 100%;
+  aspect-ratio: 720 / 400;
+}
+.tr-status {
+  min-height: 20px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.tr-stages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+.tr-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, .22);
+  transition: border-color .25s ease, background .25s ease;
+}
+.tr-stage-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tr-puck {
+  min-width: 42px;
+  height: 28px;
+  padding: 0 8px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--line-strong);
+  transition: color .25s ease, border-color .25s ease;
+}
+.tr-stage-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+.tr-stage-time {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--muted);
+  transition: color .25s ease;
+}
+.tr-stage p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+.tr-stage[data-state="active"] {
+  border-color: rgba(234, 186, 1, .55);
+  background: rgba(234, 186, 1, .06);
+}
+.tr-stage[data-state="active"] .tr-stage-time { color: var(--text); }
+.tr-stage[data-state="done"] { border-color: rgba(234, 186, 1, .22); }
+.tr-stage[data-state="done"] .tr-stage-time { color: var(--brand-yellow); }
+.tr-stage:is([data-state="active"],[data-state="done"]) .tr-puck {
+  color: var(--brand-yellow);
+  border-color: rgba(234, 186, 1, .5);
+}
+
+/* Compare strip: ALTA onboard vs ground-in-the-loop */
+.tr-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.tr-compare[hidden] { display: none; }
+.tr-compare > div {
+  background: var(--bg-elev);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tr-compare-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.tr-compare-k {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tr-compare-v {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.005em;
+}
+.tr-track {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, .06);
+}
+.tr-track-alta {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--brand-yellow);
+  box-shadow: 0 0 8px var(--brand-yellow);
+}
+.tr-track-ground {
+  background: linear-gradient(90deg,
+    var(--brand-red) 0%,
+    rgba(253, 11, 4, .6) 70%,
+    rgba(253, 11, 4, 0) 100%);
+}
+
+.tr-note {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: var(--dim);
+}
 
 @media (max-width: 640px) {
-  .anomaly-launch { padding: 14px 16px; gap: 10px; font-size: 14px; }
-  .anomaly-launch-meta { display: none; }
-  .anomaly-runner { padding: 18px; }
-  .anomaly-stage-desc { margin-left: 62px; font-size: 13.5px; }
-  .anomaly-status { text-align: left; flex-basis: 100%; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .anomaly-stage.is-active .anomaly-stage-puck::after { animation: none; }
+  .tr { padding: 22px 18px; gap: 20px; }
+  .tr-title { font-size: 19px; }
+  .tr-sub { font-size: 14px; }
+  .tr-viz { padding: 14px; }
+  .tr-clock { font-size: 28px; }
+  .tr-stage { padding: 14px; }
+  .tr-stage-label { font-size: 15px; }
 }
 
 /* ---------- ROADMAP PHASE DRILL-DOWN ---------- */
@@ -2021,7 +2066,6 @@ p { margin: 0; }
   .prism-svg, .prism-glow,
   .reveal,
   .step-num::after,
-  .anomaly-stage.is-active .anomaly-stage-puck::after,
   .nav, .nav.scrolled,
   .step, .card, .use-card, .sister-project-card, .arch-tab {
     animation: none !important;
@@ -2061,12 +2105,9 @@ p { margin: 0; }
   .hero-prism, .prism-glow, .why-now,
   .reveal { opacity: 1 !important; transform: none !important; }
   .nav, .footer, #starfield, .progress-dots, .theme-toggle, .nav-toggle,
-  .hero-prism, .step-hint, .tl-toggle, .anomaly-trigger, .anomaly-launch,
+  .hero-prism, .step-hint, .tl-toggle, .tr-trigger, .tr-scene, .tr-bar,
   .arch-tabs, .arch-stage { display: none !important; }
   /* Expand all collapsible content for printed handout */
-  .step-expand, .tl-detail, .anomaly-runner { display: block !important; }
-  .step-expand[hidden], .tl-detail[hidden], .anomaly-runner[hidden] { display: block !important; }
-  .anomaly-sim { display: none !important; }
 
   .hero {
     min-height: auto !important;
@@ -2381,27 +2422,6 @@ p { margin: 0; }
   background: rgba(117, 42, 144, .04);
 }
 [data-theme="light"] .step-why-label { color: var(--brand-purple); }
-[data-theme="light"] .anomaly-launch {
-  background: rgba(117, 42, 144, .04);
-}
-[data-theme="light"] .anomaly-launch:hover {
-  border-color: var(--brand-purple);
-  background: rgba(117, 42, 144, .08);
-}
-[data-theme="light"] .anomaly-launch-icon {
-  background: rgba(117, 42, 144, .14);
-  color: var(--brand-purple);
-}
-[data-theme="light"] .anomaly-sim[data-state="open"] .anomaly-launch,
-[data-theme="light"] .anomaly-sim[data-state="running"] .anomaly-launch,
-[data-theme="light"] .anomaly-sim[data-state="done"] .anomaly-launch {
-  border-color: var(--brand-purple);
-  background: rgba(117, 42, 144, .08);
-}
-[data-theme="light"] .anomaly-stage-desc {
-  background: rgba(117, 42, 144, .05);
-  border-color: rgba(117, 42, 144, .18);
-}
 
 /* ARCHITECTURE COMPARISON — light theme.  The arch-compare SVGs use
    currentColor on their neutral ink, so flipping .arch-viz color here
@@ -2436,43 +2456,38 @@ p { margin: 0; }
 }
 [data-theme="light"] .arch-note a:hover { text-decoration-color: var(--brand-purple); }
 
-[data-theme="light"] .anomaly-sim { background: rgba(12, 10, 24, .03); }
-[data-theme="light"] .anomaly-stage-puck { background: #ffffff; }
-[data-theme="light"] .anomaly-stage.is-active .anomaly-stage-puck {
-  border-color: var(--brand-purple);
-  color: var(--brand-purple);
-  box-shadow: 0 0 0 5px rgba(117, 42, 144, .12), 0 0 22px rgba(117, 42, 144, .45);
+/* THERMAL-RUNAWAY DEMO — light theme.  Scene SVG inherits currentColor
+   so flipping .tr-viz color repaints the diagram without touching JS. */
+[data-theme="light"] .tr {
+  background: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, .7));
 }
-[data-theme="light"] .anomaly-stage.is-active .anomaly-stage-time,
-[data-theme="light"] .anomaly-stage.is-done   .anomaly-stage-time { color: var(--brand-purple); }
-[data-theme="light"] .anomaly-trigger {
-  border-color: var(--brand-purple);
-  color: var(--brand-purple);
-  background: rgba(117, 42, 144, .06);
+[data-theme="light"] .tr-viz {
+  background: rgba(12, 10, 24, .04);
+  color: var(--text);
 }
-[data-theme="light"] .anomaly-trigger:hover {
-  background: rgba(117, 42, 144, .12);
+[data-theme="light"] .tr-clock { color: var(--text); }
+[data-theme="light"] .tr-trigger {
+  border-color: var(--brand-purple);
+  background: rgba(117, 42, 144, .08);
+  color: var(--brand-purple);
+}
+[data-theme="light"] .tr-trigger:hover {
+  background: rgba(117, 42, 144, .14);
   box-shadow: 0 4px 18px -4px rgba(117, 42, 144, .45);
 }
-[data-theme="light"] .anomaly-stage.is-done .anomaly-stage-puck {
+[data-theme="light"] .tr-stage { background: #ffffff; }
+[data-theme="light"] .tr-stage[data-state="active"] {
   border-color: rgba(117, 42, 144, .55);
+  background: rgba(117, 42, 144, .06);
+}
+[data-theme="light"] .tr-stage[data-state="done"] { border-color: rgba(117, 42, 144, .22); }
+[data-theme="light"] .tr-stage[data-state="done"] .tr-stage-time { color: var(--brand-purple); }
+[data-theme="light"] .tr-stage:is([data-state="active"],[data-state="done"]) .tr-puck {
   color: var(--brand-purple);
-  box-shadow: 0 0 0 4px rgba(117, 42, 144, .08);
+  border-color: rgba(117, 42, 144, .5);
 }
-[data-theme="light"] .anomaly-stage:not(:last-child).is-active::after,
-[data-theme="light"] .anomaly-stage:not(:last-child).is-done::after {
-  background: linear-gradient(to right, var(--brand-purple), rgba(117, 42, 144, .45));
-}
-@media (max-width: 640px) {
-  [data-theme="light"] .anomaly-stage:not(:last-child).is-active::after,
-  [data-theme="light"] .anomaly-stage:not(:last-child).is-done::after {
-    background: linear-gradient(to bottom, var(--brand-purple), rgba(117, 42, 144, .45));
-  }
-}
-[data-theme="light"] .anomaly-stage.is-active .anomaly-stage-puck::after {
-  border-color: var(--brand-purple);
-}
-[data-theme="light"] .anomaly-sim[data-state="done"] .anomaly-status { color: var(--brand-purple); }
+[data-theme="light"] .tr-compare { background: var(--line); border-color: var(--line); }
+[data-theme="light"] .tr-compare > div { background: #ffffff; }
 
 [data-theme="light"] .tl-toggle:hover,
 [data-theme="light"] .tl-toggle[aria-expanded="true"] {
