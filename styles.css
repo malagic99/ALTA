@@ -1733,7 +1733,7 @@ p { margin: 0; }
   background: linear-gradient(180deg, var(--brand-blue), var(--brand-purple), var(--brand-red), var(--brand-yellow));
   opacity: .7;
 }
-.timeline li {
+.timeline > li {
   display: grid;
   grid-template-columns: 64px 1fr;
   gap: 24px;
@@ -2052,7 +2052,7 @@ p { margin: 0; }
   .hero-prism { max-width: 220px; opacity: .9; }
   .pipeline, .cards, .team { grid-template-columns: 1fr; }
   .section, .section-alt { padding: 64px 20px; }
-  .timeline li { grid-template-columns: 48px 1fr; gap: 16px; }
+  .timeline > li { grid-template-columns: 48px 1fr; gap: 16px; }
   .tl-mark { width: 40px; height: 40px; }
   .timeline::before { left: 19px; }
   .contact-card { padding: 40px 24px; }
