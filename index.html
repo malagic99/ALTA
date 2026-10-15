@@ -102,33 +102,13 @@
         </div>
 
         <ul class="hero-stats" role="list">
-          <li>
-            <span class="hero-stat-tag">Platform target</span>
-            <strong>O(1)</strong>
-            <span class="hero-stat-sub">energy scaling vs.&nbsp;O(N²) digital</span>
-          </li>
-          <li>
-            <span class="hero-stat-tag">Platform target</span>
-            <strong>60%</strong>
-            <span class="hero-stat-sub">spacecraft mass reduction</span>
-          </li>
-          <li>
-            <span class="hero-stat-tag">Platform target</span>
-            <strong>100&nbsp;Gbps</strong>
-            <span class="hero-stat-sub">internal photonic bus</span>
-          </li>
-          <li>
-            <span class="hero-stat-tag">Platform target</span>
-            <strong>10&nbsp;Gbps</strong>
-            <span class="hero-stat-sub">laser downlink</span>
-          </li>
+          <li><strong>O(1)</strong><span>energy scaling vs.&nbsp;O(N²) digital</span></li>
+          <li><strong>60%</strong><span>spacecraft mass reduction</span></li>
+          <li><strong>Zero A/D</strong><span>conversion — fully analogue signal chain</span></li>
+          <li><strong>10 Gbps</strong><span>laser downlink</span></li>
         </ul>
         <p class="hero-stats-note">
-          Values are platform targets at full integration — not measured ALTA performance.
-          Processing scaling cited to <a href="#advantage">Wang et&nbsp;al. (2025)</a>.
-          ALTA photonic-processing component is currently at
-          <abbr title="Technology readiness level">TRL</abbr>&nbsp;4–5
-          (<a href="https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Shaping_the_Future/Technology_Readiness_Levels_TRL" target="_blank" rel="noopener noreferrer">ESA scale</a>).
+          Platform targets at full integration. Processing scaling per <a href="#advantage">Wang et&nbsp;al. (2025)</a>; fully analogue signal chain per <a href="#advantage">Duport et&nbsp;al. (2016)</a>. ALTA Processing currently <a href="https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Shaping_the_Future/Technology_Readiness_Levels_TRL" target="_blank" rel="noopener noreferrer">TRL</a>&nbsp;4–5.
         </p>
       </div>
 
@@ -154,6 +134,10 @@
             <strong>A sovereign EU photonic stack is viable now.</strong>
             ITAR-free, exportable to U.S. defence primes.
           </li>
+          <li>
+            <strong>Laser downlinks are operational — onboard processing hasn't caught up.</strong>
+            10+ Gbps terminals are deployed; no platform pairs them with analogue onboard compute. ALTA closes that gap.
+          </li>
         </ul>
       </div>
     </section>
@@ -174,7 +158,7 @@
           <div class="step-num">01</div>
           <h3>Sensing</h3>
           <p class="step-tag">Fiber Bragg Gratings (FBG)</p>
-          <p>Rad-hard, passive optical sensors monitor thermal, vibration, and radiation events across the bus.</p>
+          <p>Rad-hard, passive optical sensors embedded in the structural fiber continuously monitor thermal, vibration, and radiation events across the bus — with no moving parts and zero power draw.</p>
           <div class="step-meta">
             <span class="trl trl-9">TRL 9</span>
             <span>ESA&nbsp;/ NASA&nbsp;qualified</span>
@@ -230,7 +214,7 @@
           <div class="step-num">02</div>
           <h3>Processing</h3>
           <p class="step-tag">Photonic Reservoir Computing</p>
-          <p>All-optical pattern and anomaly detection at light speed. Energy scales as O(1) instead of O(N²) for digital counterparts (Wang et&nbsp;al., 2025).</p>
+          <p>All-optical anomaly detection at light speed — energy scales O(1) vs. O(N²) digital (Wang et&nbsp;al., 2025). A fully analogue readout eliminates A/D conversion, keeping the signal in the optical domain end-to-end (Duport et&nbsp;al., 2016).</p>
           <div class="step-meta">
             <span class="trl trl-mid">TRL 4–5</span>
             <span>Sub-linear power&nbsp;scaling</span>
@@ -290,7 +274,7 @@
           <div class="step-num">03</div>
           <h3>Internal Comms</h3>
           <p class="step-tag">Fiber-Optic Backbone</p>
-          <p>A single fiber replaces ~100 copper wires for power and attitude coordination across the platform.</p>
+          <p>A single fiber replaces ~100 copper wires for power and attitude coordination across the platform — cutting harness mass, EMI, and connector failure modes simultaneously.</p>
           <div class="step-meta">
             <span class="trl trl-6">TRL 6</span>
             <span>100&nbsp;Gbps · 10×&nbsp;<a href="https://ecss.nl/standard/ecss-e-st-50-11c-spacefibre-very-high-speed-serial-link-15-may-2019/" target="_blank" rel="noopener noreferrer">SpaceFibre</a></span>
@@ -346,7 +330,7 @@
           <div class="step-num">04</div>
           <h3>External Link</h3>
           <p class="step-tag">Laser Terminal</p>
-          <p>Decisions — not raw data — are downlinked. 95% on-board volume reduction means more science per pass.</p>
+          <p>Decisions — not raw data — are downlinked via 10 Gbps optical link. Analogue end-to-end processing eliminates digital pre-processing overhead, achieving 95% on-board data volume reduction per pass.</p>
           <div class="step-meta">
             <span class="trl trl-67">TRL 6–7</span>
             <span>10&nbsp;Gbps optical downlink</span>
@@ -613,7 +597,7 @@
             </svg>
           </div>
           <h3>First-mover advantage</h3>
-          <p>U.S. systems are optimised for electronics, not photonics. ALTA establishes the new standard for autonomous constellations.</p>
+          <p>U.S. systems are optimised for electronics, not photonics. Laser terminals (Mynaric, NASA LCRD) are already operational at 10+ Gbps — but no platform pairs them with analogue onboard processing. ALTA establishes that standard.</p>
         </article>
         <article class="card">
           <div class="card-icon" aria-hidden="true">
@@ -640,6 +624,10 @@
             <strong><a href="https://arxiv.org/abs/1207.1619" target="_blank" rel="noopener noreferrer">Duport et&nbsp;al. (2012)</a></strong> — <em>All-optical reservoir computing</em>, <span class="journal">Optics Express</span>.
             First practical demonstration of all-optical reservoir computing using off-the-shelf fiber components,
             proving parity with state-of-the-art digital implementations.
+          </li>
+          <li>
+            <strong><a href="https://www.nature.com/articles/srep22381" target="_blank" rel="noopener noreferrer">Duport et&nbsp;al. (2016)</a></strong> — <em>Fully analogue photonic reservoir computer</em>, <span class="journal">Scientific Reports</span>.
+            First demonstration of a complete end-to-end analogue pipeline — analogue optical input, analogue electrical output — eliminating the A/D conversion bottleneck and proving the full system can operate without any digital pre/post-processing.
           </li>
         </ul>
 

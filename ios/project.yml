@@ -1,0 +1,40 @@
+# Run `xcodegen generate` in this directory to produce Penumbra.xcodeproj.
+# Or skip xcodegen entirely: open Xcode, create a new iOS App named
+# "Penumbra" with the SwiftData / SwiftUI templates, then drag the
+# `Penumbra/` folder contents into the project navigator.
+
+name: Penumbra
+options:
+  bundleIdPrefix: com.penumbra
+  deploymentTarget:
+    iOS: "17.0"
+  developmentLanguage: en
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    GENERATE_INFOPLIST_FILE: NO
+    INFOPLIST_FILE: Penumbra/Resources/Info.plist
+    PRODUCT_BUNDLE_IDENTIFIER: com.penumbra.astro
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    ENABLE_PREVIEWS: YES
+
+targets:
+  Penumbra:
+    type: application
+    platform: iOS
+    sources:
+      - path: Penumbra
+    configFiles:
+      Debug: Penumbra/Resources/App.xcconfig
+      Release: Penumbra/Resources/App.xcconfig
+    info:
+      path: Penumbra/Resources/Info.plist
+    settings:
+      base:
+        SWIFT_OBJC_BRIDGING_HEADER: ""
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_ENTITLEMENTS: Penumbra/Resources/Penumbra.entitlements
