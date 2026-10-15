@@ -2557,10 +2557,30 @@ alta-fbg > svg, alta-prc > svg, alta-wdm > svg, alta-downlink > svg {
 /* Light-theme SVG overrides.  The components set the neutral ink / muted
    / steel colors as `fill` and `stroke` attributes on individual elements;
    CSS `fill` / `stroke` properties override those attributes.  Brand hues
-   (gold / red / purple / indigo / orange / hot-white) are left alone. */
+   (red / indigo / orange / hot-white) are left alone — gold text, which
+   fails on white at 2.1:1, is flipped to brand-purple to match the rest
+   of the light theme. */
 [data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [fill="#C3C8F0"] { fill: var(--text); }
 [data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [fill="#A7ADDE"] { fill: var(--muted); }
 [data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [fill="#8A93C8"] { fill: var(--muted); }
 [data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [stroke="#8A93C8"] { stroke: var(--muted); }
 [data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [fill="#0C0F1B"] { fill: #ffffff; }
 [data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) [stroke="#C3C8F0"] { stroke: var(--text); }
+/* Gold text: fill="#EABA01" on <text> only — leaves the ring, bars and
+   dashed guide-lines gold. */
+[data-theme="light"] :is(alta-fbg, alta-prc, alta-wdm, alta-downlink) text[fill="#EABA01"] { fill: var(--brand-purple); }
+
+/* Thermal-demo scene SVG — same gold-text fix, plus the lowercase hex
+   for its dark surfaces (vent valve rect, PRC ring background).  The
+   scene is injected into .tr-scene with no custom-element wrapper. */
+[data-theme="light"] .tr-scene svg text[fill="#EABA01"] { fill: var(--brand-purple); }
+[data-theme="light"] .tr-scene svg [fill="#0c0f1b"] { fill: #ffffff; }
+[data-theme="light"] .tr-scene svg [stroke="#C3C8F0"] { stroke: var(--text); }
+
+/* Arch-compare + thermal-demo both lean on reduced opacity for text
+   hierarchy, which works at 2.4:1 against dark but drops below WCAG
+   AA on white.  Light theme lifts every SVG text label to ≈.92 so the
+   near-black ink reads cleanly; the color hierarchy (gold / red / dark)
+   now carries the distinction. */
+[data-theme="light"] .arch svg text,
+[data-theme="light"] .tr-scene svg text { opacity: .92; }
