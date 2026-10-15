@@ -1,0 +1,275 @@
+// Year
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// Theme toggle — delegate from document so it survives any re-render or
+// timing weirdness. Initial value is set by the inline <head> script.
+document.addEventListener('click', (e) => {
+  const t = e.target.closest && e.target.closest('#themeToggle');
+  if (!t) return;
+  e.preventDefault();
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  try { localStorage.setItem('alta-theme', next); } catch (err) {}
+});
+
+// Sticky nav state
+const nav = document.getElementById('nav');
+const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 12);
+onScroll();
+window.addEventListener('scroll', onScroll, { passive: true });
+
+// Mobile menu — toggle with icon swap (hamburger ↔ X), Escape to close,
+// outside-click dismissal, and link-click dismissal.  Focus returns to
+// the toggle button so keyboard users don't lose their place.
+(() => {
+  const toggle = document.getElementById('navToggle');
+  const links = document.querySelector('.nav-links');
+  if (!toggle || !links) return;
+
+  const close = ({ focusReturn } = {}) => {
+    if (!links.classList.contains('open')) return;
+    links.classList.remove('open');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Open menu');
+    if (focusReturn) toggle.focus();
+  };
+  const open = () => {
+    links.classList.add('open');
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.setAttribute('aria-label', 'Close menu');
+  };
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (links.classList.contains('open')) close({ focusReturn: true });
+    else open();
+  });
+  links.querySelectorAll('a').forEach(a =>
+    a.addEventListener('click', () => close())
+  );
+  // Outside-click dismissal
+  document.addEventListener('click', (e) => {
+    if (!links.classList.contains('open')) return;
+    if (links.contains(e.target) || toggle.contains(e.target)) return;
+    close();
+  });
+  // Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && links.classList.contains('open')) close({ focusReturn: true });
+  });
+})();
+
+// Progress dots — active state tracks which section is in view
+(() => {
+  const dots = document.querySelectorAll('.progress-dots a');
+  if (!dots.length) return;
+  const map = new Map();
+  dots.forEach(a => {
+    const id = a.getAttribute('data-section');
+    const target = id === 'top' ? document.getElementById('top') : document.getElementById(id);
+    if (target) map.set(target, a);
+  });
+  const setActive = (a) => {
+    dots.forEach(d => d.classList.toggle('active', d === a));
+  };
+  const obs = new IntersectionObserver((entries) => {
+    // Pick the entry closest to the top of the viewport
+    const visible = entries
+      .filter(e => e.isIntersecting)
+      .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+    if (visible.length) {
+      const a = map.get(visible[0].target);
+      if (a) setActive(a);
+    }
+  }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+  map.forEach((_, el) => obs.observe(el));
+})();
+
+// Reveal on scroll — but ONLY if IntersectionObserver exists and the user
+// hasn't asked for reduced motion.  If either is false, content stays
+// visible immediately (never hidden behind an animation that won't play).
+(() => {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const targets = document.querySelectorAll(
+    '.section-head, .step, .card, .science, .timeline li, .member, .callout, .contact-card, .hero-inner, .hero-prism, .band, .arch'
+  );
+  if (reduced || typeof IntersectionObserver === 'undefined') {
+    targets.forEach(el => el.classList.add('reveal', 'in'));
+    return;
+  }
+  targets.forEach(el => el.classList.add('reveal'));
+  const io = new IntersectionObserver(
+    entries => entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    }),
+    { threshold: 0.12 }
+  );
+  targets.forEach(el => io.observe(el));
+})();
+
+// Copy email — clipboard with success / error feedback and a text-select
+// fallback for browsers / contexts where navigator.clipboard is unavailable
+(() => {
+  const btn = document.querySelector('.btn-copy[data-copy]');
+  if (!btn) return;
+  const label = btn.querySelector('.btn-copy-label');
+  const original = label ? label.textContent : btn.textContent;
+  const flash = (cls, text) => {
+    btn.classList.add(cls);
+    if (label) label.textContent = text; else btn.textContent = text;
+    setTimeout(() => {
+      btn.classList.remove(cls);
+      if (label) label.textContent = original; else btn.textContent = original;
+    }, 1800);
+  };
+  const copyFallback = (text) => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.position = 'absolute'; ta.style.left = '-9999px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); flash('is-copied', 'Email copied'); }
+    catch { flash('is-error', 'Copy failed · select the email instead'); }
+    document.body.removeChild(ta);
+  };
+  btn.addEventListener('click', async () => {
+    const text = btn.dataset.copy;
+    if (!text) return;
+    if (navigator.clipboard && window.isSecureContext) {
+      try { await navigator.clipboard.writeText(text); flash('is-copied', 'Email copied'); }
+      catch { copyFallback(text); }
+    } else { copyFallback(text); }
+  });
+})();
+
+// ===== Interactive features =====
+
+// (1) FLP step expander — in-place expansion; clicked card spans full row and reveals detail
+(() => {
+  const steps = document.querySelectorAll('.step[data-step]');
+  if (!steps.length) return;
+
+  const closeAll = () => {
+    steps.forEach(s => {
+      s.classList.remove('is-expanded');
+      s.setAttribute('aria-expanded', 'false');
+      const exp = s.querySelector('.step-expand');
+      if (exp) exp.hidden = true;
+    });
+  };
+
+  const open = (step) => {
+    closeAll();
+    step.classList.add('is-expanded');
+    step.setAttribute('aria-expanded', 'true');
+    const exp = step.querySelector('.step-expand');
+    if (exp) exp.hidden = false;
+    // Gentle scroll-into-view if the bottom of the card is below the fold
+    setTimeout(() => {
+      const rect = step.getBoundingClientRect();
+      if (rect.top < 80) {
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollBy({ top: rect.top - 96, behavior: prefersReduced ? 'auto' : 'smooth' });
+      }
+    }, 60);
+  };
+
+  steps.forEach(step => {
+    const trigger = () => {
+      const isOpen = step.classList.contains('is-expanded');
+      if (isOpen) closeAll(); else open(step);
+    };
+    step.addEventListener('click', (e) => {
+      if (e.target.closest('a')) return;
+      trigger();
+    });
+    step.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        trigger();
+      }
+    });
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAll();
+  });
+})();
+
+// (2) Wang architecture-comparison viz — now lives in /arch-compare.js
+//     auto-mounts on [data-arch-compare]; no logic needed here.
+
+// (3) Thermal-runaway demo — now lives in /thermal-demo.js
+//     auto-mounts on [data-thermal-demo]; no logic needed here.
+
+// (4) Roadmap phase drill-down — exclusive accordion (only one open at a time)
+(() => {
+  const items = document.querySelectorAll('.tl-item');
+  if (!items.length) return;
+  items.forEach(item => {
+    const btn = item.querySelector('.tl-toggle');
+    const panel = item.querySelector('.tl-detail');
+    if (!btn || !panel) return;
+    btn.addEventListener('click', () => {
+      const isOpen = btn.getAttribute('aria-expanded') === 'true';
+      // Close all
+      items.forEach(other => {
+        const b = other.querySelector('.tl-toggle');
+        const p = other.querySelector('.tl-detail');
+        if (b && p) { b.setAttribute('aria-expanded', 'false'); p.hidden = true; }
+      });
+      if (!isOpen) {
+        btn.setAttribute('aria-expanded', 'true');
+        panel.hidden = false;
+      }
+    });
+  });
+})();
+
+// Starfield
+(() => {
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canvas = document.getElementById('starfield');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  const resize = () => {
+    w = canvas.width = window.innerWidth * dpr;
+    h = canvas.height = window.innerHeight * dpr;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    const count = Math.floor((window.innerWidth * window.innerHeight) / 9000);
+    stars = Array.from({ length: count }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: Math.random() * 1.2 * dpr + 0.2 * dpr,
+      a: Math.random() * 0.8 + 0.2,
+      s: Math.random() * 0.4 + 0.05,
+      tw: Math.random() * Math.PI * 2,
+    }));
+  };
+
+  const paint = (t) => {
+    ctx.clearRect(0, 0, w, h);
+    for (const s of stars) {
+      const flicker = reduced ? s.a : s.a * (0.7 + 0.3 * Math.sin(t * 0.002 + s.tw));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(220, 230, 255, ${flicker})`;
+      ctx.fill();
+      if (!reduced) {
+        s.y += s.s * dpr * 0.2;
+        if (s.y > h) { s.y = 0; s.x = Math.random() * w; }
+      }
+    }
+  };
+  const loop = (t) => { paint(t); if (!reduced) requestAnimationFrame(loop); };
+
+  resize();
+  // Repaint static starfield on resize when reduced-motion is on
+  window.addEventListener('resize', () => { resize(); if (reduced) paint(0); });
+  requestAnimationFrame(loop);
+})();

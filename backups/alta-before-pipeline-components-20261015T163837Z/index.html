@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ALTA — Photonic Spacecraft Autonomy Platform</title>
+  <meta name="description" content="ALTA (Advanced Light Thinking Architecture) integrates photonic sensing, processing and communication into a single lightweight platform for SmallSat autonomy. ITAR-free EU supply chain, O(1) energy scaling and 60% mass reduction." />
+  <meta property="og:title" content="ALTA — Photonic Spacecraft Autonomy Platform" />
+  <meta property="og:description" content="Light-speed autonomy for the next generation of SmallSat constellations." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://malagic99.github.io/ALTA/" />
+  <meta property="og:image" content="https://malagic99.github.io/ALTA/assets/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="ALTA — Photonic Spacecraft Autonomy Platform" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="ALTA — Photonic Spacecraft Autonomy Platform" />
+  <meta name="twitter:description" content="Light-speed autonomy for the next generation of SmallSat constellations." />
+  <meta name="twitter:image" content="https://malagic99.github.io/ALTA/assets/og-image.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="assets/alta-mark-color.svg" />
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Theme init - runs before paint to avoid flash of wrong theme.
+    // Default is dark; user toggle persists in localStorage.
+    (function() {
+      try {
+        var t = localStorage.getItem('alta-theme');
+        if (t !== 'light' && t !== 'dark') t = 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#top">Skip to content</a>
+  <canvas id="starfield" aria-hidden="true"></canvas>
+
+  <header class="nav" id="nav">
+    <a class="brand" href="#top" aria-label="ALTA home">
+      <img src="assets/alta-logo-white.svg" alt="ALTA" class="brand-logo brand-logo-dark" width="132" height="45" />
+      <img src="assets/alta-logo-black.svg" alt="ALTA" class="brand-logo brand-logo-light" width="132" height="45" />
+    </a>
+    <nav class="nav-links" id="navLinks" aria-label="Primary">
+      <a href="#technology">Technology</a>
+      <a href="#use-cases">Markets</a>
+      <a href="#advantage">Advantage</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#team">Team</a>
+      <a href="#contact" class="nav-cta">Contact</a>
+    </nav>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Toggle light or dark theme" title="Toggle theme">
+      <svg class="theme-icon icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <svg class="theme-icon icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"/>
+        <line x1="12" y1="2"  x2="12" y2="5"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+        <line x1="2"  y1="12" x2="5"  y2="12"/>
+        <line x1="19" y1="12" x2="22" y2="12"/>
+        <line x1="4.9"  y1="4.9"  x2="7"    y2="7"/>
+        <line x1="17"   y1="17"   x2="19.1" y2="19.1"/>
+        <line x1="4.9"  y1="19.1" x2="7"    y2="17"/>
+        <line x1="17"   y1="7"    x2="19.1" y2="4.9"/>
+      </svg>
+    </button>
+    <button class="nav-toggle" id="navToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+      <span class="nav-toggle-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+      <svg class="nav-toggle-close" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </header>
+
+  <nav class="progress-dots" aria-label="Section navigation">
+    <a href="#top"        data-section="top"        title="Top"><span></span></a>
+    <a href="#technology" data-section="technology" title="Technology"><span></span></a>
+    <a href="#use-cases"  data-section="use-cases"  title="Markets"><span></span></a>
+    <a href="#advantage"  data-section="advantage"  title="Advantage"><span></span></a>
+    <a href="#roadmap"    data-section="roadmap"    title="Roadmap"><span></span></a>
+    <a href="#team"       data-section="team"       title="Team"><span></span></a>
+    <a href="#contact"    data-section="contact"    title="Contact"><span></span></a>
+  </nav>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-inner">
+        <p class="eyebrow"><span class="dot"></span>Advanced Light Thinking Architecture</p>
+        <h1>ALTA — Photonic spacecraft autonomy</h1>
+        <p class="hero-brandline">Intelligence that emerges from light.</p>
+        <p class="lede">
+          Photonic sensing, processing and communication for SmallSat autonomy.
+          ALTA is developing a lightweight platform to detect anomalies and respond
+          onboard, without waiting for ground control.
+        </p>
+        <div class="hero-cta">
+          <a href="#contact" class="btn btn-primary">Discuss a pilot integration</a>
+          <a href="#technology" class="btn btn-ghost">Explore the technology →</a>
+        </div>
+
+        <ul class="hero-stats" role="list">
+          <li><strong>O(1)</strong><span>energy scaling vs.&nbsp;O(N²) digital</span></li>
+          <li><strong>60%</strong><span>spacecraft mass reduction</span></li>
+          <li><strong>Zero A/D</strong><span>conversion — fully analogue signal chain</span></li>
+          <li><strong>10 Gbps</strong><span>laser downlink</span></li>
+        </ul>
+        <p class="hero-stats-note">
+          Platform targets at full integration. Processing scaling per <a href="#advantage">Wang et&nbsp;al. (2025)</a>; fully analogue signal chain per <a href="#advantage">Duport et&nbsp;al. (2016)</a>. ALTA Processing currently <a href="https://www.esa.int/Enabling_Support/Space_Engineering_Technology/Shaping_the_Future/Technology_Readiness_Levels_TRL" target="_blank" rel="noopener noreferrer">TRL</a>&nbsp;4–5.
+        </p>
+      </div>
+
+      <div class="hero-prism" aria-hidden="true">
+        <div class="prism-glow"></div>
+        <img src="assets/alta-mark-color.svg" alt="" class="prism-svg" />
+      </div>
+    </section>
+
+    <section id="why-now" class="why-now">
+      <div class="why-now-inner">
+        <p class="eyebrow"><span class="dot"></span>Why now</p>
+        <ul class="why-now-list" role="list">
+          <li>
+            <strong>Constellations are scaling 10× this decade.</strong>
+            Onboard autonomy is the bottleneck — ground-in-the-loop doesn't scale.
+          </li>
+          <li>
+            <strong>Electronics have hit thermal &amp; power walls.</strong>
+            Photonic computing scales sub-linearly with zero EMI.
+          </li>
+          <li>
+            <strong>A sovereign EU photonic stack is viable now.</strong>
+            ITAR-free, exportable to U.S. defence primes.
+          </li>
+          <li>
+            <strong>Laser downlinks are operational — onboard processing hasn't caught up.</strong>
+            10+ Gbps terminals are deployed; no platform pairs them with analogue onboard compute. ALTA closes that gap.
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="technology" class="section">
+      <header class="section-head">
+        <p class="eyebrow"><span class="dot"></span>Technology</p>
+        <h2><span class="hl">Fiber Loop Photonics</span> — a 4&#8209;step optical&nbsp;pipeline</h2>
+        <p class="section-sub">
+          ALTA replaces heavy, power-hungry electronic subsystems with a <span class="hl">continuous optical path</span>
+          from sensor to downlink. No EMI. <span class="hl">Nanosecond decisions.</span> Mass and watts saved
+          by <span class="hl">orders of magnitude.</span>
+        </p>
+      </header>
+
+      <div class="pipeline">
+        <article class="step" data-step="1" role="button" tabindex="0" aria-expanded="false">
+          <div class="step-num">01</div>
+          <h3>Sensing</h3>
+          <p class="step-tag">Fiber Bragg Gratings (FBG)</p>
+          <p>Rad-hard, passive optical sensors embedded in the structural fiber continuously monitor thermal, vibration, and radiation events across the bus — with no moving parts and zero power draw.</p>
+          <div class="step-meta">
+            <span class="trl trl-9">TRL 9</span>
+            <span>ESA&nbsp;/ NASA&nbsp;qualified</span>
+          </div>
+          <div class="step-hint" aria-hidden="true"><span class="step-hint-text">Look inside</span><svg class="step-hint-chevron" viewBox="0 0 12 12" width="11" height="11"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+          <div class="step-expand" hidden>
+            <div class="step-expand-grid">
+              <figure class="step-expand-visual">
+                <svg viewBox="0 0 480 220" class="step-anim step-anim-1" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="fbgFiber" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%"  stop-color="#EABA01" stop-opacity=".25"/>
+                      <stop offset="50%" stop-color="#EABA01" stop-opacity=".75"/>
+                      <stop offset="100%" stop-color="#EABA01" stop-opacity=".25"/>
+                    </linearGradient>
+                    <radialGradient id="fbgPulseGlow"><stop offset="0%" stop-color="#EABA01"/><stop offset="100%" stop-color="#EABA01" stop-opacity="0"/></radialGradient>
+                  </defs>
+                  <rect x="50" y="102" width="380" height="16" rx="3" fill="none" stroke="url(#fbgFiber)" stroke-width="1.5"/>
+                  <g class="step-anim-gratings" stroke="#EABA01" stroke-width="1.5">
+                    <line x1="180" y1="96" x2="180" y2="124"/><line x1="198" y1="96" x2="198" y2="124"/>
+                    <line x1="216" y1="96" x2="216" y2="124"/><line x1="234" y1="96" x2="234" y2="124"/>
+                    <line x1="252" y1="96" x2="252" y2="124"/><line x1="270" y1="96" x2="270" y2="124"/>
+                    <line x1="288" y1="96" x2="288" y2="124"/><line x1="306" y1="96" x2="306" y2="124"/>
+                  </g>
+                  <text x="58" y="80" font-family="'JetBrains Mono', monospace" font-size="11" fill="currentColor" opacity=".7">broadband λ&nbsp;→</text>
+                  <text x="420" y="80" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="11" fill="#EABA01">←&nbsp;λ_Bragg</text>
+                  <text x="243" y="170" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="currentColor" opacity=".55">Δ temp · Δ strain · Δ radiation</text>
+                  <text x="243" y="200" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".4">Wavelength shift ∝ measurand</text>
+
+                  <circle r="11" fill="url(#fbgPulseGlow)" opacity=".75"><animate attributeName="cx" values="60;180;180" keyTimes="0;.5;1" dur="4s" repeatCount="indefinite"/><animate attributeName="cy" values="110;110;110" dur="4s" repeatCount="indefinite"/></circle>
+                  <circle r="4" fill="#fff"><animate attributeName="cx" values="60;180;180" keyTimes="0;.5;1" dur="4s" repeatCount="indefinite"/><animate attributeName="cy" values="110;110;110" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;1;0" keyTimes="0;.4;.55" dur="4s" repeatCount="indefinite"/></circle>
+                  <circle r="11" fill="url(#fbgPulseGlow)"><animate attributeName="cx" values="180;420" keyTimes="0;1" begin=".5s;4.5s" dur="3.5s" fill="freeze"/><animate attributeName="cy" values="110;110" dur="3.5s" begin=".5s;4.5s"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.05;.85;1" begin=".5s;4.5s" dur="3.5s"/></circle>
+                  <circle r="4" fill="#EABA01"><animate attributeName="cx" values="180;420" keyTimes="0;1" begin=".5s;4.5s" dur="3.5s" fill="freeze"/><animate attributeName="cy" values="110;110" dur="3.5s" begin=".5s;4.5s"/><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.05;.85;1" begin=".5s;4.5s" dur="3.5s"/></circle>
+                </svg>
+              </figure>
+              <div class="step-expand-prose">
+                <p class="step-expand-eyebrow">How it works</p>
+                <h4>Sense in light. Across radiation. <span class="hl">Without electronics.</span></h4>
+                <p>A Bragg grating is a periodic refractive-index pattern written into a fiber's core. It reflects one specific wavelength — λ<sub>Bragg</sub> — and passes the rest. As heat, strain, or radiation perturbs the fiber, λ<sub>Bragg</sub> shifts by a known coefficient. The sensor is the fiber itself: passive, distributed, rad-hard by physics.</p>
+                <div class="step-pills">
+                  <span class="step-pill">ESA-qualified</span>
+                  <span class="step-pill">EMI-immune</span>
+                  <span class="step-pill">50-year heritage</span>
+                </div>
+                <p class="step-why"><span class="step-why-label">Why this matters</span>One sensor type, multiplexed along a single fiber, can replace dozens of vulnerable electronic sensors — and survives radiation environments where silicon stalls.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="step" data-step="2" role="button" tabindex="0" aria-expanded="false">
+          <div class="step-num">02</div>
+          <h3>Processing</h3>
+          <p class="step-tag">Photonic Reservoir Computing</p>
+          <p>All-optical anomaly detection at light speed — energy scales O(1) vs. O(N²) digital (Wang et&nbsp;al., 2025). A fully analogue readout eliminates A/D conversion, keeping the signal in the optical domain end-to-end (Duport et&nbsp;al., 2016).</p>
+          <div class="step-meta">
+            <span class="trl trl-mid">TRL 4–5</span>
+            <span>Sub-linear power&nbsp;scaling</span>
+          </div>
+          <div class="step-hint" aria-hidden="true"><span class="step-hint-text">Look inside</span><svg class="step-hint-chevron" viewBox="0 0 12 12" width="11" height="11"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+          <div class="step-expand" hidden>
+            <div class="step-expand-grid">
+              <figure class="step-expand-visual">
+                <!-- Replaces the ellipse+orbit SMIL with the new photonic delay-reservoir
+                     animation (90 inward bars, nonlinear node, anomaly cycle). Rendered
+                     by arch-compare.js on [data-arch-compare]. -->
+                <div class="step-anim step-anim--prc" data-arch-compare data-default="photonic" data-n="500">
+                  <div class="arch-stage" role="img" aria-label="Photonic delay reservoir: one nonlinear node on a fiber loop forms N virtual neurons."></div>
+                </div>
+              </figure>
+              <div class="step-expand-prose">
+                <p class="step-expand-eyebrow">How it works</p>
+                <h4>A loop of light, <span class="hl">thinking in nanoseconds.</span></h4>
+                <p>A short pulse enters a fiber loop with one nonlinear element. As it circulates, the loop's delay maps onto a sequence of virtual neurons — a high-dimensional reservoir state. The readout layer projects this to a decision. Inference happens at the speed of light through the loop; only the readout weights are trained.</p>
+                <div class="step-pills">
+                  <span class="step-pill">O(1) energy</span>
+                  <span class="step-pill">Picosecond inference</span>
+                  <span class="step-pill">No backprop</span>
+                </div>
+                <p class="step-why"><span class="step-why-label">Why this matters</span>Energy per decision is constant regardless of reservoir size — the same loop scales from 100 to 10,000 virtual neurons without burning a single extra watt (Wang et&nbsp;al., 2025).</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="step" data-step="3" role="button" tabindex="0" aria-expanded="false">
+          <div class="step-num">03</div>
+          <h3>Internal Comms</h3>
+          <p class="step-tag">Fiber-Optic Backbone</p>
+          <p>A single fiber replaces ~100 copper wires for power and attitude coordination across the platform — cutting harness mass, EMI, and connector failure modes simultaneously.</p>
+          <div class="step-meta">
+            <span class="trl trl-6">TRL 6</span>
+            <span>100&nbsp;Gbps · 10×&nbsp;<a href="https://ecss.nl/standard/ecss-e-st-50-11c-spacefibre-very-high-speed-serial-link-15-may-2019/" target="_blank" rel="noopener noreferrer">SpaceFibre</a></span>
+          </div>
+          <div class="step-hint" aria-hidden="true"><span class="step-hint-text">Look inside</span><svg class="step-hint-chevron" viewBox="0 0 12 12" width="11" height="11"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+          <div class="step-expand" hidden>
+            <div class="step-expand-grid">
+              <figure class="step-expand-visual">
+                <svg viewBox="0 0 480 220" class="step-anim step-anim-3" aria-hidden="true">
+                  <rect x="200" y="90" width="80" height="40" rx="8" fill="rgba(234, 186, 1, .08)" stroke="#EABA01" stroke-width="1.5"/>
+                  <text x="240" y="115" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" fill="#EABA01">WDM hub</text>
+                  <g stroke-width="1.4" opacity=".75" fill="none">
+                    <line x1="60"  y1="40"  x2="200" y2="102" stroke="#EABA01"/>
+                    <line x1="60"  y1="110" x2="200" y2="110" stroke="#FD0B04" opacity=".8"/>
+                    <line x1="60"  y1="180" x2="200" y2="118" stroke="#A965C9"/>
+                    <line x1="280" y1="102" x2="420" y2="40"  stroke="#EABA01"/>
+                    <line x1="280" y1="110" x2="420" y2="110" stroke="#FD0B04" opacity=".8"/>
+                    <line x1="280" y1="118" x2="420" y2="180" stroke="#A965C9"/>
+                  </g>
+                  <g font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".7">
+                    <text x="48" y="44"  text-anchor="end">power</text>
+                    <text x="48" y="114" text-anchor="end">attitude</text>
+                    <text x="48" y="184" text-anchor="end">payload</text>
+                    <text x="432" y="44">comms</text>
+                    <text x="432" y="114">thermal</text>
+                    <text x="432" y="184">guidance</text>
+                  </g>
+                  <g class="step-anim-packets">
+                    <circle r="3.5" fill="#EABA01"><animate attributeName="cx" values="68;200;280;412" keyTimes="0;.4;.6;1" dur="3s" repeatCount="indefinite"/><animate attributeName="cy" values="40;102;102;40" keyTimes="0;.4;.6;1" dur="3s" repeatCount="indefinite"/></circle>
+                    <circle r="3.5" fill="#FD0B04"><animate attributeName="cx" values="68;200;280;412" keyTimes="0;.4;.6;1" dur="3s" begin="-1s" repeatCount="indefinite"/><animate attributeName="cy" values="110;110;110;110" dur="3s" begin="-1s" repeatCount="indefinite"/></circle>
+                    <circle r="3.5" fill="#A965C9"><animate attributeName="cx" values="68;200;280;412" keyTimes="0;.4;.6;1" dur="3s" begin="-2s" repeatCount="indefinite"/><animate attributeName="cy" values="180;118;118;180" keyTimes="0;.4;.6;1" dur="3s" begin="-2s" repeatCount="indefinite"/></circle>
+                  </g>
+                  <text x="240" y="200" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".4">One fiber · WDM-multiplexed · 100 Gbps</text>
+                </svg>
+              </figure>
+              <div class="step-expand-prose">
+                <p class="step-expand-eyebrow">How it works</p>
+                <h4>One hundred wires <span class="hl">become one fiber.</span></h4>
+                <p>Conventional spacecraft buses run hundreds of copper conductors between subsystems — heavy, noisy, EMI-coupled. A single multi-mode fiber with wavelength-division multiplexing carries all of it at 100&nbsp;Gbps, ten times the SpaceFibre standard. Different subsystems travel on different wavelengths through the same physical strand.</p>
+                <div class="step-pills">
+                  <span class="step-pill">100 Gbps</span>
+                  <span class="step-pill">60% mass cut</span>
+                  <span class="step-pill">Zero EMI</span>
+                </div>
+                <p class="step-why"><span class="step-why-label">Why this matters</span>The fiber backbone is the platform's nervous system: lighter, faster, electrically silent — and a smaller attack surface for radiation-induced upsets.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="step" data-step="4" role="button" tabindex="0" aria-expanded="false">
+          <div class="step-num">04</div>
+          <h3>External Link</h3>
+          <p class="step-tag">Laser Terminal</p>
+          <p>Decisions — not raw data — are downlinked via 10 Gbps optical link. Analogue end-to-end processing eliminates digital pre-processing overhead, achieving 95% on-board data volume reduction per pass.</p>
+          <div class="step-meta">
+            <span class="trl trl-67">TRL 6–7</span>
+            <span>10&nbsp;Gbps optical downlink</span>
+          </div>
+          <div class="step-hint" aria-hidden="true"><span class="step-hint-text">Look inside</span><svg class="step-hint-chevron" viewBox="0 0 12 12" width="11" height="11"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+          <div class="step-expand" hidden>
+            <div class="step-expand-grid">
+              <figure class="step-expand-visual">
+                <svg viewBox="0 0 480 220" class="step-anim step-anim-4" aria-hidden="true">
+                  <defs>
+                    <radialGradient id="laserPulse"><stop offset="0%" stop-color="#EABA01"/><stop offset="100%" stop-color="#EABA01" stop-opacity="0"/></radialGradient>
+                  </defs>
+                  <rect x="208" y="22" width="64" height="34" rx="4" fill="rgba(234,186,1,.06)" stroke="currentColor" stroke-width="1.4" opacity=".75"/>
+                  <rect x="184" y="32" width="22" height="14" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/>
+                  <rect x="274" y="32" width="22" height="14" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/>
+                  <text x="240" y="42" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".75">satellite</text>
+                  <line x1="240" y1="58" x2="240" y2="180" stroke="#EABA01" stroke-width="2" opacity=".55" stroke-dasharray="5 4"/>
+                  <text x="260" y="120" font-family="'JetBrains Mono', monospace" font-size="11" fill="#EABA01">10 Gbps · 1550 nm</text>
+                  <circle r="12" fill="url(#laserPulse)" opacity=".7"><animate attributeName="cy" values="60;178" dur="2.4s" repeatCount="indefinite"/></circle>
+                  <circle r="4" fill="#fff"><animate attributeName="cy" values="60;178" dur="2.4s" repeatCount="indefinite"/><animate attributeName="cx" values="240;240" dur="2.4s" repeatCount="indefinite"/></circle>
+                  <circle cx="240" cy="180" r="18" fill="none" stroke="#EABA01" stroke-width="1.5" opacity="0"><animate attributeName="opacity" values="0;.9;0" dur="2.4s" repeatCount="indefinite"/><animate attributeName="r" values="6;26;26" dur="2.4s" repeatCount="indefinite"/></circle>
+                  <path d="M 90 195 L 240 180 L 390 195 Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55"/>
+                  <line x1="110" y1="195" x2="370" y2="195" stroke="currentColor" stroke-width="1" opacity=".4" stroke-dasharray="2 3"/>
+                  <text x="240" y="212" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".4">Ground station · 95% raw-data volume eliminated on-board</text>
+                </svg>
+              </figure>
+              <div class="step-expand-prose">
+                <p class="step-expand-eyebrow">How it works</p>
+                <h4>Decisions, <span class="hl">not data.</span></h4>
+                <p>Conventional missions downlink raw telemetry and process on the ground. ALTA's pipeline already decides on-board, so the laser terminal sends only compressed decisions and event summaries — 95% of raw data volume is eliminated before transmission.</p>
+                <div class="step-pills">
+                  <span class="step-pill">10 Gbps</span>
+                  <span class="step-pill">TESAT-class heritage</span>
+                  <span class="step-pill">95% on-board reduction</span>
+                </div>
+                <p class="step-why"><span class="step-why-label">Why this matters</span>More science per pass. Less ground latency. A constellation that thinks for itself instead of phoning home for every decision.</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <section class="tr" data-thermal-demo data-speed="1" data-auto-loop="false" data-show-compare="true" aria-labelledby="tr-title">
+        <header>
+          <p class="tr-eyebrow">Primary use case · Interactive</p>
+          <h3 class="tr-title" id="tr-title">Thermal runaway, handled <em>in a microsecond.</em></h3>
+          <p class="tr-sub">A battery cell overheats. ALTA senses it in light, decides on board and vents — before a ground station could even hear about it.</p>
+        </header>
+        <div class="tr-viz">
+          <div class="tr-bar">
+            <div>
+              <div class="tr-kicker">Event clock</div>
+              <div class="tr-clockrow"><span class="tr-clock">0.0 ns</span><span class="tr-slow">playback slowed ≈ 10⁹×</span></div>
+            </div>
+            <div class="tr-actions">
+              <span>or click any cell</span>
+              <button class="tr-trigger" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3l-1.5 6h5L10 21l1.5-7h-5z"/></svg>
+                <span class="tr-trigger-label">Trigger thermal event</span>
+              </button>
+            </div>
+          </div>
+          <div class="tr-scene"></div>
+          <div class="tr-status" role="status">Nominal · all cells within limits</div>
+        </div>
+        <ol class="tr-stages">
+            <li class="tr-stage" data-state="idle">
+              <div class="tr-stage-head"><span class="tr-puck">FBG</span><span class="tr-stage-label">Sense</span><span class="tr-stage-time">—</span></div>
+              <p>The grating beside the hot cell reflects a shifted wavelength. Passive optics — no electronics in the loop.</p>
+            </li>
+            <li class="tr-stage" data-state="idle">
+              <div class="tr-stage-head"><span class="tr-puck">PRC</span><span class="tr-stage-label">Infer</span><span class="tr-stage-time">—</span></div>
+              <p>The light signature runs through the photonic reservoir and is classified as thermal runaway.</p>
+            </li>
+            <li class="tr-stage" data-state="idle">
+              <div class="tr-stage-head"><span class="tr-puck">↳</span><span class="tr-stage-label">Decide</span><span class="tr-stage-time">—</span></div>
+              <p>A vent command goes out on the fiber backbone. No ground-station round-trip.</p>
+            </li>
+            <li class="tr-stage" data-state="idle">
+              <div class="tr-stage-head"><span class="tr-puck">VENT</span><span class="tr-stage-label">Act</span><span class="tr-stage-time">—</span></div>
+              <p>The valve opens, heat is dumped, and neighbouring cells stay safe.</p>
+            </li>
+        </ol>
+        <div class="tr-compare" hidden>
+          <div><div class="tr-compare-row"><span class="tr-compare-k">ALTA · on board</span><span class="tr-compare-v" style="color:#EABA01">≈ 1 μs</span></div><div class="tr-track"><div class="tr-track-alta"></div></div></div>
+          <div><div class="tr-compare-row"><span class="tr-compare-k">Ground in the loop</span><span class="tr-compare-v" style="color:#FF5A4F">next contact window</span></div><div class="tr-track tr-track-ground"></div></div>
+        </div>
+        <p class="tr-note">Stage timings as published on this site. Diagram is schematic.</p>
+      </section>
+    </section>
+
+    <section id="use-cases" class="section">
+      <header class="section-head">
+        <p class="eyebrow"><span class="dot"></span>Where this goes</p>
+        <h2>One photonic platform, <span class="hl">many intelligent outputs.</span></h2>
+        <p class="section-sub">
+          Fiber Loop Photonics is the common substrate — the markets below are the targeted applications
+          as the platform matures through its TRL gates.
+        </p>
+      </header>
+
+      <div class="use-grid">
+        <article class="use-card use-card-lead">
+          <div class="use-card-glow" aria-hidden="true"></div>
+          <div class="use-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9.5" y="10" width="5" height="4" rx="0.5"/>
+              <rect x="2.5" y="11" width="6" height="2" rx="0.5"/>
+              <rect x="15.5" y="11" width="6" height="2" rx="0.5"/>
+              <line x1="12" y1="10" x2="12" y2="6"/>
+              <line x1="12" y1="14" x2="12" y2="18"/>
+              <circle cx="12" cy="5" r="1.5"/>
+              <path d="M10 18.5 Q12 20.5 14 18.5"/>
+            </svg>
+          </div>
+          <h3>Satellites &amp; SmallSat autonomy</h3>
+          <p>On-board photonic processing lets constellations sense, decide and downlink without waiting on the ground — autonomy that survives the radiation and thermal limits where silicon stalls.</p>
+          <ul class="use-bullets" role="list">
+            <li>Real-time thermal-runaway detection and autonomous venting</li>
+            <li>95% on-board data compression before downlink</li>
+            <li>Nanosecond inference per anomaly cycle, zero EMI</li>
+          </ul>
+          <div class="use-tags">
+            <span class="use-tag">Edge autonomy</span>
+            <span class="use-tag">Rad-tolerant</span>
+            <span class="use-tag">ITAR-free</span>
+          </div>
+        </article>
+
+        <article class="use-card">
+          <div class="use-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 13l5-2 4 4 4-4 5 2-9 5z"/>
+              <path d="M11 4l3 7"/>
+              <path d="M9 21h6"/>
+            </svg>
+          </div>
+          <h3>Fly-by-wire systems</h3>
+          <p>Deterministic, EMI-immune photonic links carry flight-control signals at the speed of light — lighter harnesses, higher integrity, zero electromagnetic interference.</p>
+          <div class="use-tags">
+            <span class="use-tag">Deterministic</span>
+            <span class="use-tag">EMI-immune</span>
+          </div>
+        </article>
+
+        <article class="use-card">
+          <div class="use-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2.5 14h19"/>
+              <circle cx="6" cy="14" r="1.4"/>
+              <circle cx="12" cy="14" r="1.4"/>
+              <circle cx="18" cy="14" r="1.4"/>
+              <path d="M6 12.6V8"/>
+              <path d="M12 12.6V8"/>
+              <path d="M18 12.6V8"/>
+              <path d="M5 8h2"/>
+              <path d="M11 8h2"/>
+              <path d="M17 8h2"/>
+            </svg>
+          </div>
+          <h3>Distributed fiber sensing</h3>
+          <p>Photonic strain, temperature and vibration sensing across pipelines, structures and facilities — multi-point intelligence from a single fibre run.</p>
+          <div class="use-tags">
+            <span class="use-tag">Civil &amp; industrial</span>
+            <span class="use-tag">Multi-point</span>
+          </div>
+        </article>
+
+        <article class="use-card">
+          <div class="use-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="4" cy="12" r="2"/>
+              <circle cx="20" cy="12" r="2"/>
+              <line x1="6.2" y1="12" x2="17.8" y2="12" stroke-dasharray="2 2"/>
+              <path d="M4 6v2"/>
+              <path d="M4 16v2"/>
+              <path d="M20 6v2"/>
+              <path d="M20 16v2"/>
+            </svg>
+          </div>
+          <h3>Inter-satellite optical links</h3>
+          <p>Free-space laser links carry terabit-class data between LEO constellation nodes — bypassing congested RF spectrum and ground-station latency.</p>
+          <div class="use-tags">
+            <span class="use-tag">Terabit</span>
+            <span class="use-tag">Free-space</span>
+          </div>
+        </article>
+
+        <article class="use-card">
+          <div class="use-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12h4l2-6 4 12 2-6h6"/>
+            </svg>
+          </div>
+          <h3>Structural health monitoring</h3>
+          <p>In-situ FBG arrays track aircraft, spacecraft and turbine wear in real time — early-warning intelligence at the edge, not after the fact.</p>
+          <div class="use-tags">
+            <span class="use-tag">In-situ</span>
+            <span class="use-tag">Predictive</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="band">
+      <p class="band-label">Potential European suppliers — fiber, PICs, lasers, qualification &amp; silicon · ITAR-free sourcing</p>
+      <ul class="band-list" role="list">
+        <li><a href="https://www.exail.com" target="_blank" rel="noopener noreferrer" title="Exail — rad-hard optical fiber and LiNbO₃ modulators · France">Exail</a></li>
+        <li><a href="https://www.lionix-international.com" target="_blank" rel="noopener noreferrer" title="LioniX International — TriPleX silicon-nitride PIC foundry · Netherlands">LioniX International</a></li>
+        <li><a href="https://www.toptica.com" target="_blank" rel="noopener noreferrer" title="TOPTICA Photonics — diode and fiber laser sources · Germany">TOPTICA Photonics</a></li>
+        <li><a href="https://www.thalesaleniaspace.com" target="_blank" rel="noopener noreferrer" title="Thales Alenia Space — flight qualification and LEO payload host · France / Italy">Thales Alenia Space</a></li>
+        <li><a href="https://www.st.com" target="_blank" rel="noopener noreferrer" title="STMicroelectronics — control and readout silicon · France / Italy">STMicroelectronics</a></li>
+      </ul>
+    </section>
+
+    <section id="advantage" class="section section-alt">
+      <header class="section-head">
+        <p class="eyebrow"><span class="dot"></span>Strategic Differentiation</p>
+        <h2>Sovereign by design. First mover by default.</h2>
+      </header>
+
+      <div class="cards">
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 18h18"/>
+              <path d="M6 18V9"/>
+              <path d="M18 18V9"/>
+              <path d="M3 9c0-2 2-4 4.5-4S12 7 12 9c0-2 2-4 4.5-4S21 7 21 9"/>
+              <path d="M12 9v9"/>
+            </svg>
+          </div>
+          <h3>NATO Photonics Bridge</h3>
+          <p>EU-sourceable supply chain across fiber, PICs, lasers, flight qualification and silicon — Exail, LioniX, TOPTICA, Thales Alenia Space, STMicroelectronics. ITAR-free status enables export to U.S. defence primes (subject to EU dual-use controls).</p>
+        </article>
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 3l-1.5 6h5L10 21l1.5-7h-5z"/>
+            </svg>
+          </div>
+          <h3>First-mover advantage</h3>
+          <p>U.S. systems are optimised for electronics, not photonics. Laser terminals (Mynaric, NASA LCRD) are already operational at 10+ Gbps — but no platform pairs them with analogue onboard processing. ALTA establishes that standard.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 17l6-6 4 4 8-8"/>
+              <path d="M14 7h7v7"/>
+            </svg>
+          </div>
+          <h3>$13.7B SmallSat market by 2030</h3>
+          <p>The global SmallSat market is projected to reach $13.7B by 2030 at 16.4% CAGR — with onboard computing platforms emerging as the highest-growth sub-segment as the industry shifts toward autonomous, software-defined spacecraft. ALTA targets that onboard intelligence layer.</p>
+          <p class="card-cite">Sources: <a href="https://www.alliedmarketresearch.com/press-release/small-satellite-market.html" target="_blank" rel="noopener noreferrer">Allied Market Research</a> · <a href="https://www.fortunebusinessinsights.com/space-on-board-computing-platform-market-108373" target="_blank" rel="noopener noreferrer">Fortune Business Insights</a></p>
+        </article>
+      </div>
+
+      <div class="science">
+        <h3>Grounded in peer-reviewed science</h3>
+        <ul>
+          <li>
+            <strong><a href="https://www.nature.com/articles/s41377-025-01927-6" target="_blank" rel="noopener noreferrer">Wang et&nbsp;al. (2025)</a></strong> — <em>Optical next-generation reservoir computing</em>, <span class="journal">Nature Photonics</span>.
+            Demonstrates that energy consumption scales as O(1) versus O(N²) for digital counterparts;
+            achieves NRMSE of 0.0971 on chaotic forecasting with 10× less training data.
+          </li>
+          <li>
+            <strong><a href="https://arxiv.org/abs/1207.1619" target="_blank" rel="noopener noreferrer">Duport et&nbsp;al. (2012)</a></strong> — <em>All-optical reservoir computing</em>, <span class="journal">Optics Express</span>.
+            First practical demonstration of all-optical reservoir computing using off-the-shelf fiber components,
+            proving parity with state-of-the-art digital implementations.
+          </li>
+          <li>
+            <strong><a href="https://www.nature.com/articles/srep22381" target="_blank" rel="noopener noreferrer">Duport et&nbsp;al. (2016)</a></strong> — <em>Fully analogue photonic reservoir computer</em>, <span class="journal">Scientific Reports</span>.
+            First demonstration of a complete end-to-end analogue pipeline — analogue optical input, analogue electrical output — eliminating the A/D conversion bottleneck and proving the full system can operate without any digital pre/post-processing.
+          </li>
+        </ul>
+
+        <section class="arch arch-nested" data-arch-compare data-n="500" data-default="photonic" aria-labelledby="arch-title">
+          <header>
+            <p class="arch-eyebrow eyebrow"><span class="dot"></span>Interactive · Architecture comparison</p>
+            <h3 class="arch-title" id="arch-title">Same task. Two architectures. <em>Different physics.</em></h3>
+            <p class="arch-sub">A reservoir of N&nbsp;=&nbsp;<span data-arch-n>500</span> nodes. Toggle the substrate — watch where the energy goes.</p>
+          </header>
+          <div class="arch-tabs" role="tablist" aria-label="Substrate">
+            <button class="arch-tab" type="button" role="tab" data-arch-mode="photonic" aria-selected="true">Photonic FLP</button>
+            <button class="arch-tab" type="button" role="tab" data-arch-mode="silicon"  aria-selected="false">Silicon Digital</button>
+          </div>
+          <div class="arch-viz">
+            <div class="arch-stage" aria-live="polite"></div>
+            <p class="arch-insight"></p>
+          </div>
+          <ul class="arch-facts" role="list"></ul>
+          <p class="arch-note">Diagrams are schematic. Energy scaling cited above (Wang et&nbsp;al. 2025).</p>
+        </section>
+      </div>
+    </section>
+
+    <section id="roadmap" class="section">
+      <header class="section-head">
+        <p class="eyebrow"><span class="dot"></span>Development Roadmap</p>
+        <h2>Gate-funded path to TRL 9</h2>
+        <p class="section-sub">From lab prototype to constellation deployment in four phases.</p>
+      </header>
+
+      <ol class="timeline" role="list">
+        <li class="tl-item" data-phase="1">
+          <div class="tl-mark">P1</div>
+          <div class="tl-body">
+            <p class="tl-when">Target 2027 · €375k</p>
+            <h3>FLP Lab Prototype</h3>
+            <p>Demonstrate the Fiber Loop Photonics pipeline end-to-end with 95% anomaly-detection accuracy.</p>
+            <button class="tl-toggle" type="button" aria-expanded="false" aria-controls="tl-detail-1">
+              <span class="tl-toggle-label">Phase&nbsp;detail</span>
+              <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="tl-detail" id="tl-detail-1" hidden>
+              <div class="tl-detail-grid">
+                <div class="tl-detail-block">
+                  <h5>Deliverables</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>Integrated FLP benchtop — Sensing → Processing → Decision</li>
+                    <li>Validation dataset of simulated thermal-runaway events</li>
+                    <li>Reproducibility brief + open hardware bill-of-materials</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Technical milestones</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>All-optical inference closed-loop on FBG input</li>
+                    <li>NRMSE ≤ 0.10 on chaotic forecast benchmark</li>
+                    <li>End-to-end latency ≤ 50&nbsp;ns measured</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Success criteria</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>≥ 95% anomaly-detection accuracy on simulated events</li>
+                    <li>Cold-start reproducibility across two independent runs</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Funding allocation</h5>
+                  <ul class="use-bullets tl-fund" role="list">
+                    <li><span>Lab equipment &amp; optics</span><span class="tl-fund-pct">35%</span></li>
+                    <li><span>PRC tuning &amp; characterisation</span><span class="tl-fund-pct">30%</span></li>
+                    <li><span>Team</span><span class="tl-fund-pct">25%</span></li>
+                    <li><span>IP, dual-use review</span><span class="tl-fund-pct">10%</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="tl-item" data-phase="2">
+          <div class="tl-mark">P2</div>
+          <div class="tl-body">
+            <p class="tl-when">2028 – 2029 · €2M</p>
+            <h3>CubeSat on-orbit demo</h3>
+            <p>Flight demonstration vs. an electronic baseline. Validate efficiency, mass and decision latency in LEO.</p>
+            <button class="tl-toggle" type="button" aria-expanded="false" aria-controls="tl-detail-2">
+              <span class="tl-toggle-label">Phase&nbsp;detail</span>
+              <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="tl-detail" id="tl-detail-2" hidden>
+              <div class="tl-detail-grid">
+                <div class="tl-detail-block">
+                  <h5>Deliverables</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>Flight-ready FLP payload (3U-class)</li>
+                    <li>Electronic baseline payload for A/B comparison</li>
+                    <li>Mission operations plan + ground-segment software</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Technical milestones</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>TVAC, vibration, radiation qualification passed</li>
+                    <li>Rideshare launch to LEO secured</li>
+                    <li>≥ 6 months continuous in-orbit operation</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Success criteria</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>≥ 30% power reduction vs electronic baseline at parity accuracy</li>
+                    <li>EMI-free coexistence with host bus confirmed</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Funding allocation</h5>
+                  <ul class="use-bullets tl-fund" role="list">
+                    <li><span>Hardware &amp; qualification</span><span class="tl-fund-pct">40%</span></li>
+                    <li><span>Launch &amp; rideshare</span><span class="tl-fund-pct">25%</span></li>
+                    <li><span>Mission operations</span><span class="tl-fund-pct">20%</span></li>
+                    <li><span>Team</span><span class="tl-fund-pct">15%</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="tl-item" data-phase="3">
+          <div class="tl-mark">P3</div>
+          <div class="tl-body">
+            <p class="tl-when">2030 · €10M</p>
+            <h3>Silicon photonics + OEM integration</h3>
+            <p>Shrink to wafer-scale silicon photonics. Integrate with European satellite OEM platforms.</p>
+            <button class="tl-toggle" type="button" aria-expanded="false" aria-controls="tl-detail-3">
+              <span class="tl-toggle-label">Phase&nbsp;detail</span>
+              <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="tl-detail" id="tl-detail-3" hidden>
+              <div class="tl-detail-grid">
+                <div class="tl-detail-block">
+                  <h5>Deliverables</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>Wafer-scale silicon-nitride PIC of the PRC loop</li>
+                    <li>Reference design integrated into one EU satellite bus</li>
+                    <li>Supply-chain qualification dossier (ITAR-free chain)</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Technical milestones</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>First successful PIC tape-out at LioniX-class foundry</li>
+                    <li>OEM pilot integration completed</li>
+                    <li>Internal photonic bus operational at 100&nbsp;Gbps</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Success criteria</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>60% mass reduction vs Phase 2 baseline</li>
+                    <li>Letter-of-intent with one EU satellite prime</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Funding allocation</h5>
+                  <ul class="use-bullets tl-fund" role="list">
+                    <li><span>Silicon-photonic design</span><span class="tl-fund-pct">45%</span></li>
+                    <li><span>Foundry &amp; packaging</span><span class="tl-fund-pct">25%</span></li>
+                    <li><span>OEM integration</span><span class="tl-fund-pct">20%</span></li>
+                    <li><span>Team</span><span class="tl-fund-pct">10%</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="tl-item" data-phase="4">
+          <div class="tl-mark tl-mark-final">P4</div>
+          <div class="tl-body">
+            <p class="tl-when">2031+ · €50M+</p>
+            <h3>TRL 9 constellation deployment</h3>
+            <p>Operational photonic autonomy across SmallSat constellations — sovereign, scalable, light-speed.</p>
+            <button class="tl-toggle" type="button" aria-expanded="false" aria-controls="tl-detail-4">
+              <span class="tl-toggle-label">Phase&nbsp;detail</span>
+              <svg viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="tl-detail" id="tl-detail-4" hidden>
+              <div class="tl-detail-grid">
+                <div class="tl-detail-block">
+                  <h5>Deliverables</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>Production-ready FLP units in multiple form factors</li>
+                    <li>First operational constellation contract</li>
+                    <li>Sovereign manufacturing partner network across EU</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Technical milestones</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>Multi-satellite deployment, in-service operation</li>
+                    <li>Second-generation roadmap (deep-space, inter-satellite mesh)</li>
+                    <li>ITAR-free export framework formalised</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Success criteria</h5>
+                  <ul class="use-bullets" role="list">
+                    <li>Operational across at least one customer constellation</li>
+                    <li>Recurring revenue from production units</li>
+                  </ul>
+                </div>
+                <div class="tl-detail-block">
+                  <h5>Funding allocation</h5>
+                  <ul class="use-bullets tl-fund" role="list">
+                    <li><span>Production scale-up</span><span class="tl-fund-pct">50%</span></li>
+                    <li><span>Constellation operations</span><span class="tl-fund-pct">25%</span></li>
+                    <li><span>R&amp;D, next-gen</span><span class="tl-fund-pct">15%</span></li>
+                    <li><span>Team</span><span class="tl-fund-pct">10%</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ol>
+      <p class="timeline-note">Indicative development roadmap. Dates are targets, not commitments; funding figures distinguish required capital from secured funding only where stated. Milestone completion status is not asserted.</p>
+    </section>
+
+    <section id="team" class="section section-alt">
+      <header class="section-head">
+        <p class="eyebrow"><span class="dot"></span>The Team</p>
+        <h2>Two founders, complementary stacks</h2>
+        <p class="section-sub">Business and photonics, end-to-end. Pre-seed.</p>
+      </header>
+
+      <div class="team team-2">
+        <article class="member">
+          <div class="member-avatar" aria-hidden="true">MA</div>
+          <h3>Marko Alagić</h3>
+          <p class="role">Business Lead</p>
+          <p class="bio">MSc, Business and Administration. Strategy, fundraising and partnerships.</p>
+        </article>
+        <article class="member">
+          <div class="member-avatar" aria-hidden="true">BA</div>
+          <h3>Bushra Alzadjali</h3>
+          <p class="role">Photonics Lead</p>
+          <p class="bio">BSc, Aerospace Engineering. Optical architecture and photonic subsystems.</p>
+        </article>
+      </div>
+
+      <p class="network">
+        Two-person founding team · EIIS Annual Space Challenge alumni.
+      </p>
+
+      <aside class="sister-project" aria-label="Sister project">
+        <div class="sister-project-eyebrow">In parallel</div>
+        <a class="sister-project-card" href="https://dtorbital.com/" target="_blank" rel="noopener noreferrer">
+          <div class="sister-project-body">
+            <div class="sister-project-name">Deuterium&nbsp;Orbital</div>
+            <p class="sister-project-tag">Modular robotic systems for in-orbit servicing and controlled deorbiting in LEO. Same bench, different physics — the hands to ALTA's mind.</p>
+          </div>
+          <span class="sister-project-arrow" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M9 7h8v8"/></svg>
+          </span>
+        </a>
+      </aside>
+    </section>
+
+    <section id="contact" class="section contact">
+      <div class="contact-card">
+        <h2>Discuss a pilot integration</h2>
+        <p>
+          ALTA was founded through the <a href="https://www.eiis.eu/master-space-entrepreneurship" target="_blank" rel="noopener noreferrer">Airbus / EIIS Annual Space Challenge</a>.
+          For partnership, research or investment conversations on the photonic-autonomy side, reach the ALTA inbox below.
+          For in-orbit robotics and deorbiting, see our sister programme <a href="https://dtorbital.com/" target="_blank" rel="noopener noreferrer">Deuterium Orbital</a>.
+        </p>
+        <div class="contact-actions">
+          <a class="btn btn-primary" href="mailto:hello@alta.space">hello@alta.space</a>
+          <button class="btn btn-ghost btn-copy" type="button" data-copy="hello@alta.space" aria-live="polite">
+            <span class="btn-copy-label">Copy email</span>
+          </button>
+        </div>
+        <p class="contact-aside">
+          Prefer in-orbit robotics instead? <a href="https://dtorbital.com/" target="_blank" rel="noopener noreferrer">Deuterium Orbital →</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="assets/alta-logo-white.svg" alt="ALTA" class="footer-logo brand-logo-dark" width="105" height="36" />
+        <img src="assets/alta-logo-black.svg" alt="ALTA" class="footer-logo brand-logo-light" width="105" height="36" />
+        <p>Advanced Light Thinking Architecture · Photonic Spacecraft Autonomy</p>
+        <p class="footer-sister">Sister project: <a href="https://dtorbital.com/" target="_blank" rel="noopener noreferrer">Deuterium Orbital →</a></p>
+      </div>
+      <p class="footer-meta">© <span id="year"></span> ALTA. Founded through the EIIS / Airbus Space Challenge.</p>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+  <script src="arch-compare.js" defer></script>
+  <script src="thermal-demo.js" defer></script>
+</body>
+</html>
