@@ -224,36 +224,12 @@
           <div class="step-expand" hidden>
             <div class="step-expand-grid">
               <figure class="step-expand-visual">
-                <svg viewBox="0 0 480 220" class="step-anim step-anim-2" aria-hidden="true">
-                  <defs>
-                    <path id="prcLoopPath" d="M 370 110 A 100 58 0 1 1 170 110 A 100 58 0 1 1 370 110" fill="none"/>
-                    <radialGradient id="prcGlow"><stop offset="0%" stop-color="#EABA01"/><stop offset="100%" stop-color="#EABA01" stop-opacity="0"/></radialGradient>
-                  </defs>
-                  <line x1="40" y1="110" x2="160" y2="110" stroke="currentColor" stroke-width="1.4" opacity=".55"/>
-                  <text x="40" y="92" font-family="'JetBrains Mono', monospace" font-size="11" fill="currentColor" opacity=".7">input pulse</text>
-                  <ellipse cx="270" cy="110" rx="100" ry="58" fill="none" stroke="#EABA01" stroke-width="1.5" opacity=".7"/>
-                  <circle cx="170" cy="110" r="6" fill="#FD0B04"/>
-                  <text x="170" y="88" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="#FD0B04" opacity=".9">nonlinear node</text>
-                  <g fill="#EABA01" opacity=".5">
-                    <circle cx="370" cy="110" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin="0s" repeatCount="indefinite"/></circle>
-                    <circle cx="358" cy="156" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin=".2s" repeatCount="indefinite"/></circle>
-                    <circle cx="320" cy="180" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin=".4s" repeatCount="indefinite"/></circle>
-                    <circle cx="270" cy="168" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin=".6s" repeatCount="indefinite"/></circle>
-                    <circle cx="220" cy="180" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin=".8s" repeatCount="indefinite"/></circle>
-                    <circle cx="182" cy="156" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin="1s" repeatCount="indefinite"/></circle>
-                    <circle cx="170" cy="110" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin="1.1s" repeatCount="indefinite"/></circle>
-                    <circle cx="182" cy="64" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin="1.2s" repeatCount="indefinite"/></circle>
-                    <circle cx="220" cy="40" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin="1.3s" repeatCount="indefinite"/></circle>
-                    <circle cx="270" cy="52" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin="1.4s" repeatCount="indefinite"/></circle>
-                    <circle cx="320" cy="40" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin=".0s" repeatCount="indefinite"/></circle>
-                    <circle cx="358" cy="64" r="2.5"><animate attributeName="r" values="2.5;5;2.5" dur="1.5s" begin=".1s" repeatCount="indefinite"/></circle>
-                  </g>
-                  <circle r="12" fill="url(#prcGlow)" opacity=".7"><animateMotion dur="5s" repeatCount="indefinite"><mpath href="#prcLoopPath"/></animateMotion></circle>
-                  <circle r="4.5" fill="#fff"><animateMotion dur="5s" repeatCount="indefinite"><mpath href="#prcLoopPath"/></animateMotion></circle>
-                  <line x1="380" y1="110" x2="440" y2="110" stroke="#EABA01" stroke-width="1.6"/>
-                  <text x="440" y="92" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="11" fill="#EABA01">readout</text>
-                  <text x="270" y="200" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="currentColor" opacity=".5">Delay-line forms the reservoir state</text>
-                </svg>
+                <!-- Replaces the ellipse+orbit SMIL with the new photonic delay-reservoir
+                     animation (90 inward bars, nonlinear node, anomaly cycle). Rendered
+                     by arch-compare.js on [data-arch-compare]. -->
+                <div class="step-anim step-anim--prc" data-arch-compare data-default="photonic" data-n="500">
+                  <div class="arch-stage" role="img" aria-label="Photonic delay reservoir: one nonlinear node on a fiber loop forms N virtual neurons."></div>
+                </div>
               </figure>
               <div class="step-expand-prose">
                 <p class="step-expand-eyebrow">How it works</p>
@@ -374,76 +350,53 @@
         </article>
       </div>
 
-      <aside class="callout">
-        <h4>Primary use case</h4>
-        <p>
-          Real-time autonomous anomaly response — e.g. immediate thermal-runaway detection
-          triggering autonomous venting, with no ground in the loop.
-        </p>
-
-        <div class="anomaly-sim" data-state="collapsed">
-          <button class="anomaly-launch" type="button" aria-expanded="false" aria-controls="anomaly-runner">
-            <span class="anomaly-launch-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3l-1.5 6h5L10 21l1.5-7h-5z"/></svg>
-            </span>
-            <span class="anomaly-launch-label">Watch a thermal-runaway response</span>
-            <span class="anomaly-launch-meta">≈&nbsp;4&nbsp;s</span>
-            <svg class="anomaly-launch-chevron" viewBox="0 0 12 12" width="11" height="11" aria-hidden="true"><path d="M2 4 L6 8 L10 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-
-          <div class="anomaly-runner" id="anomaly-runner" hidden>
-            <ol class="anomaly-sim-flow">
-              <li class="anomaly-stage" data-stage="1">
-                <div class="anomaly-stage-row">
-                  <div class="anomaly-stage-puck"><span>FBG</span></div>
-                  <div class="anomaly-stage-body">
-                    <div class="anomaly-stage-label">Sense</div>
-                    <div class="anomaly-stage-time">— ns</div>
-                  </div>
-                </div>
-                <p class="anomaly-stage-desc">Fiber Bragg gratings register a wavelength shift in the affected zone. The sensor line is passive optics — no electronics in the loop, no EMI to fight.</p>
-              </li>
-              <li class="anomaly-stage" data-stage="2">
-                <div class="anomaly-stage-row">
-                  <div class="anomaly-stage-puck"><span>PRC</span></div>
-                  <div class="anomaly-stage-body">
-                    <div class="anomaly-stage-label">Infer</div>
-                    <div class="anomaly-stage-time">— ns</div>
-                  </div>
-                </div>
-                <p class="anomaly-stage-desc">The photonic reservoir computes the signature. Light circulates the fiber loop; the readout layer classifies it as thermal-runaway with high confidence.</p>
-              </li>
-              <li class="anomaly-stage" data-stage="3">
-                <div class="anomaly-stage-row">
-                  <div class="anomaly-stage-puck"><span>↳</span></div>
-                  <div class="anomaly-stage-body">
-                    <div class="anomaly-stage-label">Decide</div>
-                    <div class="anomaly-stage-time">— ns</div>
-                  </div>
-                </div>
-                <p class="anomaly-stage-desc">Decision logic dispatches the vent command on the photonic backbone. No ground-station round-trip; the platform decides locally.</p>
-              </li>
-              <li class="anomaly-stage" data-stage="4">
-                <div class="anomaly-stage-row">
-                  <div class="anomaly-stage-puck"><span>VENT</span></div>
-                  <div class="anomaly-stage-body">
-                    <div class="anomaly-stage-label">Act</div>
-                    <div class="anomaly-stage-time">— μs</div>
-                  </div>
-                </div>
-                <p class="anomaly-stage-desc">The vent valve actuates. End-to-end, from FBG shift to mechanical response, well under a microsecond after the event.</p>
-              </li>
-            </ol>
-            <div class="anomaly-sim-control">
-              <button class="anomaly-trigger" type="button">
-                <span class="anomaly-trigger-label">Trigger thermal event</span>
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3l-1.5 6h5L10 21l1.5-7h-5z"/></svg>
+      <section class="tr" data-thermal-demo data-speed="1" data-auto-loop="false" data-show-compare="true" aria-labelledby="tr-title">
+        <header>
+          <p class="tr-eyebrow">Primary use case · Interactive</p>
+          <h3 class="tr-title" id="tr-title">Thermal runaway, handled <em>in a microsecond.</em></h3>
+          <p class="tr-sub">A battery cell overheats. ALTA senses it in light, decides on board and vents — before a ground station could even hear about it.</p>
+        </header>
+        <div class="tr-viz">
+          <div class="tr-bar">
+            <div>
+              <div class="tr-kicker">Event clock</div>
+              <div class="tr-clockrow"><span class="tr-clock">0.0 ns</span><span class="tr-slow">playback slowed ≈ 10⁹×</span></div>
+            </div>
+            <div class="tr-actions">
+              <span>or click any cell</span>
+              <button class="tr-trigger" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 3l-1.5 6h5L10 21l1.5-7h-5z"/></svg>
+                <span class="tr-trigger-label">Trigger thermal event</span>
               </button>
-              <div class="anomaly-status" role="status">Awaiting trigger…</div>
             </div>
           </div>
+          <div class="tr-scene"></div>
+          <div class="tr-status" role="status">Nominal · all cells within limits</div>
         </div>
-      </aside>
+        <ol class="tr-stages">
+            <li class="tr-stage" data-state="idle">
+              <div class="tr-stage-head"><span class="tr-puck">FBG</span><span class="tr-stage-label">Sense</span><span class="tr-stage-time">—</span></div>
+              <p>The grating beside the hot cell reflects a shifted wavelength. Passive optics — no electronics in the loop.</p>
+            </li>
+            <li class="tr-stage" data-state="idle">
+              <div class="tr-stage-head"><span class="tr-puck">PRC</span><span class="tr-stage-label">Infer</span><span class="tr-stage-time">—</span></div>
+              <p>The light signature runs through the photonic reservoir and is classified as thermal runaway.</p>
+            </li>
+            <li class="tr-stage" data-state="idle">
+              <div class="tr-stage-head"><span class="tr-puck">↳</span><span class="tr-stage-label">Decide</span><span class="tr-stage-time">—</span></div>
+              <p>A vent command goes out on the fiber backbone. No ground-station round-trip.</p>
+            </li>
+            <li class="tr-stage" data-state="idle">
+              <div class="tr-stage-head"><span class="tr-puck">VENT</span><span class="tr-stage-label">Act</span><span class="tr-stage-time">—</span></div>
+              <p>The valve opens, heat is dumped, and neighbouring cells stay safe.</p>
+            </li>
+        </ol>
+        <div class="tr-compare" hidden>
+          <div><div class="tr-compare-row"><span class="tr-compare-k">ALTA · on board</span><span class="tr-compare-v" style="color:#EABA01">≈ 1 μs</span></div><div class="tr-track"><div class="tr-track-alta"></div></div></div>
+          <div><div class="tr-compare-row"><span class="tr-compare-k">Ground in the loop</span><span class="tr-compare-v" style="color:#FF5A4F">next contact window</span></div><div class="tr-track tr-track-ground"></div></div>
+        </div>
+        <p class="tr-note">Stage timings as published on this site. Diagram is schematic.</p>
+      </section>
     </section>
 
     <section id="use-cases" class="section">
@@ -933,5 +886,6 @@
 
   <script src="script.js" defer></script>
   <script src="arch-compare.js" defer></script>
+  <script src="thermal-demo.js" defer></script>
 </body>
 </html>

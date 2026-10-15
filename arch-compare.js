@@ -1,5 +1,6 @@
 /* ALTA — Architecture comparison (Photonic FLP vs Silicon Digital)
  * Framework-free. Mount: <section data-arch-compare data-n="500"> … see snippet.html.
+ * Photonic-only embed (pipeline step 02): <div data-arch-compare data-default="photonic"><div class="arch-stage"></div></div> — no tabs/insight/facts needed.
  * Photonic view: rAF-driven (bars morph live). Silicon view: SVG SMIL (same technique as index.html step-anims).
  */
 (() => {
@@ -204,8 +205,8 @@ function mount(root) {
   const setMode = (mode) => {
     stop(); self.ph = {};
     stage.replaceChildren(mode === 'photonic' ? photonic(n, self) : silicon(n, svgRef));
-    insight.textContent = COPY[mode].insight;
-    facts.replaceChildren(...COPY[mode].facts.map(([k, v, c]) => {
+    if (insight) insight.textContent = COPY[mode].insight;
+    if (facts) facts.replaceChildren(...COPY[mode].facts.map(([k, v, c]) => {
       const li = document.createElement('li');
       li.innerHTML = `<span class="arch-fact-k"></span><span class="arch-fact-v ${c}"></span>`;
       li.children[0].textContent = k; li.children[1].textContent = v;

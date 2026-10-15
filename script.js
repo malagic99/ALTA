@@ -200,86 +200,8 @@ window.addEventListener('scroll', onScroll, { passive: true });
 // (2) Wang architecture-comparison viz — now lives in /arch-compare.js
 //     auto-mounts on [data-arch-compare]; no logic needed here.
 
-// (3) Anomaly response simulator — collapsed by default; expand → trigger → stage-by-stage reveal
-(() => {
-  const sim = document.querySelector('.anomaly-sim');
-  if (!sim) return;
-  const launch = sim.querySelector('.anomaly-launch');
-  const runner = sim.querySelector('.anomaly-runner');
-  const trigger = sim.querySelector('.anomaly-trigger');
-  const status = sim.querySelector('.anomaly-status');
-  const stages = Array.from(sim.querySelectorAll('.anomaly-stage'));
-  if (!launch || !runner || !trigger) return;
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  const timing = ['0.4 ns', '1.2 ns', '2 ns', '~1 μs'];
-  const statusByStage = [
-    'Thermal anomaly detected · sensing…',
-    'Pattern matched · inferring response…',
-    'Decision: vent · dispatching command…',
-    'Autonomous venting initiated · zero ground latency',
-  ];
-
-  const resetStages = () => {
-    stages.forEach((s, i) => {
-      s.classList.remove('is-active', 'is-done');
-      s.querySelector('.anomaly-stage-time').textContent = '— ' + (i < 3 ? 'ns' : 'μs');
-    });
-  };
-
-  const collapse = () => {
-    sim.dataset.state = 'collapsed';
-    launch.setAttribute('aria-expanded', 'false');
-    runner.hidden = true;
-    resetStages();
-    status.textContent = 'Awaiting trigger…';
-    trigger.disabled = false;
-  };
-
-  const expand = () => {
-    sim.dataset.state = 'open';
-    launch.setAttribute('aria-expanded', 'true');
-    runner.hidden = false;
-    resetStages();
-    status.textContent = 'Awaiting trigger…';
-    trigger.disabled = false;
-  };
-
-  const run = () => {
-    trigger.disabled = true;
-    sim.dataset.state = 'running';
-    resetStages();
-    const stepDuration = reduced ? 320 : 950;
-
-    stages.forEach((stage, i) => {
-      setTimeout(() => {
-        if (i > 0) {
-          stages[i - 1].classList.remove('is-active');
-          stages[i - 1].classList.add('is-done');
-        }
-        stage.classList.add('is-active');
-        stage.querySelector('.anomaly-stage-time').textContent = timing[i];
-        status.textContent = statusByStage[i];
-
-        if (i === stages.length - 1) {
-          setTimeout(() => {
-            stage.classList.remove('is-active');
-            stage.classList.add('is-done');
-            sim.dataset.state = 'done';
-            trigger.disabled = false;
-          }, stepDuration * 0.9);
-        }
-      }, i * stepDuration);
-    });
-  };
-
-  launch.addEventListener('click', () => {
-    if (sim.dataset.state === 'collapsed') expand(); else collapse();
-  });
-  trigger.addEventListener('click', () => {
-    requestAnimationFrame(run);
-  });
-})();
+// (3) Thermal-runaway demo — now lives in /thermal-demo.js
+//     auto-mounts on [data-thermal-demo]; no logic needed here.
 
 // (4) Roadmap phase drill-down — exclusive accordion (only one open at a time)
 (() => {
