@@ -197,7 +197,7 @@ class ThermalSim {
     }
     const bars = [];
     for (let i = 0; i < RING.M; i++) bars.push(h('line', { key: i, x1: RING.cx, y1: RING.cy - 34, x2: RING.cx, y2: RING.cy - 22 - (i % 3) * 3, stroke: G, strokeWidth: 2, strokeLinecap: 'round', opacity: .35 + (i % 4) * .15, transform: `rotate(${i * 10} ${RING.cx} ${RING.cy})` }));
-    return h('svg', { viewBox: '0 0 720 400', width: '100%', height: '100%', style: { display: 'block', color: '#C3C8F0', overflow: 'visible' }, role: 'img', 'aria-label': 'Battery bay with an embedded Bragg-grating fiber. A hot cell shifts the reflected wavelength; the signal runs to the ALTA photonic reservoir, which commands the vent valve to open.' },
+    return h('svg', { viewBox: '0 0 720 400', width: '100%', height: '100%', style: { display: 'block', color: '#C3C8F0', overflow: 'hidden' }, role: 'img', 'aria-label': 'Battery bay with an embedded Bragg-grating fiber. A hot cell shifts the reflected wavelength; the signal runs to the ALTA photonic reservoir, which commands the vent valve to open.' },
       h('defs', null,
         h('radialGradient', { id: 'trHeat' }, h('stop', { offset: '0%', stopColor: R, stopOpacity: .75 }), h('stop', { offset: '55%', stopColor: '#FF5A1F', stopOpacity: .22 }), h('stop', { offset: '100%', stopColor: R, stopOpacity: 0 })),
         h('radialGradient', { id: 'trGold' }, h('stop', { offset: '0%', stopColor: G }), h('stop', { offset: '100%', stopColor: G, stopOpacity: 0 })),
