@@ -80,8 +80,67 @@ main, .nav, .footer { position: relative; z-index: 1; }
 
 /* Anchor scroll offset so nav doesn't overlap section headers when
    jumping via in-page links */
-section[id], main[id] { scroll-margin-top: 90px; }
+section[id], main[id] { scroll-margin-top: 96px; }
 main[id="top"] { scroll-margin-top: 0; }
+
+/* ---------- SKIP LINK ---------- */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--brand-yellow);
+  color: #04050d;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform .18s ease;
+}
+.skip-link:focus { transform: translateY(0); outline: 2px solid #04050d; outline-offset: 2px; }
+
+/* ---------- NAV TOGGLE ICON SWAP (mobile) ---------- */
+.nav-toggle { position: relative; }
+.nav-toggle-bars { display: inline-flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; }
+.nav-toggle-bars span {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: var(--text);
+}
+.nav-toggle-close { display: none; }
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars { display: none; }
+.nav-toggle[aria-expanded="true"] .nav-toggle-close { display: block; }
+
+/* ---------- CONTACT ASIDE ---------- */
+.contact-aside {
+  margin: 18px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.contact-aside a {
+  color: var(--brand-yellow);
+  text-decoration: underline;
+  text-decoration-color: rgba(234, 186, 1, .45);
+  text-underline-offset: 3px;
+}
+.contact-aside a:hover { text-decoration-color: var(--brand-yellow); }
+
+/* ---------- ROADMAP DISCLAIMER ---------- */
+.timeline-note {
+  margin: 28px 0 0;
+  padding: 14px 18px;
+  border-left: 2px solid var(--line-strong);
+  background: rgba(255, 255, 255, .02);
+  border-radius: 0 10px 10px 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.55;
+  max-width: 760px;
+}
 
 /* ---------- PROGRESS DOTS ---------- */
 .progress-dots {
@@ -224,20 +283,19 @@ main[id="top"] { scroll-margin-top: 0; }
   background: none;
   border: 1px solid var(--line-strong);
   border-radius: 8px;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   cursor: pointer;
   padding: 0;
   flex-direction: column;
   gap: 4px;
   align-items: center;
   justify-content: center;
+  color: var(--text);
 }
-.nav-toggle span {
-  display: block;
-  width: 18px;
-  height: 1.5px;
-  background: var(--text);
+.nav-toggle:focus-visible {
+  outline: 2px solid var(--brand-yellow);
+  outline-offset: 2px;
 }
 
 /* ---------- BUTTONS ---------- */
@@ -259,33 +317,39 @@ main[id="top"] { scroll-margin-top: 0; }
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  background: var(--brand-red);
+  /* Dark-only gradient — all three stops pass WCAG AA against #fff:
+     purple #752A90 (8.5:1), red #FD0B04 (4.5:1), deep-blue #060C83 (12:1).
+     No yellow stop so the label stays readable across the full width. */
+  background: linear-gradient(90deg,
+    var(--brand-purple) 0%,
+    var(--brand-red)    55%,
+    var(--brand-blue)   100%);
   border: 0;
   color: #fff;
   font-weight: 600;
-  box-shadow: 0 6px 18px -4px rgba(253, 11, 4, .35);
+  box-shadow: 0 6px 18px -4px rgba(117, 42, 144, .35);
 }
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  background: linear-gradient(
-    to right,
-    var(--brand-yellow) 0%,
-    var(--brand-red)    35%,
-    var(--brand-purple) 70%,
-    var(--brand-blue)   100%
-  );
-  z-index: -1;
-  border-radius: inherit;
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px -4px rgba(117, 42, 144, .50);
 }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 28px -4px rgba(117, 42, 144, .45); }
+.btn-primary:focus-visible {
+  outline: 2px solid var(--brand-yellow);
+  outline-offset: 3px;
+}
 .btn-ghost {
   background: rgba(255,255,255,.03);
   color: var(--text);
   border-color: var(--line-strong);
 }
 .btn-ghost:hover { border-color: var(--brand-yellow); color: var(--brand-yellow); }
+.btn-ghost:focus-visible {
+  outline: 2px solid var(--brand-yellow);
+  outline-offset: 3px;
+}
+/* Copy-email button sits inside .contact-actions as .btn-ghost + .btn-copy */
+.btn-copy.is-copied { color: var(--brand-yellow); border-color: var(--brand-yellow); }
+.btn-copy.is-error  { color: var(--brand-red);    border-color: var(--brand-red); }
 
 /* ---------- TYPOGRAPHY ---------- */
 h1, h2, h3, h4 {
@@ -338,75 +402,98 @@ p { margin: 0; }
   position: relative;
   max-width: var(--max);
   margin: 0 auto;
-  padding: 80px 32px 80px;
+  padding: 72px 32px 56px;
   display: grid;
   grid-template-columns: 1.1fr 1fr;
-  gap: 56px;
+  gap: 48px;
   align-items: center;
-  min-height: calc(100vh - 80px);
+  /* Shorter than full viewport so the next content hints below the fold */
+  min-height: min(680px, 86vh);
 }
 .hero-inner { max-width: 640px; }
-.hero h1 { margin-bottom: 22px; }
+.hero h1 {
+  margin: 0 0 10px;
+  /* Solid high-contrast ink — gradient reserved for logo + restrained accents */
+  color: var(--text);
+}
+.hero-brandline {
+  margin: 0 0 20px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--muted);
+  font-style: italic;
+}
 .lede {
   color: var(--muted);
-  font-size: 18px;
-  max-width: 560px;
-  margin-bottom: 36px;
+  font-size: 17px;
+  line-height: 1.55;
+  max-width: 580px;
+  margin: 0 0 32px;
 }
 .hero-cta {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 56px;
+  margin-bottom: 40px;
 }
 .hero-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 28px;
+  gap: 20px;
   border-top: 1px solid var(--line);
-  padding-top: 28px;
+  padding-top: 24px;
 }
 .hero-stats li {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  min-width: 0;
+}
+.hero-stat-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--dim);
 }
 .hero-stats strong {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 26px;
   font-weight: 600;
-  background: var(--grad-linear);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  line-height: 1.1;
+  /* Solid ink — no gradient on essential values (contrast + prompt guidance) */
+  color: var(--text);
+  letter-spacing: -0.015em;
+  white-space: nowrap;
 }
-.hero-stats span {
-  font-size: 12px;
+.hero-stat-sub,
+.hero-stats span.hero-stat-sub {
+  font-size: 14px;
   color: var(--muted);
   line-height: 1.4;
-}
-.hero-stats li span::first-letter {
-  font-weight: 700;
-  color: var(--brand-yellow);
-  font-size: 14px;
+  margin-top: 2px;
 }
 .hero-stats-note {
-  margin-top: 16px;
-  font-size: 11.5px;
-  line-height: 1.5;
-  color: var(--dim);
-  font-family: 'JetBrains Mono', monospace;
-  letter-spacing: .02em;
-  max-width: 560px;
+  margin-top: 18px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 620px;
 }
 .hero-stats-note a {
   color: var(--brand-yellow);
   text-decoration: underline;
-  text-decoration-color: rgba(234, 186, 1, .35);
+  text-decoration-color: rgba(234, 186, 1, .45);
   text-underline-offset: 3px;
 }
-.hero-stats-note a:hover {
-  text-decoration-color: var(--brand-yellow);
+.hero-stats-note a:hover { text-decoration-color: var(--brand-yellow); }
+.hero-stats-note abbr {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--dim);
+  text-underline-offset: 3px;
+  cursor: help;
 }
 
 /* Prism / refraction visual */
@@ -1858,7 +1945,9 @@ p { margin: 0; }
     padding-bottom: 60px;
     gap: 48px;
   }
-  .hero-prism { max-width: 320px; margin: 0 auto; }
+  /* Headline/intro/actions come first in source order (hero-inner before
+     hero-prism); keep that reading order on tablet. */
+  .hero-prism { max-width: 280px; margin: 0 auto; }
   .hero-stats { grid-template-columns: repeat(2, 1fr); gap: 22px; }
   .pipeline, .cards, .team { grid-template-columns: 1fr 1fr; }
   .section, .section-alt { padding: 80px 24px; }
@@ -1876,33 +1965,46 @@ p { margin: 0; }
     gap: 0;
     background: var(--bg-elev);
     border-bottom: 1px solid var(--line);
-    padding: 12px 20px 18px;
+    padding: 8px 20px 18px;
   }
   .nav-links.open { display: flex; }
+  /* Full-width tap area, 44px minimum height per WCAG 2.5.5 */
   .nav-links a {
-    padding: 12px 0;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 0;
     border-bottom: 1px solid var(--line);
     font-size: 15px;
   }
   .nav-links a:last-child { border-bottom: none; }
-  /* Inside the mobile burger menu, strip the Contact CTA back to a plain link */
+  /* Contact stays visually distinct even in the collapsed menu */
   .nav-links .nav-cta {
-    padding: 12px 0;
-    border: 0;
-    border-bottom: 1px solid var(--line);
-    border-radius: 0;
-    box-shadow: none;
-    color: var(--muted) !important;
-    font-weight: 400;
+    padding: 10px 14px;
+    margin-top: 8px;
+    border: 1px solid var(--brand-yellow);
+    border-radius: 999px;
+    background: rgba(234, 186, 1, .08);
+    color: var(--brand-yellow) !important;
+    font-weight: 500;
+    justify-content: center;
+    min-height: 44px;
   }
   .nav-links .nav-cta:last-child { border-bottom: none; }
-  .nav-links .nav-cta:hover { box-shadow: none; color: var(--text) !important; }
+  .nav-links .nav-cta:hover { background: rgba(234, 186, 1, .14); color: var(--brand-yellow) !important; }
   .nav-toggle { display: inline-flex; }
   /* On mobile nav-links is hidden, so theme-toggle takes over pushing to the right */
   .theme-toggle { margin-left: auto; }
 
-  .hero { padding: 40px 20px 60px; }
-  .hero-stats { grid-template-columns: 1fr 1fr; }
+  .hero { padding: 32px 20px 48px; min-height: 0; }
+  .hero-cta { gap: 10px; }
+  .hero-cta .btn { flex: 1 1 100%; justify-content: center; min-height: 44px; }
+  .hero-stats { grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+  .hero-stats strong { font-size: 22px; }
+  .hero h1 { font-size: clamp(32px, 8vw, 44px); }
+  /* Shrink the decorative prism so the useful content isn't pushed
+     below the fold on narrow phones */
+  .hero-prism { max-width: 220px; opacity: .9; }
   .pipeline, .cards, .team { grid-template-columns: 1fr; }
   .section, .section-alt { padding: 64px 20px; }
   .timeline li { grid-template-columns: 48px 1fr; gap: 16px; }
@@ -1913,7 +2015,25 @@ p { margin: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .prism-svg, .prism-glow, .reveal { animation: none !important; transition: none !important; }
+  /* Static page: no decorative motion, no reveal fade, no ambient
+     orbit on the prism, no step-pulse. Content must stay visible even
+     if animation never runs. */
+  .prism-svg, .prism-glow,
+  .reveal,
+  .step-num::after,
+  .anomaly-stage.is-active .anomaly-stage-puck::after,
+  .nav, .nav.scrolled,
+  .step, .card, .use-card, .sister-project-card, .arch-tab {
+    animation: none !important;
+    transition: none !important;
+  }
+  /* Reveal targets are initialised with opacity:0 for the fade-in. If
+     the fade-in animation can't run, make them visible immediately. */
+  .reveal { opacity: 1 !important; transform: none !important; }
+  /* The decorative starfield canvas keeps a static field (no scroll
+     drift) — script.js already honours prefers-reduced-motion for the
+     per-frame updates. */
+  html { scroll-behavior: auto; }
 }
 
 /* ============================================================
@@ -2117,10 +2237,6 @@ p { margin: 0; }
 }
 [data-theme="light"] .step-num::after {
   border-color: var(--brand-purple);
-}
-
-[data-theme="light"] .hero-stats li span::first-letter {
-  color: var(--brand-purple);
 }
 
 /* Section panels with white tint — invert to a much lighter wash so the
